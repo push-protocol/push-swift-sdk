@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "walletconnectswiftv2",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/WalletConnect/WalletConnectSwiftV2",
+      "state" : {
+        "revision" : "742a501a87101801389e35e427b0a3695812423d",
+        "version" : "1.6.0"
+      }
+    }
+  ],
+  "version" : 2
+}

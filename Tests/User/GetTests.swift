@@ -1,7 +1,7 @@
 import Push
 import XCTest
 
-class UserTests: XCTestCase {
+class GetUserTests: XCTestCase {
 
   func testUserGetReturnsNilWhenUserDoesNotExist() async throws {
     let nonEixstingUser = "eip155:0x265422EcbC75BEb6f3BedDf0C3480Eb6072d021d"
