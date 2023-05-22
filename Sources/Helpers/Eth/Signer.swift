@@ -10,10 +10,11 @@ public struct Singer {
     self.account = account
   }
 
-  public func getEip191Signature(message: String) throws -> String {
+  public func getEip191Signature(message: String, version: String = "v2") throws -> String {
     let data = message.data(using: .utf8)!
-    let msg = try account.signMessage(message: data)
-    return msg
+    let signature = try account.signMessage(message: data)
+    let sigType = version == "v1" ? "eip191" : "eip191v2"
+    return "\(sigType):\(signature)"
   }
 
 }
