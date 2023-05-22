@@ -1,5 +1,4 @@
 import Push
-import Web3
 import XCTest
 
 class AddressHelperTests: XCTestCase {

@@ -7,8 +7,9 @@ let package = Package(
   name: "Push",
   platforms: [.iOS(.v14), .macOS(.v11)],
   dependencies: [
-    .package(url: "https://github.com/Boilertalk/Web3.swift.git", from: "0.6.0"),
-    .package(url: "https://github.com/krzyzanowskim/ObjectivePGP.git", from: "0.99.4")
+    .package(url: "https://github.com/krzyzanowskim/ObjectivePGP.git", from: "0.99.4"),
+    .package(url: "https://github.com/GigaBitcoin/secp256k1.swift.git", exact: "0.10.0"),
+    .package(url: "https://github.com/argentlabs/web3.swift", from: "1.1.0")
   ],
   targets: [
     // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -16,10 +17,9 @@ let package = Package(
     .executableTarget(
       name: "Push",
       dependencies: [
-        .product(name: "Web3", package: "Web3.swift"),
-        .product(name: "Web3PromiseKit", package: "Web3.swift"),
-        .product(name: "Web3ContractABI", package: "Web3.swift"),
-        .product(name: "ObjectivePGP", package: "ObjectivePGP")
+        .product(name: "ObjectivePGP", package: "ObjectivePGP"),
+        .product(name: "secp256k1", package: "secp256k1.swift"),
+				"web3.swift"
       ],
       path: "Sources"
     ),
