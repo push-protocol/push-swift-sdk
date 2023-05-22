@@ -1,19 +1,19 @@
 import web3
 
 public struct Singer {
-  //   let privateKey: EthereumPrivateKey
-  //   let address: EthereumAddress
+  let account: EthereumAccount
 
-  //   init(privateKey: String) {
-  //     let userAccount = try! EthereumPrivateKey(
-  //       hexPrivateKey: privateKey)
+  public init(privateKey: String) {
+    let keyStorage = EthereumKeyLocalStorage()
+    let account = try! EthereumAccount.importAccount(
+      addingTo: keyStorage, privateKey: privateKey, keystorePassword: privateKey)
+    self.account = account
+  }
 
-  //     self.privateKey = userAccount
-  //     self.address = userAccount.address
-  //   }
+  public func getEip191Signature(message: String) throws -> String {
+    let data = message.data(using: .utf8)!
+    let msg = try account.signMessage(message: data)
+    return msg
+  }
 
-  //   public func getEip191Signature(message: String ){
-  //     let web3 = Web3(rpcURL: "")
-  //     // let res = web3.eth.
-  //   }
 }
