@@ -42,4 +42,28 @@ extension PushEndpoint {
     )
   }
 
+  static func getFeeds(
+    options: FeedsOptionsType,
+    env: ENV
+  ) throws -> Self {
+    let userAddressCaip10 = try addressToCaip10(env: env, address: options.user)
+    return PushEndpoint(
+      env: env,
+      path: "users/\(userAddressCaip10)/feeds",
+      queryItems: [
+        URLQueryItem(
+          name: "page",
+          value: String(options.page)
+        ),
+        URLQueryItem(
+          name: "limit",
+          value: String(options.limit)
+        ),
+        URLQueryItem(
+          name: "spam",
+          value: String(options.spam)
+        ),
+      ]
+    )
+  }
 }
