@@ -1,14 +1,10 @@
 import ObjectivePGP
 
 public struct Pgp {
-  let publicKey: Data
+  public let publicKey: Data
   let secretKey: Data
 
-  public init() throws {
-    let key = KeyGenerator().generate(for: "", passphrase: "")
-
-    let publicKey = try key.export(keyType: .public)
-    let secretKey = try key.export(keyType: .secret)
+  public init(publicKey: Data, secretKey: Data) throws {
 
     self.publicKey = publicKey
     self.secretKey = secretKey
@@ -31,32 +27,38 @@ public struct Pgp {
 
   }
 
-  public func encryptWithPGPKey(message: Data, anotherUserPublicKey: Data) throws -> Data {
+  public func encryptWithPGPKey(message: Data, anotherUserPublicKey: Data) throws -> String {
     let myKey = try ObjectivePGP.readKeys(from: self.publicKey).first!
     let anotherUserKey = try ObjectivePGP.readKeys(from: anotherUserPublicKey).first!
     let encrypted = try ObjectivePGP.encrypt(
       message, addSignature: false, using: [anotherUserKey, myKey])
-    return encrypted
+    return Armor.armored(encrypted, as: .message)
   }
 
-  public func decryptWithPGPKey(message: Data) throws -> Data {
-    let myKey = try ObjectivePGP.readKeys(from: self.publicKey).first!
+  public func decryptWithPGPKey(message: String) throws -> String {
+    let messageData = try Armor.readArmored(message)
+    let myKey = try ObjectivePGP.readKeys(from: self.secretKey).first!
     let decrypted = try ObjectivePGP.decrypt(
-      message, andVerifySignature: false, using: [myKey])
+      messageData, andVerifySignature: false, using: [myKey], passphraseForKey: useEmptyPassPhrase)
 
-    return decrypted
+    return String(data: decrypted, encoding: .utf8)!
   }
 
-  public func verify(encryptedBin: Data, signature: Data) throws -> Bool {
+  public func verify(encryptedData: String, signature: String) throws -> Bool {
+    let encryptedBin = try Armor.readArmored(encryptedData)
+    let signatureBin = try Armor.readArmored(signature)
     let myKey = try ObjectivePGP.readKeys(from: self.publicKey).first!
-    try ObjectivePGP.verify(encryptedBin, withSignature: signature, using: [myKey])
+    try ObjectivePGP.verify(encryptedBin, withSignature: signatureBin, using: [myKey])
     return true
   }
 
-  public func sign(encryptedBin: Data) throws -> Data {
-    let myKey = try ObjectivePGP.readKeys(from: self.publicKey).first!
-    let signature = try ObjectivePGP.sign(encryptedBin, detached: true, using: [myKey])
-    return signature
+  public func sign(encryptedData: String) throws -> String {
+    let encryptedBin = try Armor.readArmored(encryptedData)
+    let mySk = try ObjectivePGP.readKeys(from: self.secretKey).first!
+    // let myPk = try ObjectivePGP.readKeys(from: self.secretKey).first!
+    let signature = try ObjectivePGP.sign(
+      encryptedBin, detached: true, using: [mySk], passphraseForKey: useEmptyPassPhrase)
+    return Armor.armored(signature, as: .signature)
   }
 
   public func getPublicKey() -> String {
@@ -70,7 +72,24 @@ public struct Pgp {
   }
 
   public static func GenerateNewPgpPair() throws -> Self {
-    return try Pgp()
+    let key = KeyGenerator(
+      algorithm: .RSA, keyBitsLength: 2048, cipherAlgorithm: .AES256, hashAlgorithm: .SHA256
+    ).generate(for: "", passphrase: "")
+
+    let publicKey = try key.export(keyType: .public)
+    let secretKey = try key.export(keyType: .secret)
+    return try Pgp(publicKey: publicKey, secretKey: secretKey)
+  }
+
+  public static func fromArmor(publicKey: String, secretKey: String) throws -> Self {
+    let pk = try Armor.readArmored(publicKey)
+    let sk = try Armor.readArmored(secretKey)
+
+    return try Pgp(publicKey: pk, secretKey: sk)
+  }
+
+  func useEmptyPassPhrase(key: Key?) -> String? {
+    return ""
   }
 
 }
