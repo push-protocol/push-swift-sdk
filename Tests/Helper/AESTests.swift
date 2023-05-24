@@ -117,7 +117,8 @@ class AESTests: XCTestCase {
       message: orignalMsg, secret: secret, nonceHex: nonce, saltHex: salt
     )
 
-    let recoveredStr = try Push.AESHelper.decrypt(chiperHex: chiper, secret: secret, nonceHex: nonce, saltHex: salt)
+    let recoveredStr = try Push.AESHelper.decrypt(
+      chiperHex: chiper, secret: secret, nonceHex: nonce, saltHex: salt)
 
     XCTAssertEqual(orignalMsg, recoveredStr)
   }

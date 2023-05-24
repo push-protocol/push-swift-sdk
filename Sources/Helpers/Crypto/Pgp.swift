@@ -31,9 +31,32 @@ public struct Pgp {
 
   }
 
-  public func encryptPGPKey(singer: Push.Singer) throws -> Any {
+  public func encryptWithPGPKey(message: Data, anotherUserPublicKey: Data) throws -> Data {
+    let myKey = try ObjectivePGP.readKeys(from: self.publicKey).first!
+    let anotherUserKey = try ObjectivePGP.readKeys(from: anotherUserPublicKey).first!
+    let encrypted = try ObjectivePGP.encrypt(
+      message, addSignature: false, using: [anotherUserKey, myKey])
+    return encrypted
+  }
 
-    return ""
+  public func decryptWithPGPKey(message: Data) throws -> Data {
+    let myKey = try ObjectivePGP.readKeys(from: self.publicKey).first!
+    let decrypted = try ObjectivePGP.decrypt(
+      message, andVerifySignature: false, using: [myKey])
+
+    return decrypted
+  }
+
+  public func verify(encryptedBin: Data, signature: Data) throws -> Bool {
+    let myKey = try ObjectivePGP.readKeys(from: self.publicKey).first!
+    try ObjectivePGP.verify(encryptedBin, withSignature: signature, using: [myKey])
+    return true
+  }
+
+  public func sign(encryptedBin: Data) throws -> Data {
+    let myKey = try ObjectivePGP.readKeys(from: self.publicKey).first!
+    let signature = try ObjectivePGP.sign(encryptedBin, detached: true, using: [myKey])
+    return signature
   }
 
   public func getPublicKey() -> String {
