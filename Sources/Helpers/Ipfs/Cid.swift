@@ -16,8 +16,8 @@ public struct Message: Codable {
 }
 
 public func getCID(env: ENV, cid: String) async throws -> Message {
-  let url: URL = PushEndpoint.getCID(env: env, cid: cid).url;
-  let (data, res) = try await URLSession.shared.data(from: url);
+  let url: URL = PushEndpoint.getCID(env: env, cid: cid).url
+  let (data, res) = try await URLSession.shared.data(from: url)
 
   guard let httpResponse = res as? HTTPURLResponse else {
     throw URLError(.badServerResponse)
@@ -28,9 +28,9 @@ public func getCID(env: ENV, cid: String) async throws -> Message {
   }
 
   do {
-    return try JSONDecoder().decode(Message.self, from: data);
+    return try JSONDecoder().decode(Message.self, from: data)
   } catch {
-      print("[Push SDK] - API \(error.localizedDescription)")
-      throw error
+    print("[Push SDK] - API \(error.localizedDescription)")
+    throw error
   }
 }

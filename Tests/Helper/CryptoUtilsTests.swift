@@ -12,7 +12,7 @@ class CryptoUtilTests: XCTestCase {
     XCTAssertEqual(m2.count, 10 * 2)
     XCTAssertEqual(m3.count, 15 * 2)
 
-    XCTAssertNotEqual(m1,m2)
+    XCTAssertNotEqual(m1, m2)
   }
 
   func testHash() async throws {

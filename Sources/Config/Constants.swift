@@ -5,7 +5,6 @@ public enum ENCRYPTION_TYPE: Swift.String, Swift.CodingKey {
   case NFTPGP_V1 = "pgpv1:nft"
 }
 
-
 public enum CONSTANTS {
   public enum PAGINATION {
     public static let INITIAL_PAGE = 1

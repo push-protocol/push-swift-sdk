@@ -17,7 +17,8 @@ public enum AdditionalMetaEnum: Codable {
     } else if let value = try? container.decode(AdditionalMeta.self) {
       self = .additionalMeta(value)
     } else {
-      throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid additionalMeta value")
+      throw DecodingError.dataCorruptedError(
+        in: container, debugDescription: "Invalid additionalMeta value")
     }
   }
 
@@ -35,7 +36,7 @@ public enum AdditionalMetaEnum: Codable {
 public enum Recipients: Codable {
   case string(String)
   case stringArray([String])
-  
+
   public init(from decoder: Decoder) throws {
     let container = try decoder.singleValueContainer()
     if let value = try? container.decode(String.self) {
@@ -43,10 +44,11 @@ public enum Recipients: Codable {
     } else if let value = try? container.decode([String].self) {
       self = .stringArray(value)
     } else {
-      throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid recipients value")
+      throw DecodingError.dataCorruptedError(
+        in: container, debugDescription: "Invalid recipients value")
     }
   }
-  
+
   public func encode(to encoder: Encoder) throws {
     var container = encoder.singleValueContainer()
     switch self {
@@ -103,12 +105,12 @@ public struct FeedResponse: Codable {
 }
 
 public struct FeedsOptionsType {
-  var user: String;
-  var chainId: Int = CONSTANTS.DEFAULT_CHAIN_ID;
-  var env: ENV = ENV.STAGING;
-  var page: Int = CONSTANTS.PAGINATION.INITIAL_PAGE;
-  var spam: Bool = false;
-  var limit: Int = CONSTANTS.PAGINATION.LIMIT;
+  var user: String
+  var chainId: Int = CONSTANTS.DEFAULT_CHAIN_ID
+  var env: ENV = ENV.STAGING
+  var page: Int = CONSTANTS.PAGINATION.INITIAL_PAGE
+  var spam: Bool = false
+  var limit: Int = CONSTANTS.PAGINATION.LIMIT
 
   public init(
     user: String,
@@ -118,13 +120,13 @@ public struct FeedsOptionsType {
     spam: Bool = false,
     limit: Int = CONSTANTS.PAGINATION.LIMIT
   ) {
-    self.user = user;
-    self.chainId = chainId;
-    self.env = env;
-    self.page = page;
-    self.spam = spam;
-    self.limit = limit;
-  }  
+    self.user = user
+    self.chainId = chainId
+    self.env = env
+    self.page = page
+    self.spam = spam
+    self.limit = limit
+  }
 }
 
 extension User {
@@ -134,9 +136,9 @@ extension User {
     let url: URL = try PushEndpoint.getFeeds(
       options: options,
       env: options.env
-    ).url;
+    ).url
 
-    let (data, res) = try await URLSession.shared.data(from: url);
+    let (data, res) = try await URLSession.shared.data(from: url)
 
     guard let httpResponse = res as? HTTPURLResponse else {
       throw URLError(.badServerResponse)
@@ -147,16 +149,16 @@ extension User {
     }
 
     if data.count == 4 {
-      return FeedResponse(feeds: [], itemcount: 0);
+      return FeedResponse(feeds: [], itemcount: 0)
     }
 
     do {
-      let jsonData = Data(data);
+      let jsonData = Data(data)
       let dataContainer = try JSONDecoder().decode(FeedResponse.self, from: jsonData)
-      return dataContainer;
+      return dataContainer
     } catch {
-      print("[Push SDK] - API : \(error.localizedDescription)");
-      throw error;
+      print("[Push SDK] - API : \(error.localizedDescription)")
+      throw error
     }
   }
 }
