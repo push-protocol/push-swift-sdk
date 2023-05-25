@@ -1,18 +1,18 @@
 import Foundation
 
 public struct Message: Codable {
-  public let fromCAIP10: String
-  public let toCAIP10: String
-  public let fromDID: String
-  public let toDID: String
-  public let messageType: String
-  public let messageContent: String
-  public let signature: String
-  public let sigType: String
-  public let timestamp: Int?
-  public let encType: String
-  public let encryptedSecret: String
-  public let link: String?
+  public var fromCAIP10: String
+  public var toCAIP10: String
+  public var fromDID: String
+  public var toDID: String
+  public var messageType: String
+  public var messageContent: String
+  public var signature: String
+  public var sigType: String
+  public var timestamp: Int?
+  public var encType: String
+  public var encryptedSecret: String
+  public var link: String?
 }
 
 public func getCID(env: ENV, cid: String) async throws -> Message {

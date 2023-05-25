@@ -92,7 +92,7 @@ public struct Payload: Codable {
   public let etime: String?
 }
 
-public struct Feeds: Codable {
+public struct UserFeeds: Codable {
   public let payload_id: Int
   public let sender: String
   public let epoch: String
@@ -100,7 +100,7 @@ public struct Feeds: Codable {
 }
 
 public struct FeedResponse: Codable {
-  public let feeds: [Feeds]
+  public let feeds: [UserFeeds]
   public let itemcount: Int
 }
 

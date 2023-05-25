@@ -2,7 +2,7 @@ import Foundation
 
 public struct User: Decodable {
   public let about: String?
-  public let name: String
+  public let name: String?
   public let allowedNumMsg: Int
   public let did: String
   public let encryptedPrivateKey: String

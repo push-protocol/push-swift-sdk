@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		555B9A962A1DEF1200F96CB7 /* Push in Frameworks */ = {isa = PBXBuildFile; productRef = 555B9A952A1DEF1200F96CB7 /* Push */; };
 		E700DAB52A18ADE8009EF921 /* PushIosDemoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E700DAB42A18ADE8009EF921 /* PushIosDemoApp.swift */; };
 		E700DAB72A18ADE8009EF921 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E700DAB62A18ADE8009EF921 /* ContentView.swift */; };
 		E700DAB92A18ADEB009EF921 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E700DAB82A18ADEB009EF921 /* Assets.xcassets */; };
@@ -15,6 +16,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		555B9A942A1DE66F00F96CB7 /* push-swift-sdk */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "push-swift-sdk"; path = ..; sourceTree = "<group>"; };
 		E700DAB12A18ADE8009EF921 /* PushIosDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PushIosDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E700DAB42A18ADE8009EF921 /* PushIosDemoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushIosDemoApp.swift; sourceTree = "<group>"; };
 		E700DAB62A18ADE8009EF921 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -27,6 +29,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				555B9A962A1DEF1200F96CB7 /* Push in Frameworks */,
 				E700DAC42A18D3C3009EF921 /* WalletConnect in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -34,11 +37,28 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		555B9A912A1DE62100F96CB7 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		555B9A932A1DE66F00F96CB7 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				555B9A942A1DE66F00F96CB7 /* push-swift-sdk */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
 		E700DAA82A18ADE8009EF921 = {
 			isa = PBXGroup;
 			children = (
+				555B9A932A1DE66F00F96CB7 /* Packages */,
 				E700DAB32A18ADE8009EF921 /* PushIosDemo */,
 				E700DAB22A18ADE8009EF921 /* Products */,
+				555B9A912A1DE62100F96CB7 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -87,6 +107,7 @@
 			name = PushIosDemo;
 			packageProductDependencies = (
 				E700DAC32A18D3C3009EF921 /* WalletConnect */,
+				555B9A952A1DEF1200F96CB7 /* Push */,
 			);
 			productName = PushIosDemo;
 			productReference = E700DAB12A18ADE8009EF921 /* PushIosDemo.app */;
@@ -362,6 +383,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		555B9A952A1DEF1200F96CB7 /* Push */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Push;
+		};
 		E700DAC32A18D3C3009EF921 /* WalletConnect */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E700DAC22A18D3C3009EF921 /* XCRemoteSwiftPackageReference "WalletConnectSwiftV2" */;

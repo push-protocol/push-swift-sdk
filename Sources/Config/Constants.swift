@@ -1,4 +1,4 @@
-public enum ENCRYPTION_TYPE: Swift.String, Swift.CodingKey {
+public enum ENCRYPTION_TYPE: Swift.String, Swift.CodingKey, Decodable, Encodable {
   case PGP_V1 = "x25519-xsalsa20-poly1305"
   case PGP_V2 = "aes256GcmHkdfSha256"
   case PGP_V3 = "eip191-aes256-gcm-hkdf-sha256"

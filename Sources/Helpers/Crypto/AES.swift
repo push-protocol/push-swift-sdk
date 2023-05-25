@@ -99,4 +99,19 @@ public struct AESHelper {
 
     return hexStr
   }
+
+  public static func decrypt(cipherText: String, secretKey: String) throws -> String {
+    let cipherData = hexToData(characters: cipherText)
+    let sk = Data(
+      getSigToBytes(sig: secretKey)
+    )
+    let derivedKey = HKDF<SHA256>.deriveKey(
+      inputKeyMaterial: SymmetricKey(data: sk),
+      salt: Data(),
+      outputByteCount: 32
+    )
+    let sealedBox = try AES.GCM.SealedBox(combined: cipherData)
+    let decryptedData = try AES.GCM.open(sealedBox, using: derivedKey)
+    return String(data: decryptedData, encoding: .utf8)!
+  }
 }

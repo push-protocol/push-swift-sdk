@@ -1,6 +1,6 @@
 import web3
 
-public struct Singer {
+public struct Signer {
   let account: EthereumAccount
 
   public init(privateKey: String) {
@@ -17,4 +17,7 @@ public struct Singer {
     return "\(sigType):\(signature)"
   }
 
+  public func getAddress() -> String {
+    return account.address.asString();
+  }
 }
