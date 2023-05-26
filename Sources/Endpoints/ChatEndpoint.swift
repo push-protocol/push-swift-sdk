@@ -18,7 +18,7 @@ extension PushEndpoint {
         URLQueryItem(
           name: "limit",
           value: String(limit)
-        )
+        ),
       ]
     )
   }

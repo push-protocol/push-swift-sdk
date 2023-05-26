@@ -1,7 +1,7 @@
 import CryptoKit
 import Foundation
 
-public struct AESHelper {
+public struct AESGCMHelper {
 
   static func hexToData(characters: String) -> Data {
     var data = Data(capacity: characters.count / 2)
@@ -113,5 +113,15 @@ public struct AESHelper {
     let sealedBox = try AES.GCM.SealedBox(combined: cipherData)
     let decryptedData = try AES.GCM.open(sealedBox, using: derivedKey)
     return String(data: decryptedData, encoding: .utf8)!
+  }
+
+  func encryptAES(message: Data, key: SymmetricKey) throws -> Data {
+    let sealedBox = try AES.GCM.seal(message, using: key)
+    return sealedBox.combined!
+  }
+
+  func decryptAES(ciphertext: Data, key: SymmetricKey) throws -> Data {
+    let sealedBox = try AES.GCM.SealedBox(combined: ciphertext)
+    return try AES.GCM.open(sealedBox, using: key)
   }
 }

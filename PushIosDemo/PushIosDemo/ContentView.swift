@@ -1,6 +1,6 @@
+import Push
 import SwiftUI
 import WalletConnectSign
-import Push
 
 struct ContentView: View {
   @State private var showAlert = false

@@ -29,11 +29,11 @@ public struct CreateUserOptions {
     version: ENCRYPTION_TYPE = ENCRYPTION_TYPE.PGP_V3,
     progressHook: ((ProgressHookType) -> Void)?
   ) {
-    self.env = env;
-    self.account = account;
-    self.signer = signer;
-    self.version = version;
-    self.progressHook = progressHook;
+    self.env = env
+    self.account = account
+    self.signer = signer
+    self.version = version
+    self.progressHook = progressHook
   }
 }
 
@@ -72,55 +72,63 @@ public struct CreateUserResponse: Decodable {
 extension User {
   public static func create(options: CreateUserOptions) async throws -> CreateUserResponse {
     do {
-      if(options.account == nil && options.signer == nil) {
+      if options.account == nil && options.signer == nil {
         throw UserError.ONE_OF_ACCOUNT_OR_SIGNER_REQUIRED
       }
-      let wallet = getWallet(options: walletType(account: options.account, signer: options.signer));
-      let address = await getAccountAddress(wallet: wallet);
-      if(!isValidETHAddress(address: address)) {
+      let wallet = getWallet(options: walletType(account: options.account, signer: options.signer))
+      let address = await getAccountAddress(wallet: wallet)
+      if !isValidETHAddress(address: address) {
         throw UserError.INVALID_ETH_ADDRESS
       }
       // let caip10 = try addressToCaip10(env: options.env, address: address);
-      let caip10 = walletToPCAIP10(account: address);
-      var encryptionType = options.version;
-      if(options.signer == nil) {
-        encryptionType = ENCRYPTION_TYPE.PGP_V1;
+      let caip10 = walletToPCAIP10(account: address)
+      var encryptionType = options.version
+      if options.signer == nil {
+        encryptionType = ENCRYPTION_TYPE.PGP_V1
       }
-      options.progressHook?(ProgressHookType(
-        progressId: "PUSH-CREATE-01", 
-        progressTitle: "Generating Secure Profile Signature", 
-        progressInfo: "This step is only done for first time users and might take a few seconds. PGP keys are getting generated to provide you with secure yet seamless chat", 
-        level: ProgressLevel.INFO
-      ));
+      options.progressHook?(
+        ProgressHookType(
+          progressId: "PUSH-CREATE-01",
+          progressTitle: "Generating Secure Profile Signature",
+          progressInfo:
+            "This step is only done for first time users and might take a few seconds. PGP keys are getting generated to provide you with secure yet seamless chat",
+          level: ProgressLevel.INFO
+        ))
 
-      let keyPairs = try Pgp.GenerateNewPgpPair();
+      let keyPairs = try Pgp.GenerateNewPgpPair()
 
-      options.progressHook?(ProgressHookType(
-        progressId: "PUSH-CREATE-02", 
-        progressTitle: "Signing Generated Profile", 
-        progressInfo: "This step is only done for first time users. Please sign the message to continue.", 
-        level: ProgressLevel.INFO
-      ));
+      options.progressHook?(
+        ProgressHookType(
+          progressId: "PUSH-CREATE-02",
+          progressTitle: "Signing Generated Profile",
+          progressInfo:
+            "This step is only done for first time users. Please sign the message to continue.",
+          level: ProgressLevel.INFO
+        ))
 
-      let publicKey = try keyPairs.preparePGPPublicKey(signer: wallet.signer!);
+      let publicKey = try keyPairs.preparePGPPublicKey(signer: wallet.signer!)
 
-      options.progressHook?(ProgressHookType(
-        progressId: "PUSH-CREATE-03", 
-        progressTitle: "Encrypting Generated Profile", 
-        progressInfo: "Encrypting your keys. Please sign the message to continue.", 
-        level: ProgressLevel.INFO
-      ));
+      options.progressHook?(
+        ProgressHookType(
+          progressId: "PUSH-CREATE-03",
+          progressTitle: "Encrypting Generated Profile",
+          progressInfo: "Encrypting your keys. Please sign the message to continue.",
+          level: ProgressLevel.INFO
+        ))
 
-      let encryptedPrivateKey: EncryptedPrivateKeyV2 = try keyPairs.encryptPGPKey(signer: wallet.signer!);
+      let encryptedPrivateKey: EncryptedPrivateKeyV2 = try keyPairs.encryptPGPKey(
+        signer: wallet.signer!)
 
-      let encryptedPrivateKeyString = String(data: try JSONEncoder().encode(encryptedPrivateKey), encoding: .utf8)!;
+      let encryptedPrivateKeyString = String(
+        data: try JSONEncoder().encode(encryptedPrivateKey), encoding: .utf8)!
 
-      options.progressHook?(ProgressHookType(
-        progressId: "PUSH-CREATE-04", 
-        progressTitle: "Syncing Generated Profile", 
-        progressInfo: "Please sign the message to continue. Steady lads, chat is almost ready!", 
-        level: ProgressLevel.INFO
-      ));
+      options.progressHook?(
+        ProgressHookType(
+          progressId: "PUSH-CREATE-04",
+          progressTitle: "Syncing Generated Profile",
+          progressInfo: "Please sign the message to continue. Steady lads, chat is almost ready!",
+          level: ProgressLevel.INFO
+        ))
 
       let apiData = CreateUserHashData(
         caip10: walletToPCAIP10(account: caip10),
@@ -129,10 +137,11 @@ extension User {
         encryptedPrivateKey: encryptedPrivateKeyString
       )
 
-      let hash = generateSHA256Hash(msg: 
-        String(data: try JSONEncoder().encode(apiData), encoding: .utf8)!
-      );
-      let signatureObject = try wallet.signer!.getEip191Signature(message: hash, version: "v2");
+      let hash = generateSHA256Hash(
+        msg:
+          String(data: try JSONEncoder().encode(apiData), encoding: .utf8)!
+      )
+      let signatureObject = try wallet.signer!.getEip191Signature(message: hash, version: "v2")
 
       let updatedData = CreateUserAPIOptions(
         caip10: walletToPCAIP10(account: caip10),
@@ -147,13 +156,13 @@ extension User {
         sigType: "a"
       )
 
-      let url: URL = PushEndpoint.createUser(env: options.env).url;
-      var request = URLRequest(url: url);
-      request.httpMethod = "POST";
-      request.setValue("application/json", forHTTPHeaderField: "Content-Type");
-      request.httpBody = try JSONEncoder().encode(updatedData);
+      let url: URL = PushEndpoint.createUser(env: options.env).url
+      var request = URLRequest(url: url)
+      request.httpMethod = "POST"
+      request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+      request.httpBody = try JSONEncoder().encode(updatedData)
 
-      let (data, res) = try await URLSession.shared.data(for: request);
+      let (data, res) = try await URLSession.shared.data(for: request)
 
       guard let httpResponse = res as? HTTPURLResponse else {
         throw URLError(.badServerResponse)
@@ -163,26 +172,28 @@ extension User {
         throw URLError(.badServerResponse)
       }
 
-      let response = try JSONDecoder().decode(CreateUserResponse.self, from: data);
+      let response = try JSONDecoder().decode(CreateUserResponse.self, from: data)
       // TODO: complete this verification of the key using the signature
       // response.public = verify()
 
-      options.progressHook?(ProgressHookType(
-        progressId: "PUSH-CREATE-05", 
-        progressTitle: "Setup Complete", 
-        progressInfo: "", 
-        level: ProgressLevel.SUCCESS
-      ));
+      options.progressHook?(
+        ProgressHookType(
+          progressId: "PUSH-CREATE-05",
+          progressTitle: "Setup Complete",
+          progressInfo: "",
+          level: ProgressLevel.SUCCESS
+        ))
 
-      return response;
+      return response
 
     } catch {
-      options.progressHook?(ProgressHookType(
-        progressId: "PUSH-ERROR-00", 
-        progressTitle: "Non Specific Error", 
-        progressInfo: "[Push SDK] - API  - Error - API create User() -: \(error)", 
-        level: ProgressLevel.ERROR
-      ));
+      options.progressHook?(
+        ProgressHookType(
+          progressId: "PUSH-ERROR-00",
+          progressTitle: "Non Specific Error",
+          progressInfo: "[Push SDK] - API  - Error - API create User() -: \(error)",
+          level: ProgressLevel.ERROR
+        ))
       throw UserError.RUNTIME_ERROR("[Push SDK] - API  - Error - API create User() -: \(error)")
     }
   }

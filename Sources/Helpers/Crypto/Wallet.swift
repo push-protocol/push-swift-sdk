@@ -9,13 +9,13 @@ public struct walletType {
 // }
 
 func getWallet(options: walletType) -> walletType {
-  var account = options.account;
-  if(account != nil) {
-    account = pCAIP10ToWallet(address: account!);
+  var account = options.account
+  if account != nil {
+    account = pCAIP10ToWallet(address: account!)
   }
   let wallet = walletType(
     account: account,
     signer: options.signer
-  );
-  return wallet;
+  )
+  return wallet
 }

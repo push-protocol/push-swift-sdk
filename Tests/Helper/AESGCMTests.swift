@@ -11,7 +11,7 @@ class AESTests: XCTestCase {
     let secret =
       "eip191:0x79725b6918f31cf01da680c8c11c8c6a208130c35459d64032444b7ba6b3b2cc447671d6c3be264fdfa08d5114cead9ca383f683809ec69f3c70c7101fc253221c"
 
-    let decryptedPK = try Push.AESHelper.decrypt(
+    let decryptedPK = try Push.AESGCMHelper.decrypt(
       chiperHex: chyper, secret: secret, nonceHex: nonce, saltHex: salt)
 
     XCTAssertTrue(
@@ -88,7 +88,7 @@ class AESTests: XCTestCase {
     let secret =
       "eip191:0x79725b6918f31cf01da680c8c11c8c6a208130c35459d64032444b7ba6b3b2cc447671d6c3be264fdfa08d5114cead9ca383f683809ec69f3c70c7101fc253221c"
 
-    let chiper = try Push.AESHelper.encrypt(
+    let chiper = try Push.AESGCMHelper.encrypt(
       message: pgpKey, secret: secret, nonceHex: nonce, saltHex: salt
     )
 
@@ -113,11 +113,11 @@ class AESTests: XCTestCase {
     let secret =
       "eip191:0x79725b6918f31cf01da680c8c11c8c6a208130c35459d64032444b7ba6b3b2cc447671d6c3be264fdfa08d5114cead9ca383f683809ec69f3c70c7101fc253221c"
 
-    let chiper = try Push.AESHelper.encrypt(
+    let chiper = try Push.AESGCMHelper.encrypt(
       message: orignalMsg, secret: secret, nonceHex: nonce, saltHex: salt
     )
 
-    let recoveredStr = try Push.AESHelper.decrypt(
+    let recoveredStr = try Push.AESGCMHelper.decrypt(
       chiperHex: chiper, secret: secret, nonceHex: nonce, saltHex: salt)
 
     XCTAssertEqual(orignalMsg, recoveredStr)

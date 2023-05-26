@@ -1,31 +1,31 @@
 import Foundation
 
-public struct Feeds : Decodable {
-  var msg: Message?;
-  var did: String;
-  var wallets: String;
-  var profilePicture: String?;
-  var publicKey: String?;
-  var about: String?;
-  var name: String?;
-  var threadhash: String?;
-  var intent: String?;
-  var intentSentBy: String?;
+public struct Feeds: Decodable {
+  var msg: Message?
+  var did: String
+  var wallets: String
+  var profilePicture: String?
+  var publicKey: String?
+  var about: String?
+  var name: String?
+  var threadhash: String?
+  var intent: String?
+  var intentSentBy: String?
   var intentTimestamp: String?
-  var combinedDID: String;
-  var cid: String?;
-  var chatId: String?;
-  var deprecated: Bool?;
-  var deprecatedCode: String?;
+  var combinedDID: String
+  var cid: String?
+  var chatId: String?
+  var deprecated: Bool?
+  var deprecatedCode: String?
 }
 
 public struct GetChatsOptions {
-  var account: String;
-  var pgpPrivateKey: String?;
-  var toDecrypt: Bool = false;
-  var page: Int = CONSTANTS.PAGINATION.INITIAL_PAGE;
-  var limit: Int = CONSTANTS.PAGINATION.LIMIT;
-  var env: ENV = ENV.STAGING;
+  var account: String
+  var pgpPrivateKey: String?
+  var toDecrypt: Bool = false
+  var page: Int = CONSTANTS.PAGINATION.INITIAL_PAGE
+  var limit: Int = CONSTANTS.PAGINATION.LIMIT
+  var env: ENV = ENV.STAGING
 
   public init(
     account: String,
@@ -35,17 +35,17 @@ public struct GetChatsOptions {
     limit: Int = CONSTANTS.PAGINATION.LIMIT,
     env: ENV = ENV.STAGING
   ) {
-    self.account = account;
-    self.pgpPrivateKey = pgpPrivateKey;
-    self.toDecrypt = toDecrypt;
-    self.page = page;
-    self.limit = limit;
-    self.env = env;
+    self.account = account
+    self.pgpPrivateKey = pgpPrivateKey
+    self.toDecrypt = toDecrypt
+    self.page = page
+    self.limit = limit
+    self.env = env
   }
 }
 
 struct GetChatsResponse: Decodable {
-  var chats: [Feeds];
+  var chats: [Feeds]
 }
 
 enum ChatError: Error {
@@ -56,25 +56,23 @@ enum ChatError: Error {
 
 public struct Chats {
   public static func getChats(options: GetChatsOptions) async throws -> [Feeds] {
-    if(!isValidETHAddress(address: options.account)) {
-      throw ChatError.invalidAddress;
+    if !isValidETHAddress(address: options.account) {
+      throw ChatError.invalidAddress
     }
-    let user = getUserDID(address: options.account);
+    let user = getUserDID(address: options.account)
 
     let url = try PushEndpoint.getChats(
       did: user,
       page: options.page,
       limit: options.limit,
       env: options.env
-    ).url;
-
-    print("user: \(user)")
+    ).url
 
     do {
-      let (data, _) = try await URLSession.shared.data(from: url);
-      let response = try JSONDecoder().decode(GetChatsResponse.self, from: data);
-      print("chats: \(response.chats)")
-      
+      let (data, _) = try await URLSession.shared.data(from: url)
+      let response = try JSONDecoder().decode(GetChatsResponse.self, from: data)
+
+      // TODO:
       let feeds = try await getInboxLists(
         chats: response.chats,
         user: user,
@@ -82,10 +80,10 @@ public struct Chats {
         pgpPrivateKey: options.pgpPrivateKey,
         env: options.env
       )
-      return feeds;
+      return feeds
     } catch {
       print("error: \(error)")
-      throw error;
+      throw error
     }
   }
 }
