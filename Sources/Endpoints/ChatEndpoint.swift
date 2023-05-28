@@ -22,4 +22,33 @@ extension PushEndpoint {
       ]
     )
   }
+
+  static func getConversationHash(
+    converationId: String,
+    account: String,
+    env: ENV
+  ) throws -> Self {
+    return PushEndpoint(
+      env: env,
+      path: "chat/users/\(account)/conversations/\(converationId)/hash"
+    )
+  }
+
+  static func getConversationHashReslove(
+    threadHash: String,
+    fetchLimit: Int,
+    env: ENV
+  ) throws -> Self {
+    return PushEndpoint(
+      env: env,
+      path: "chat/conversationhash/\(threadHash)",
+      queryItems: [
+        URLQueryItem(
+          name: "fetchLimit",
+          value: "\(fetchLimit)"
+        )
+      ]
+    )
+  }
+
 }

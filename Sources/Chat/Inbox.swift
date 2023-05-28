@@ -44,7 +44,7 @@ public struct GetChatsOptions {
   }
 }
 
-struct GetChatsResponse: Decodable {
+public struct GetChatsResponse: Decodable {
   var chats: [Feeds]
 }
 
@@ -73,7 +73,7 @@ public struct Chats {
       let response = try JSONDecoder().decode(GetChatsResponse.self, from: data)
 
       // TODO:
-      let feeds = try await getInboxLists(
+      let feeds: [Feeds] = try await getInboxLists(
         chats: response.chats,
         user: user,
         toDecrypt: options.toDecrypt,

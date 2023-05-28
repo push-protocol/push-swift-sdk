@@ -67,10 +67,16 @@ public struct CreateUserResponse: Decodable {
   public var publicKey: String
   public var encryptionType: ENCRYPTION_TYPE
   public var did: String
+  public var wallets: String
+  public var name: String
+  public var signature: String
+  public var profilePicture: String
+  public var numMsg: Int
+  public var allowedNumMsg: Int
 }
 
 extension User {
-  public static func create(options: CreateUserOptions) async throws -> CreateUserResponse {
+  public static func create(options: CreateUserOptions) async throws -> User {
     do {
       if options.account == nil && options.signer == nil {
         throw UserError.ONE_OF_ACCOUNT_OR_SIGNER_REQUIRED
@@ -172,9 +178,8 @@ extension User {
         throw URLError(.badServerResponse)
       }
 
-      let response = try JSONDecoder().decode(CreateUserResponse.self, from: data)
-      // TODO: complete this verification of the key using the signature
-      // response.public = verify()
+      // orut
+      let createdUser = try JSONDecoder().decode(User.self, from: data)
 
       options.progressHook?(
         ProgressHookType(
@@ -184,7 +189,7 @@ extension User {
           level: ProgressLevel.SUCCESS
         ))
 
-      return response
+      return createdUser
 
     } catch {
       options.progressHook?(

@@ -1,7 +1,20 @@
 import Push
 import XCTest
+import web3
 
 class CreateUserTests: XCTestCase {
+  func getRandomAccount() -> (String, String) {
+    let length = 64
+    let letters = "abcdef0123456789"
+    let keyStorage = EthereumKeyLocalStorage()
+    let privateKey = String((0..<length).map { _ in letters.randomElement()! })
+
+    let account = try! EthereumAccount.importAccount(
+      addingTo: keyStorage, privateKey: privateKey, keystorePassword: privateKey)
+
+    let address = account.address.toChecksumAddress()
+    return (address, privateKey)
+  }
 
   func testThrowsErrorWhenBothSignerAndAccountAreNull() async throws {
     let expectation = XCTestExpectation(description: "Throws error")
@@ -37,7 +50,7 @@ class CreateUserTests: XCTestCase {
     }
   }
 
-  func testCreatesUserSuccessfully() async throws {
+  func testUserCreateFailsIfAlreadyExists() async throws {
     let expectation = XCTestExpectation(description: "Creates user successfully with account")
     do {
       let _ = try await User.create(
@@ -54,5 +67,25 @@ class CreateUserTests: XCTestCase {
     } catch {
       expectation.fulfill()
     }
+  }
+
+  func testCreateNewUser() async throws {
+    let (userAddress, userPk) = getRandomAccount()
+    let userCAIPAddress = walletToPCAIP10(account: userAddress)
+
+    let user = try await User.create(
+      options: CreateUserOptions(
+        env: ENV.STAGING,
+        account: userAddress,
+        signer: Signer(
+          privateKey: userPk
+        ),
+        version: ENCRYPTION_TYPE.PGP_V3,
+        progressHook: nil
+      ))
+
+    XCTAssertEqual(user.did, userCAIPAddress)
+    XCTAssertEqual(user.wallets, userCAIPAddress)
+    XCTAssert(user.encryptedPrivateKey.count > 0)
   }
 }

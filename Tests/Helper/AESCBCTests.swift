@@ -14,8 +14,8 @@ class AESCBC: XCTestCase {
   }
 
   func testAESEncrypt() async throws {
-    let ciphertextOriginal = "U2FsdGVkX18/SWOonW/UfODCpIrRFuOUKITIvRob3iE="
-    let key = "XxJNyUTlCFrrbTG"
+    let _ = "U2FsdGVkX18/SWOonW/UfODCpIrRFuOUKITIvRob3iE="
+    let _ = "XxJNyUTlCFrrbTG"
   }
 
   func testKeyGen() async throws {

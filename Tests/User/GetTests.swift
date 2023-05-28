@@ -28,4 +28,16 @@ class GetUserTests: XCTestCase {
     XCTAssertTrue(user.profilePicture.contains("data:image/png;base64,"))
   }
 
+  func testUserGetReturnsUserWithEthAddress() async throws {
+    let account = "0x03fAD591aEb926bFD95FE1E38D51811167a5ad5c"
+    let env = ENV.STAGING
+    let user = try await User.get(account: account, env: env)!
+
+    XCTAssertNotNil(user, "Expected the User not to be nil.")
+    XCTAssertTrue(
+      user.publicKey.contains("-----BEGIN PGP PUBLIC KEY BLOCK-----"),
+      "Expected user to have valid public key")
+    XCTAssertTrue(user.profilePicture.contains("data:image/png;base64,"))
+  }
+
 }

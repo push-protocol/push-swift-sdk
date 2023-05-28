@@ -16,7 +16,7 @@ public struct User: Decodable {
   public let signature: String
   public let wallets: String
   public let linkedListHash: String?
-  public let nfts: [String]
+  public let nfts: [String]?
 }
 
 extension User {
@@ -24,8 +24,9 @@ extension User {
     account userAddress: String,
     env: ENV
   ) async throws -> User? {
+    let caipAddress = walletToPCAIP10(account: userAddress)
     let url = PushEndpoint.user(
-      account: userAddress,
+      account: caipAddress,
       env: env
     ).url
 
