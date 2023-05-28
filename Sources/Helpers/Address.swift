@@ -50,3 +50,36 @@ public func addressToCaip10(env: ENV, address: String) throws -> String {
   }
   throw AddressError.InvalidAddress
 }
+
+public func pCAIP10ToWallet(address: String) -> String {
+  return address.replacingOccurrences(of: "eip155:", with: "")
+}
+
+public func walletToPCAIP10(account: String) -> String {
+  let splittedAddress = account.split(separator: ":")
+  if splittedAddress.count == 3 {
+    return "eip155:" + splittedAddress[2]
+  }
+  if account.contains("eip155:") {
+    return account
+  }
+  return "eip155:\(account)"
+}
+
+public func getAccountAddress(wallet: walletType) async -> String {
+  if wallet.account != nil {
+    return wallet.account!
+  }
+  var address = ""
+  if wallet.signer != nil {
+    address = wallet.signer!.getAddress()
+  }
+  return address
+}
+
+public func getUserDID(address: String) -> String {
+  if isValidETHAddress(address: address) {
+    return walletToPCAIP10(account: address)
+  }
+  return address
+}
