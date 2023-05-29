@@ -23,7 +23,7 @@ func verifyProfileSignature(verificationProof: String, signedData: String, walle
 {
   let length = verificationProof.split(separator: ":").count
   let signature = verificationProof.split(separator: ":")[length - 1]
-  let recoveredAddress = try recoverAddressFromSignature(
+  let _ = try recoverAddressFromSignature(
     signature: String(signature), signedData: signedData)
   // TODO: return recoveredAddress.lowercased() == wallet.lowercased();
   return true
