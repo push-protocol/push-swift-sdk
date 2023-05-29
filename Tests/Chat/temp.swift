@@ -14,7 +14,6 @@
 // let messages = try await Chats.History(
 //   threadHash: converationHash,limit: 10, pgpPrivateKey: pgpPrivateKey, env: .STAGING)
 
-
 // for msg in messages{
-//   print(msg.messageContent) 
+//   print(msg.messageContent)
 // }
