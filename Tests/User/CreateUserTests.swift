@@ -1,18 +1,15 @@
 import Push
 import XCTest
-import web3
-
+import Web3
 class CreateUserTests: XCTestCase {
   func getRandomAccount() -> (String, String) {
     let length = 64
     let letters = "abcdef0123456789"
-    let keyStorage = EthereumKeyLocalStorage()
     let privateKey = String((0..<length).map { _ in letters.randomElement()! })
 
-    let account = try! EthereumAccount.importAccount(
-      addingTo: keyStorage, privateKey: privateKey, keystorePassword: privateKey)
+    let account = try! EthereumPrivateKey(hexPrivateKey: privateKey)
 
-    let address = account.address.toChecksumAddress()
+    let address = account.address.hex(eip55: true)
     return (address, privateKey)
   }
 

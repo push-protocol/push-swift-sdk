@@ -19,15 +19,6 @@
       }
     },
     {
-      "identity" : "generic-json-swift",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/iwill/generic-json-swift",
-      "state" : {
-        "revision" : "0a06575f4038b504e78ac330913d920f1630f510",
-        "version" : "2.0.2"
-      }
-    },
-    {
       "identity" : "objectivepgp",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/krzyzanowskim/ObjectivePGP.git",
@@ -37,12 +28,21 @@
       }
     },
     {
+      "identity" : "promisekit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/mxcl/PromiseKit.git",
+      "state" : {
+        "revision" : "8a98e31a47854d3180882c8068cc4d9381bf382d",
+        "version" : "6.22.1"
+      }
+    },
+    {
       "identity" : "secp256k1.swift",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/GigaBitcoin/secp256k1.swift.git",
+      "location" : "https://github.com/Boilertalk/secp256k1.swift.git",
       "state" : {
-        "revision" : "48fb20fce4ca3aad89180448a127d5bc16f0e44c",
-        "version" : "0.10.0"
+        "revision" : "cd187c632fb812fd93711a9f7e644adb7e5f97f0",
+        "version" : "0.1.7"
       }
     },
     {
@@ -61,15 +61,6 @@
       "state" : {
         "revision" : "937e904258d22af6e447a0b72c0bc67583ef64a2",
         "version" : "1.0.4"
-      }
-    },
-    {
-      "identity" : "swift-log",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-log.git",
-      "state" : {
-        "revision" : "32e8d724467f8fe623624570367e3d50c5638e46",
-        "version" : "1.5.2"
       }
     },
     {
@@ -111,19 +102,19 @@
     {
       "identity" : "web3.swift",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/argentlabs/web3.swift",
+      "location" : "https://github.com/Boilertalk/Web3.swift.git",
       "state" : {
-        "revision" : "8ca33e700ed8de6137a0e1471017aa3b3c8de0db",
-        "version" : "1.6.0"
+        "revision" : "4647a88ef5a85d92963512e0f7ebc78a66b6d850",
+        "version" : "0.8.3"
       }
     },
     {
       "identity" : "websocket-kit",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/vapor/websocket-kit",
+      "location" : "https://github.com/vapor/websocket-kit.git",
       "state" : {
-        "revision" : "17c0afbf24f4e288e183bc34317dc97b5cd084bd",
-        "version" : "2.9.0"
+        "revision" : "53fe0639a98903858d0196b699720decb42aee7b",
+        "version" : "2.14.0"
       }
     }
   ],

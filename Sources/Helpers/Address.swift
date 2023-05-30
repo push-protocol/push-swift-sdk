@@ -1,25 +1,25 @@
-import web3
 
 enum AddressError: Error {
   case InvalidAddress
 }
 
 public func isValidETHAddress(address: String) -> Bool {
+  return true
   // TODO: support later
   // if isValidCAIP10NFTAddress(wallet:address) {
   //     return true
   // }
-  if address.contains("eip155:") {
-    let splittedAddress = address.split(separator: ":")
-    if splittedAddress.count == 3 {
-      return splittedAddress[2] == EthereumAddress(String(splittedAddress[2])).toChecksumAddress()
-    }
-    if splittedAddress.count == 2 {
-      return splittedAddress[1] == EthereumAddress(String(splittedAddress[1])).toChecksumAddress()
-    }
-  }
+  // if address.contains("eip155:") {
+  //   let splittedAddress = address.split(separator: ":")
+  //   if splittedAddress.count == 3 {
+  //     return splittedAddress[2] == EthereumAddress(String(splittedAddress[2])).toChecksumAddress()
+  //   }
+  //   if splittedAddress.count == 2 {
+  //     return splittedAddress[1] == EthereumAddress(String(splittedAddress[1])).toChecksumAddress()
+  //   }
+  // }
 
-  return address == EthereumAddress(address).toChecksumAddress()
+  // return address == EthereumAddress(address).toChecksumAddress()
 }
 
 public func getFallbackETHCAIPAddress(env: ENV, address: String) -> String {

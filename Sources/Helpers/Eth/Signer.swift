@@ -1,4 +1,4 @@
-import web3
+import Web3
 
 public protocol Signer {
   func getEip191Signature(message: String) async throws -> String
@@ -6,22 +6,30 @@ public protocol Signer {
 }
 
 public struct SignerPrivateKey: Signer {
-  let account: EthereumAccount
+  let account: EthereumPrivateKey
 
   public init(privateKey: String) {
-    let keyStorage = EthereumKeyLocalStorage()
-    let account = try! EthereumAccount.importAccount(
-      addingTo: keyStorage, privateKey: privateKey, keystorePassword: privateKey)
-    self.account = account
+    var pk = privateKey
+    if !privateKey.hasPrefix("0x") {
+      pk = "0x" + privateKey
+    }
+
+    let privateKey = try! EthereumPrivateKey(hexPrivateKey:pk)
+    self.account = privateKey
   }
 
   public func getEip191Signature(message: String) async throws -> String {
+    print("\n\ncalled\n\n")
+    
     let data = message.data(using: .utf8)!
-    let signature = try account.signMessage(message: data)
-    return signature
+    let (v,r,s) = try account.sign(message: data.bytes)
+
+    print(v,r,s)
+
+    return "0x"
   }
 
   public func getAddress() async throws -> String {
-    return account.address.toChecksumAddress()
+    return account.address.hex(eip55: true)
   }
 }

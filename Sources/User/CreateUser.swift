@@ -1,5 +1,4 @@
 import ObjectivePGP
-import web3
 
 public enum ProgressLevel {
   case INFO

@@ -153,7 +153,7 @@ extension User {
     }
 
     do {
-      let jsonData = Data(data)
+      let jsonData = data
       let dataContainer = try JSONDecoder().decode(FeedResponse.self, from: jsonData)
       return dataContainer
     } catch {

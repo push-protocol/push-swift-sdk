@@ -1,6 +1,5 @@
 import CryptoKit
 import ObjectivePGP
-import web3
 
 let KDFSaltSize = 32  // bytes
 let AESGCMNonceSize = 12  // property iv

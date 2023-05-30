@@ -70,7 +70,7 @@ public struct AESCBCHelper {
   ) {
     func genMd5(data: Data) -> Data {
       let computed = Insecure.MD5.hash(data: data)
-      return Data(computed.bytes)
+      return Data(computed)
     }
 
     let cipherDataAll = Data(base64Encoded: ciphertextCombined)!
