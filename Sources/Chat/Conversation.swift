@@ -37,7 +37,7 @@ extension Chats {
     async throws -> [Message]
   {
     do {
-      var messages = try await getMessagesService(threadHash: threadHash,limit: limit, env: env)
+      var messages = try await getMessagesService(threadHash: threadHash, limit: limit, env: env)
 
       for i in 0..<messages.count {
         let decryptedMsg = try decryptMessage(

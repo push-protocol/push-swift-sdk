@@ -13,7 +13,10 @@ struct ContentView: View {
 
       Button(action: {
         showAlert = false
-        connect()
+        //        connect()
+        Task {
+          await connect()
+        }
       }) {
         Text("Conect Wallet Connect")
           .font(.headline)
@@ -32,7 +35,14 @@ struct ContentView: View {
   }
 }
 
-func connect() {
+func connect() async {
+  do {
+    let user = try await Push.User.get(
+      account: "0xD26A7BF7fa0f8F1f3f73B056c9A67565A6aFE63c", env: .STAGING)!
+    print(user)
+  } catch {
+    print(error)
+  }
 }
 
 struct ContentView_Previews: PreviewProvider {

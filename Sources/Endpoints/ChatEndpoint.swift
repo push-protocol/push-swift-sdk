@@ -51,4 +51,13 @@ extension PushEndpoint {
     )
   }
 
+  static func sendChatIntent(
+    env: ENV
+  ) throws -> Self {
+    return PushEndpoint(
+      env: env,
+      path: "chat/request"
+    )
+  }
+
 }

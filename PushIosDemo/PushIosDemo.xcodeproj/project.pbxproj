@@ -7,21 +7,21 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		555B9A962A1DEF1200F96CB7 /* Push in Frameworks */ = {isa = PBXBuildFile; productRef = 555B9A952A1DEF1200F96CB7 /* Push */; };
 		E700DAB52A18ADE8009EF921 /* PushIosDemoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E700DAB42A18ADE8009EF921 /* PushIosDemoApp.swift */; };
 		E700DAB72A18ADE8009EF921 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E700DAB62A18ADE8009EF921 /* ContentView.swift */; };
 		E700DAB92A18ADEB009EF921 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E700DAB82A18ADEB009EF921 /* Assets.xcassets */; };
 		E700DABC2A18ADEB009EF921 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E700DABB2A18ADEB009EF921 /* Preview Assets.xcassets */; };
 		E700DAC42A18D3C3009EF921 /* WalletConnect in Frameworks */ = {isa = PBXBuildFile; productRef = E700DAC32A18D3C3009EF921 /* WalletConnect */; };
+		E7FBD19C2A24718D0080F660 /* Push in Frameworks */ = {isa = PBXBuildFile; productRef = E7FBD19B2A24718D0080F660 /* Push */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		555B9A942A1DE66F00F96CB7 /* push-swift-sdk */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "push-swift-sdk"; path = ..; sourceTree = "<group>"; };
 		E700DAB12A18ADE8009EF921 /* PushIosDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PushIosDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E700DAB42A18ADE8009EF921 /* PushIosDemoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushIosDemoApp.swift; sourceTree = "<group>"; };
 		E700DAB62A18ADE8009EF921 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		E700DAB82A18ADEB009EF921 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E700DABB2A18ADEB009EF921 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		E7FBD19A2A2471740080F660 /* push-swift-sdk */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "push-swift-sdk"; path = ..; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -29,7 +29,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				555B9A962A1DEF1200F96CB7 /* Push in Frameworks */,
+				E7FBD19C2A24718D0080F660 /* Push in Frameworks */,
 				E700DAC42A18D3C3009EF921 /* WalletConnect in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -47,7 +47,7 @@
 		555B9A932A1DE66F00F96CB7 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				555B9A942A1DE66F00F96CB7 /* push-swift-sdk */,
+				E7FBD19A2A2471740080F660 /* push-swift-sdk */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
@@ -107,7 +107,7 @@
 			name = PushIosDemo;
 			packageProductDependencies = (
 				E700DAC32A18D3C3009EF921 /* WalletConnect */,
-				555B9A952A1DEF1200F96CB7 /* Push */,
+				E7FBD19B2A24718D0080F660 /* Push */,
 			);
 			productName = PushIosDemo;
 			productReference = E700DAB12A18ADE8009EF921 /* PushIosDemo.app */;
@@ -383,14 +383,14 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		555B9A952A1DEF1200F96CB7 /* Push */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Push;
-		};
 		E700DAC32A18D3C3009EF921 /* WalletConnect */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E700DAC22A18D3C3009EF921 /* XCRemoteSwiftPackageReference "WalletConnectSwiftV2" */;
 			productName = WalletConnect;
+		};
+		E7FBD19B2A24718D0080F660 /* Push */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Push;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

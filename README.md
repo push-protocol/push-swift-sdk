@@ -2,6 +2,26 @@
 This package gives access to Push Protocol (Push Nodes) APIs. Visit [Developer Docs](https://docs.push.org/developers) or [Push.org](https://push.org) to learn more.
 
 -----
+## Signer
+For the user's PGP secret key encryption and decryption Singer capable of doing [eip-191]("https://eips.ethereum.org/EIPS/eip-191") signature. The Signer protocol defines an abstract signer that can be implemented to provide signing functionality. This protocol provides two methods: `getEip191Signature` and  `getAddress`.
+```swift
+public protocol Signer {
+  func getEip191Signature(message: String) async throws -> String
+  func getAddress() async throws -> String
+}
+```
+
+### SignerPrivateKey
+To begin using `Signer`, you can generate an instance of it using the `SignerPrivateKey` struct and providing the private key string. The `SignerPrivateKey` struct implements to the `Signer` protocol.
+```swift
+let signer = SignerPrivateKey(
+  privateKey: "ab34496b3a6daf27df9e133092b2b9c1f9ec57b84e07a69bec17e905f5c8d892"
+)
+```
+
+
+
+-----
 ## For Chat
 ### **Create user for chat**
 
@@ -10,8 +30,8 @@ let user:User = try await User.create(
   options: CreateUserOptions(
     env: ENV.STAGING,
     account: userAddress,
-    signer: Signer(
-      privateKey: userPk
+    signer: SignerPrivateKey(
+      privateKey: ""
     ),
 ))
 ```
@@ -185,7 +205,7 @@ let user = try await User.get(account: account, env: ENV.STAGING)
 
 let pgpKey:String = await User.decryptPGPKey(
   encryptedPrivateKey: user.encryptedPrivateKey,
-  signer: Signer
+  signer: signer
 )
 ```
 
@@ -423,7 +443,7 @@ let latestMessage = await Chats.Latest(
 ```swift
 // pre-requisite API calls that should be made before
 // need to get user and through that encryptedPvtKey of the user
-let signer = Signer(
+let signer = SignerPrivateKey(
   privateKey:"c39d17b1575c8d5e6e615767e19dc285d1f803d21882fb0c60f7f5b7edb759b2"
 )
 let userAddress = "0xD26A7BF7fa0f8F1f3f73B056c9A67565A6aFE63c"
