@@ -1,16 +1,17 @@
 import Push
 import XCTest
-import Web3
+
+import web3swift
+import Web3Core
+
 class CreateUserTests: XCTestCase {
-  func getRandomAccount() -> (String, String) {
+  func getRandomAccount() -> String{
     let length = 64
     let letters = "abcdef0123456789"
     let privateKey = String((0..<length).map { _ in letters.randomElement()! })
 
-    let account = try! EthereumPrivateKey(hexPrivateKey: privateKey)
 
-    let address = account.address.hex(eip55: true)
-    return (address, privateKey)
+    return  privateKey
   }
 
   func testUserCreateFailsIfAlreadyExists() async throws {
@@ -32,8 +33,12 @@ class CreateUserTests: XCTestCase {
   }
 
   func testCreateNewUser() async throws {
-    let (userAddress, userPk) = getRandomAccount()
-    let userCAIPAddress = walletToPCAIP10(account: userAddress)
+    let userPk = getRandomAccount()
+    let signer = try SignerPrivateKey(
+          privateKey: userPk
+        )
+    let addrs = try await signer.getAddress()
+    let userCAIPAddress = walletToPCAIP10(account: addrs)
 
     let user = try await User.create(
       options: CreateUserOptions(

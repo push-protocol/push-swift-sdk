@@ -4,7 +4,7 @@ import XCTest
 class GetChatsTests: XCTestCase {
 
   func testGetChatsFeeds() async throws {
-    let signer = SignerPrivateKey(
+    let signer = try SignerPrivateKey(
       privateKey: "c39d17b1575c8d5e6e615767e19dc285d1f803d21882fb0c60f7f5b7edb759b2")
     let userAddress = try await signer.getAddress()
 
@@ -29,7 +29,7 @@ class GetChatsTests: XCTestCase {
 
   func testChatHistory() async throws {
     // import Foundation
-    let signer = SignerPrivateKey(
+    let signer = try SignerPrivateKey(
       privateKey: "c39d17b1575c8d5e6e615767e19dc285d1f803d21882fb0c60f7f5b7edb759b2")
     let userAddress = try await signer.getAddress()
     let user = try await User.get(account: userAddress, env: .STAGING)!

@@ -1,4 +1,8 @@
-import Web3
+import web3swift
+import Web3Core
+
+import Foundation
+import CryptoSwift
 
 public protocol Signer {
   func getEip191Signature(message: String) async throws -> String
@@ -6,30 +10,22 @@ public protocol Signer {
 }
 
 public struct SignerPrivateKey: Signer {
-  let account: EthereumPrivateKey
+  let account:EthereumKeystoreV3 
 
-  public init(privateKey: String) {
-    var pk = privateKey
-    if !privateKey.hasPrefix("0x") {
-      pk = "0x" + privateKey
-    }
-
-    let privateKey = try! EthereumPrivateKey(hexPrivateKey:pk)
-    self.account = privateKey
+  public init(privateKey: String) throws{
+     let keystore =  try EthereumKeystoreV3(privateKey: Data.fromHex(privateKey)!, password: "DADDA")!
+     self.account = keystore
   }
 
   public func getEip191Signature(message: String) async throws -> String {
-    print("\n\ncalled\n\n")
-    
-    let data = message.data(using: .utf8)!
-    let (v,r,s) = try account.sign(message: data.bytes)
-
-    print(v,r,s)
-
-    return "0x"
+      let messageData = message.data(using: .utf8)!
+      let sig = try Web3Signer.signPersonalMessage(messageData, keystore: account,account: account.getAddress()!, password: "DADDA")!
+      return "0x" + sig.map { String(format: "%02x", $0) }.joined()
   }
 
   public func getAddress() async throws -> String {
-    return account.address.hex(eip55: true)
+    // return account.address.hex(eip55: true)
+    let ethAddress = account.getAddress()!
+    return ethAddress.address  
   }
 }

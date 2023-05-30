@@ -13,7 +13,9 @@ let package = Package(
     .package(url: "https://github.com/krzyzanowskim/ObjectivePGP.git", from: "0.99.4"),
     .package(
       url: "https://github.com/krzyzanowskim/CryptoSwift.git", .upToNextMajor(from: "1.5.1")),
-    .package(url: "https://github.com/Boilertalk/Web3.swift.git", from: "0.5.3")
+    .package(url: "https://github.com/web3swift-team/web3swift.git", .upToNextMajor(from: "3.0.0"))
+
+
   ],
   targets: [
     // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -22,10 +24,7 @@ let package = Package(
       name: "Push",
       dependencies: [
         .product(name: "ObjectivePGP", package: "ObjectivePGP"),
-         .product(name: "Web3", package: "Web3.swift"),
-            .product(name: "Web3PromiseKit", package: "Web3.swift"),
-            .product(name: "Web3ContractABI", package: "Web3.swift"),
-        // "web3.swift",
+        .product(name: "web3swift", package: "web3swift"),
         "CryptoSwift",
       ],
       path: "Sources"
