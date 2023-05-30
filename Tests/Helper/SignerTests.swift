@@ -2,15 +2,14 @@ import Push
 import XCTest
 
 class SignerTests: XCTestCase {
-  func getWallet(signer:Push.Signer)async throws ->Push.Wallet{
-    return try await Push.Wallet(signer:signer)
+  func getWallet(signer: Push.Signer) async throws -> Push.Wallet {
+    return try await Push.Wallet(signer: signer)
   }
-
 
   func testSignerCanDoEIP191Sig() async throws {
     let signer = Push.SignerPrivateKey(
       privateKey: "c39d17b1575c8d5e6e615767e19dc285d1f803d21882fb0c60f7f5b7edb759b2")
-    
+
     let msg =
       "Create Push Profile \n252f10c83610ebca1a059c0bae8255eba2f95be4d1d7bcfa89d7248a82d9f111"
     let sig = try await signer.getEip191Signature(message: msg)
@@ -26,7 +25,7 @@ class SignerTests: XCTestCase {
       privateKey: "c39d17b1575c8d5e6e615767e19dc285d1f803d21882fb0c60f7f5b7edb759b2")
     let msg =
       "Create Push Profile \n252f10c83610ebca1a059c0bae8255eba2f95be4d1d7bcfa89d7248a82d9f111"
-    
+
     let wallet = try await getWallet(signer: signer)
     let sig = try await wallet.getEip191Signature(message: msg, version: "v2")
 

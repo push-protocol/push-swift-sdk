@@ -70,11 +70,15 @@ extension Chats {
     }
   }
 
-  static private func decryptMessage(
+  public static func decryptMessage(
     message: Message,
     privateKeyArmored: String
   ) throws -> String {
     do {
+      if message.encType != "pgp" {
+        return message.messageContent
+      }
+
       let secretKey: String = try Pgp.pgpDecrypt(
         cipherText: message.encryptedSecret, toPrivateKeyArmored: privateKeyArmored)
 

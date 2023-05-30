@@ -11,7 +11,7 @@ extension Chats {
     let env: ENV = .STAGING
   }
 
-  struct SendIntentAPIOptions{
+  struct SendIntentAPIOptions {
 
   }
 
@@ -29,9 +29,8 @@ extension Chats {
       var request = URLRequest(url: url)
       request.httpMethod = "POST"
       request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-    //   request.httpBody = try JSONEncoder().encode(updatedData)
-    //   let (data, res) = try await URLSession.shared.data(for: request)
-
+      //   request.httpBody = try JSONEncoder().encode(updatedData)
+      //   let (data, res) = try await URLSession.shared.data(for: request)
 
     } else {
       // send regular message

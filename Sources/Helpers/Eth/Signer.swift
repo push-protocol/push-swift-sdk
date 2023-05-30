@@ -1,11 +1,11 @@
 import web3
 
-public protocol Signer{
-  func getEip191Signature(message: String) async throws -> String;
-  func getAddress() async throws -> String;
+public protocol Signer {
+  func getEip191Signature(message: String) async throws -> String
+  func getAddress() async throws -> String
 }
 
-public struct SignerPrivateKey:Signer {
+public struct SignerPrivateKey: Signer {
   let account: EthereumAccount
 
   public init(privateKey: String) {
@@ -21,7 +21,7 @@ public struct SignerPrivateKey:Signer {
     return signature
   }
 
-  public func getAddress()async throws -> String {
+  public func getAddress() async throws -> String {
     return account.address.toChecksumAddress()
   }
 }

@@ -39,7 +39,6 @@ public struct AESCBCHelper {
 
   static func _decrypt(data cipherData: Data, key: Data, iv: Data) -> Data? {
     // Split IV and cipher text
-
     let cipherTextLength = cipherData.count
     // Output buffer
     var outputBuffer = [UInt8](

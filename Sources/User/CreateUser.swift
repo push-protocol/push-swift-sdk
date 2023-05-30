@@ -73,16 +73,16 @@ public struct CreateUserResponse: Decodable {
 }
 
 extension User {
-  public static func create(options: CreateUserOptions) async throws -> User{
+  public static func create(options: CreateUserOptions) async throws -> User {
     do {
       let wallet = try await Wallet(signer: options.signer)
       let address = wallet.account
-      
+
       if !isValidETHAddress(address: address) {
         throw UserError.INVALID_ETH_ADDRESS
       }
       let caip10 = walletToPCAIP10(account: address)
-      
+
       options.progressHook?(
         ProgressHookType(
           progressId: "PUSH-CREATE-01",
@@ -113,8 +113,6 @@ extension User {
           level: ProgressLevel.INFO
         ))
 
-      
-
       let encryptedPrivateKey: EncryptedPrivateKeyV2 = try await keyPairs.encryptPGPKey(
         wallet: wallet)
 
@@ -128,8 +126,6 @@ extension User {
           progressInfo: "Please sign the message to continue. Steady lads, chat is almost ready!",
           level: ProgressLevel.INFO
         ))
-
-      
 
       let apiData = CreateUserHashData(
         caip10: walletToPCAIP10(account: caip10),

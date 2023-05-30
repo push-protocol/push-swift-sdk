@@ -23,45 +23,18 @@ private func decryptAndVerifySignature(
   message: Message
 ) async throws -> String {
   do {
+    print("doing")
     let secretKey: String = try Pgp.pgpDecrypt(
       cipherText: encryptedSecretKey, toPrivateKeyArmored: privateKeyArmored)
 
-    // Msg sig verification
-    // if message.link == nil {
-    //   let bodyToBeHashed = BodyToHashInboxList(
-    //     fromDID: message.fromDID,
-    //     toDID: message.toDID,
-    //     messageContent: message.messageContent,
-    //     messageType: message.messageType
-    //   )
-    //   let hash = generateSHA256Hash(
-    //     msg: String(data: try JSONEncoder().encode(bodyToBeHashed), encoding: .utf8) ?? "")
-    //   do {
-    //     try verifySignature(
-    //       messageContent: hash,
-    //       signatureArmored: signatureArmored,
-    //       publicKeyArmored: publicKeyArmored
-    //     )
-    //   } catch {
-    //     try verifySignature(
-    //       messageContent: cipherText,
-    //       signatureArmored: signatureArmored,
-    //       publicKeyArmored: publicKeyArmored
-    //     )
-    //   }
-    // } else {
-    //   try verifySignature(
-    //     messageContent: cipherText,
-    //     signatureArmored: signatureArmored,
-    //     publicKeyArmored: publicKeyArmored
-    //   )
-    // }
+    print("doing")
     let userMsg = AESCBCHelper.decrypt(cipherText: cipherText, secretKey: secretKey)!
+    print("doing")
     let userMsgStr = String(data: userMsg, encoding: .utf8)!
-
+    print("User", userMsg)
     return userMsgStr
   } catch {
-    return "Unable to decrypt message"
+    return "Abishek Unable to decrypt message \(error)"
   }
 }
 
@@ -71,12 +44,10 @@ private func decryptFeeds(
   pgpPrivateKey: String?,
   env: ENV
 ) async throws -> [Feeds] {
-  var otherPeer: User?
-  var signatureValidationPubliKey: String = ""
   var updatedFeeds: [Feeds] = []
   for feed in feeds {
-    var gotOtherPeer = false
     var currentFeed = feed
+    // print(feed.chatId, feed.publicKey?.count, feed.msg?.encType)
     if currentFeed.msg == nil {
       updatedFeeds.append(currentFeed)
       continue
@@ -86,25 +57,9 @@ private func decryptFeeds(
         throw ChatError.decryptedPrivateKeyNecessary
       }
 
-      // sender is not me
-      // get the sender public key
-      if currentFeed.msg!.fromCAIP10 != connectedUser.wallets.split(separator: ",")[0] {
-        if !gotOtherPeer {
-          otherPeer = try await User.get(account: currentFeed.msg!.fromCAIP10, env: env)
-          gotOtherPeer = true
-        }
-        signatureValidationPubliKey = otherPeer!.publicKey
-      } else {
-        signatureValidationPubliKey = connectedUser.publicKey
-      }
-      currentFeed.msg!.messageContent = try await decryptAndVerifySignature(
-        cipherText: currentFeed.msg!.messageContent,
-        encryptedSecretKey: currentFeed.msg!.encryptedSecret,
-        publicKeyArmored: signatureValidationPubliKey,
-        signatureArmored: currentFeed.msg!.signature,
-        privateKeyArmored: pgpPrivateKey!,
-        message: currentFeed.msg!
-      )
+      let decryptedMsg = try Chats.decryptMessage(
+        message: currentFeed.msg!, privateKeyArmored: pgpPrivateKey!)
+      currentFeed.msg?.messageContent = decryptedMsg
     }
     updatedFeeds.append(currentFeed)
   }

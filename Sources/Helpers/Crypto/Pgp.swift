@@ -189,19 +189,21 @@ public struct Pgp {
     )
   }
 
-  public static func pgpDecrypt(cipherText: String, toPrivateKeyArmored: String) throws -> String {
-    // print("cipherText: \(cipherText)")
-    // print("toPrivateKeyArmored: \(toPrivateKeyArmored)")
+  static func filterMobilePgpInfo(_ inputString: String) -> String {
+    var lines: [String] = inputString.components(separatedBy: .newlines)
+    if lines.count >= 2 && lines[1].contains("Version: openpgp-mobile") {
+      lines.remove(at: 1)
+      return lines.joined(separator: "\n")
+    } else {
+      return inputString
+    }
+  }
 
-    // guard let privateKeyData = toPrivateKeyArmored.data(using: .utf8) else {
-    //   throw PgpError.INVALID_PRIVATE_KEY
-    // }
-    // print("privateKeyData: \(privateKeyData)")
+  public static func pgpDecrypt(cipherText: String, toPrivateKeyArmored: String) throws -> String {
 
     let pkData = try Armor.readArmored(toPrivateKeyArmored)
     let privateKey = try ObjectivePGP.readKeys(from: pkData).first!
 
-    // print("privateKey: \(privateKey)")
     let decryptData = try Armor.readArmored(cipherText)
     let decryptedData = try ObjectivePGP.decrypt(
       decryptData, andVerifySignature: false, using: [privateKey])

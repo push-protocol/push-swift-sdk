@@ -1,22 +1,22 @@
 import Foundation
 
 public struct Feeds: Decodable {
-  var msg: Message?
-  var did: String
-  var wallets: String
-  var profilePicture: String?
-  var publicKey: String?
-  var about: String?
-  var name: String?
-  var threadhash: String?
-  var intent: String?
-  var intentSentBy: String?
-  var intentTimestamp: String?
-  var combinedDID: String
-  var cid: String?
-  var chatId: String?
-  var deprecated: Bool?
-  var deprecatedCode: String?
+  public var msg: Message?
+  public var did: String
+  public var wallets: String
+  public var profilePicture: String?
+  public var publicKey: String?
+  public var about: String?
+  public var name: String?
+  public var threadhash: String?
+  public var intent: String?
+  public var intentSentBy: String?
+  public var intentTimestamp: String?
+  public var combinedDID: String
+  public var cid: String?
+  public var chatId: String?
+  public var deprecated: Bool?
+  public var deprecatedCode: String?
 }
 
 public struct GetChatsOptions {
