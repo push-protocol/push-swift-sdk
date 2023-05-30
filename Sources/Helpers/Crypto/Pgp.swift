@@ -55,10 +55,10 @@ public struct Pgp {
     self.secretKey = secretKey
   }
 
-  public func preparePGPPublicKey(signer: Push.Signer) throws -> String {
+  public func preparePGPPublicKey(signer: Push.Signer) async throws -> String {
     let createProfileMessage =
       "Create Push Profile \n" + generateSHA256Hash(msg: self.getPublicKey())
-    let verificationProof = try signer.getEip191Signature(message: createProfileMessage)
+    let verificationProof = try await signer.getEip191Signature(message: createProfileMessage)
 
     let chatPublicKey = [
       "key": self.getPublicKey(),
@@ -161,12 +161,12 @@ public struct Pgp {
     return ""
   }
 
-  public func encryptPGPKey(signer: Push.Signer) throws -> EncryptedPrivateKeyV2 {
+  public func encryptPGPKey(wallet: Push.Wallet) async throws -> EncryptedPrivateKeyV2 {
     var array = [UInt8](repeating: 0, count: 32)
     getRandomValues(array: &array)
     let input = bytesToHex(bytes: array)
     let enableProfileMessage = "Enable Push Profile \n" + input
-    let verificationProof = try signer.getEip191Signature(message: enableProfileMessage)
+    let verificationProof = try await wallet.getEip191Signature(message: enableProfileMessage)
     // let encodedPrivateKey = Array(getSecretKey().utf8);
     let encodedPrivateKeyString = getSecretKey()
 

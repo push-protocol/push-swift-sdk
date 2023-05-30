@@ -17,20 +17,17 @@ public struct ProgressHookType {
 
 public struct CreateUserOptions {
   var env: ENV = ENV.STAGING
-  var account: String?
-  var signer: Signer?
+  var signer: Signer
   var version: ENCRYPTION_TYPE = ENCRYPTION_TYPE.PGP_V3
   var progressHook: ((ProgressHookType) -> Void)?
 
   public init(
     env: ENV = ENV.STAGING,
-    account: String?,
-    signer: Signer?,
+    signer: Signer,
     version: ENCRYPTION_TYPE = ENCRYPTION_TYPE.PGP_V3,
     progressHook: ((ProgressHookType) -> Void)?
   ) {
     self.env = env
-    self.account = account
     self.signer = signer
     self.version = version
     self.progressHook = progressHook
@@ -76,22 +73,16 @@ public struct CreateUserResponse: Decodable {
 }
 
 extension User {
-  public static func create(options: CreateUserOptions) async throws -> User {
+  public static func create(options: CreateUserOptions) async throws -> User{
     do {
-      if options.account == nil && options.signer == nil {
-        throw UserError.ONE_OF_ACCOUNT_OR_SIGNER_REQUIRED
-      }
-      let wallet = getWallet(options: walletType(account: options.account, signer: options.signer))
-      let address = await getAccountAddress(wallet: wallet)
+      let wallet = try await Wallet(signer: options.signer)
+      let address = wallet.account
+      
       if !isValidETHAddress(address: address) {
         throw UserError.INVALID_ETH_ADDRESS
       }
-      // let caip10 = try addressToCaip10(env: options.env, address: address);
       let caip10 = walletToPCAIP10(account: address)
-      var encryptionType = options.version
-      if options.signer == nil {
-        encryptionType = ENCRYPTION_TYPE.PGP_V1
-      }
+      
       options.progressHook?(
         ProgressHookType(
           progressId: "PUSH-CREATE-01",
@@ -112,7 +103,7 @@ extension User {
           level: ProgressLevel.INFO
         ))
 
-      let publicKey = try keyPairs.preparePGPPublicKey(signer: wallet.signer!)
+      let publicKey = try await keyPairs.preparePGPPublicKey(signer: wallet.signer)
 
       options.progressHook?(
         ProgressHookType(
@@ -122,8 +113,10 @@ extension User {
           level: ProgressLevel.INFO
         ))
 
-      let encryptedPrivateKey: EncryptedPrivateKeyV2 = try keyPairs.encryptPGPKey(
-        signer: wallet.signer!)
+      
+
+      let encryptedPrivateKey: EncryptedPrivateKeyV2 = try await keyPairs.encryptPGPKey(
+        wallet: wallet)
 
       let encryptedPrivateKeyString = String(
         data: try JSONEncoder().encode(encryptedPrivateKey), encoding: .utf8)!
@@ -136,6 +129,8 @@ extension User {
           level: ProgressLevel.INFO
         ))
 
+      
+
       let apiData = CreateUserHashData(
         caip10: walletToPCAIP10(account: caip10),
         did: walletToPCAIP10(account: caip10),
@@ -147,14 +142,14 @@ extension User {
         msg:
           String(data: try JSONEncoder().encode(apiData), encoding: .utf8)!
       )
-      let signatureObject = try wallet.signer!.getEip191Signature(message: hash, version: "v2")
+      let _ = try await wallet.getEip191Signature(message: hash, version: "v2")
 
       let updatedData = CreateUserAPIOptions(
         caip10: walletToPCAIP10(account: caip10),
         did: walletToPCAIP10(account: caip10),
         publicKey: publicKey,
         encryptedPrivateKey: encryptedPrivateKeyString,
-        encryptionType: encryptionType.stringValue,
+        encryptionType: ENCRYPTION_TYPE.PGP_V3.stringValue,
         name: "",
         // Replace with verification proof
         // verificationProof: signatureObject

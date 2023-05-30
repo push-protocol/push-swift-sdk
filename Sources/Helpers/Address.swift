@@ -66,16 +66,6 @@ public func walletToPCAIP10(account: String) -> String {
   return "eip155:\(account)"
 }
 
-public func getAccountAddress(wallet: walletType) async -> String {
-  if wallet.account != nil {
-    return wallet.account!
-  }
-  var address = ""
-  if wallet.signer != nil {
-    address = wallet.signer!.getAddress()
-  }
-  return address
-}
 
 public func getUserDID(address: String) -> String {
   if isValidETHAddress(address: address) {
