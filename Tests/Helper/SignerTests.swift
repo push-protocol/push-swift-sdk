@@ -7,7 +7,7 @@ class SignerTests: XCTestCase {
   }
 
   func testSignerCanDoEIP191Sig() async throws {
-    let signer = try Push.SignerPrivateKey(
+    let signer = try SignerPrivateKey(
       privateKey: "c39d17b1575c8d5e6e615767e19dc285d1f803d21882fb0c60f7f5b7edb759b2")
 
     let msg =
@@ -21,7 +21,7 @@ class SignerTests: XCTestCase {
   }
 
   func testSignerCanDoEIP191SigV2() async throws {
-    let signer = try Push.SignerPrivateKey(
+    let signer = try SignerPrivateKey(
       privateKey: "c39d17b1575c8d5e6e615767e19dc285d1f803d21882fb0c60f7f5b7edb759b2")
     let msg =
       "Create Push Profile \n252f10c83610ebca1a059c0bae8255eba2f95be4d1d7bcfa89d7248a82d9f111"
@@ -37,7 +37,7 @@ class SignerTests: XCTestCase {
 
   func testSignerDerivesAesSecret() async throws {
     let preKey = "c6f086dbc8295c8499873bf73e374f0bc230d567705c047938b3414163132280"
-    let signer = try Push.SignerPrivateKey(
+    let signer = try SignerPrivateKey(
       privateKey: "c39d17b1575c8d5e6e615767e19dc285d1f803d21882fb0c60f7f5b7edb759b2")
     let msg =
       "Enable Push Profile \n\(preKey)"

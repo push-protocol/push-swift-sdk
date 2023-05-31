@@ -1,32 +1,29 @@
 
-import web3swift
-import Web3Core
-
 enum AddressError: Error {
   case InvalidAddress
 }
 
 public func isValidETHAddress(address: String) -> Bool {
+  return true
+  // func isAddressValid(addrs:String)->Bool{
+  //   let addrs = EthereumAddress(addrs)
+  //   if addrs == nil{
+  //     return false
+  //   }
+  //   return true
+  // }
   
-  func isAddressValid(addrs:String)->Bool{
-    let addrs = EthereumAddress(addrs)
-    if addrs == nil{
-      return false
-    }
-    return true
-  }
+  // if address.contains("eip155:") {
+  //   let splittedAddress = address.split(separator: ":")
+  //   if splittedAddress.count == 3 {
+  //     return isAddressValid(addrs:String(splittedAddress[2]))
+  //   }
+  //   if splittedAddress.count == 2 {
+  //     return isAddressValid(addrs:String(splittedAddress[1]))
+  //   }
+  // } 
   
-  if address.contains("eip155:") {
-    let splittedAddress = address.split(separator: ":")
-    if splittedAddress.count == 3 {
-      return isAddressValid(addrs:String(splittedAddress[2]))
-    }
-    if splittedAddress.count == 2 {
-      return isAddressValid(addrs:String(splittedAddress[1]))
-    }
-  } 
-  
-  return isAddressValid(addrs: address)
+  // return isAddressValid(addrs: address)
 }
 
 public func getFallbackETHCAIPAddress(env: ENV, address: String) -> String {

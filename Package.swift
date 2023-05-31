@@ -24,7 +24,6 @@ let package = Package(
       name: "Push",
       dependencies: [
         .product(name: "ObjectivePGP", package: "ObjectivePGP"),
-        .product(name: "web3swift", package: "web3swift"),
         "CryptoSwift",
       ],
       path: "Sources"
@@ -33,7 +32,8 @@ let package = Package(
     .testTarget(
       name: "PushTests",
       dependencies: [
-        "Push"
+        "Push",
+        .product(name: "web3swift", package: "web3swift"),
       ], path: "Tests"),
   ]
 )
