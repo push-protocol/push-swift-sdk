@@ -1,4 +1,3 @@
-
 enum AddressError: Error {
   case InvalidAddress
 }
@@ -12,7 +11,7 @@ public func isValidETHAddress(address: String) -> Bool {
   //   }
   //   return true
   // }
-  
+
   // if address.contains("eip155:") {
   //   let splittedAddress = address.split(separator: ":")
   //   if splittedAddress.count == 3 {
@@ -21,8 +20,8 @@ public func isValidETHAddress(address: String) -> Bool {
   //   if splittedAddress.count == 2 {
   //     return isAddressValid(addrs:String(splittedAddress[1]))
   //   }
-  // } 
-  
+  // }
+
   // return isAddressValid(addrs: address)
 }
 

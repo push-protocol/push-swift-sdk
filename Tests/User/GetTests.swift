@@ -40,4 +40,15 @@ class GetUserTests: XCTestCase {
     XCTAssertTrue(user.profilePicture.contains("data:image/png;base64,"))
   }
 
+  func testUserProfileCreated() async throws {
+    let existingAccount = "0x03fAD591aEb926bFD95FE1E38D51811167a5ad5c"
+    let notExistingAccount = generateRandomEthereumAddress()
+
+    let res1 = try await User.userProfileCreated(account: existingAccount, env: .STAGING)
+    let res2 = try await User.userProfileCreated(account: notExistingAccount, env: .STAGING)
+
+    XCTAssertTrue(res1)
+    XCTAssertFalse(res2)
+  }
+
 }

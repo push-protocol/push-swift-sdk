@@ -44,6 +44,10 @@ public struct EncryptedPrivateKeyV2: Encodable {
   var preKey: String?
 }
 
+func useEmptyPassPhrase(key: Key?) -> String? {
+  return ""
+}
+
 public struct Pgp {
   public let publicKey: Data
   let secretKey: Data
@@ -105,6 +109,18 @@ public struct Pgp {
     return Armor.armored(signature, as: .signature)
   }
 
+  public static func sign(message: String, privateKey: String) throws -> String {
+    let messageData = message.data(using: .utf8)!
+
+    let pkData = try Armor.readArmored(privateKey)
+    let privateKey = try ObjectivePGP.readKeys(from: pkData).first!
+
+    // let myPk = try ObjectivePGP.readKeys(from: self.secretKey).first!
+    let signature = try ObjectivePGP.sign(
+      messageData, detached: true, using: [privateKey], passphraseForKey: useEmptyPassPhrase)
+    return Armor.armored(signature, as: .signature)
+  }
+
   public func getPublicKey() -> String {
     return
       Armor.armored(self.publicKey, as: .publicKey)
@@ -154,10 +170,6 @@ public struct Pgp {
     } else {
       throw PgpError.INVALID_SIGNATURE
     }
-  }
-
-  func useEmptyPassPhrase(key: Key?) -> String? {
-    return ""
   }
 
   public func encryptPGPKey(wallet: Push.Wallet) async throws -> EncryptedPrivateKeyV2 {

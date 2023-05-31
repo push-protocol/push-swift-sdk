@@ -1,18 +1,9 @@
 import Push
-import XCTest
-
-import web3swift
 import Web3Core
+import XCTest
+import web3swift
 
 class CreateUserTests: XCTestCase {
-  func getRandomAccount() -> String{
-    let length = 64
-    let letters = "abcdef0123456789"
-    let privateKey = String((0..<length).map { _ in letters.randomElement()! })
-
-
-    return  privateKey
-  }
 
   func testUserCreateFailsIfAlreadyExists() async throws {
     let expectation = XCTestExpectation(description: "Creates user successfully with account")
@@ -35,8 +26,8 @@ class CreateUserTests: XCTestCase {
   func testCreateNewUser() async throws {
     let userPk = getRandomAccount()
     let signer = try SignerPrivateKey(
-          privateKey: userPk
-        )
+      privateKey: userPk
+    )
     let addrs = try await signer.getAddress()
     let userCAIPAddress = walletToPCAIP10(account: addrs)
 
@@ -52,5 +43,18 @@ class CreateUserTests: XCTestCase {
     XCTAssertEqual(user.did, userCAIPAddress)
     XCTAssertEqual(user.wallets, userCAIPAddress)
     XCTAssert(user.encryptedPrivateKey.count > 0)
+  }
+
+  func testCreateUserEmpty() async throws {
+    let userAddress = generateRandomEthereumAddress()
+    let userCAIPAddress = walletToPCAIP10(account: userAddress)
+
+    let user = try await User.createUserEmpty(userAddress: userAddress, env: .STAGING)
+
+    XCTAssertEqual(user.did, userCAIPAddress)
+    XCTAssertEqual(user.wallets, userCAIPAddress)
+    XCTAssertEqual(user.encryptedPrivateKey, "")
+    XCTAssertEqual(user.publicKey, "")
+
   }
 }

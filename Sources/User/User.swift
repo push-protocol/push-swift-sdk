@@ -49,4 +49,9 @@ extension User {
     return userProfile
 
   }
+
+  public static func userProfileCreated(account: String, env: ENV) async throws -> Bool {
+    let userInfo = try await User.get(account: account, env: env)
+    return userInfo != nil
+  }
 }

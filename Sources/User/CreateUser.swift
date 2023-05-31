@@ -192,4 +192,39 @@ extension User {
       throw UserError.RUNTIME_ERROR("[Push SDK] - API  - Error - API create User() -: \(error)")
     }
   }
+
+  public static func createUserEmpty(userAddress: String, env: ENV) async throws -> User {
+    let caip10 = walletToPCAIP10(account: userAddress)
+
+    let updatedData = CreateUserAPIOptions(
+      caip10: caip10,
+      did: caip10,
+      publicKey: "",
+      encryptedPrivateKey: "",
+      encryptionType: "",
+      name: "",
+      signature: "pgp",
+      sigType: "pgp"
+    )
+
+    let url: URL = PushEndpoint.createUser(env: env).url
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.httpBody = try JSONEncoder().encode(updatedData)
+
+    let (data, res) = try await URLSession.shared.data(for: request)
+
+    guard let httpResponse = res as? HTTPURLResponse else {
+      throw URLError(.badServerResponse)
+    }
+
+    guard (200...299).contains(httpResponse.statusCode) else {
+      throw URLError(.badServerResponse)
+    }
+
+    // orut
+    let createdUser = try JSONDecoder().decode(User.self, from: data)
+    return createdUser
+  }
 }

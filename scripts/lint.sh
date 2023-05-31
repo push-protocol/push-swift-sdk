@@ -1,1 +1,1 @@
-swift-format format -rip **/* --exclude PushIosDemo
+swift-format format -rip **/*

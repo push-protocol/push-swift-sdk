@@ -38,7 +38,6 @@ class GetChatsTests: XCTestCase {
 
     let converationHash = try await Chats.ConversationHash(
       conversationId: "0x4D5bE92D510300ceF50a2FC03534A95b60028950", account: userAddress)!
-    print("converation has", converationHash)
 
     let messages = try await Chats.History(
       threadHash: converationHash, limit: 5, pgpPrivateKey: pgpPrivateKey, env: .STAGING)
