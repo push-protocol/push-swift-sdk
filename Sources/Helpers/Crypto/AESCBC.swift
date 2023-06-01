@@ -11,6 +11,11 @@ public struct AESCBCHelper {
     return dec
   }
 
+  public static func encrypt(messageText: String, secretKey: String) -> Data? {
+    // derive AES-256 key and salt
+    return Data([1])
+  }
+
   static func _encrypt(data: Data, key: Data, iv: Data) -> Data? {
     // Output buffer (with padding)
     let outputLength = data.count + kCCBlockSizeAES128

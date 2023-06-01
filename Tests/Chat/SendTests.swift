@@ -8,15 +8,100 @@ class SendChatsTests: XCTestCase {
     let senderAddress = UserAddress
     let senderPgpPk = UserPrivateKey
 
-    let res = try await Push.Chats.sendIntent(
+    let messageToSen = "Hello user \(recipientAddress)"
+
+    let _ = try await Push.Chats.sendIntent(
       Chats.SendOptions(
-        messageContent: "Hellow",
+        messageContent: messageToSen,
         messageType: "Text",
         receiverAddress: recipientAddress,
         account: senderAddress,
         pgpPrivateKey: senderPgpPk
       ))
 
+    let latestFeed = try await Chats.getChats(
+      options: GetChatsOptions(
+        account: senderAddress, pgpPrivateKey: senderPgpPk, toDecrypt: true, page: 1, limit: 1,
+        env: .STAGING))
+    let latestMessage = latestFeed[0].msg!.messageContent
+
+    XCTAssertEqual(latestMessage, messageToSen)
+  }
+
+  func testSendMessage() async throws {
+    let recipientAddress = generateRandomEthereumAddress()
+    let senderAddress = UserAddress
+    let senderPgpPk = UserPrivateKey
+
+    let messageToSen = "Hello user \(recipientAddress)"
+
+    let _ = try await Push.Chats.sendIntent(
+      Chats.SendOptions(
+        messageContent: messageToSen,
+        messageType: "Text",
+        receiverAddress: recipientAddress,
+        account: senderAddress,
+        pgpPrivateKey: senderPgpPk
+      ))
+
+    let _ = try await Push.Chats.sendMessage(
+      Chats.SendOptions(
+        messageContent: messageToSen,
+        messageType: "Text",
+        receiverAddress: recipientAddress,
+        account: senderAddress,
+        pgpPrivateKey: senderPgpPk
+      ))
+
+    let latestFeed = try await Chats.getChats(
+      options: GetChatsOptions(
+        account: senderAddress, pgpPrivateKey: senderPgpPk, toDecrypt: true, page: 1, limit: 1,
+        env: .STAGING))
+    let latestMessage = latestFeed[0].msg!.messageContent
+
+    XCTAssertEqual(latestMessage, messageToSen)
+  }
+
+  func testSend() async throws {
+    let recipientAddress = generateRandomEthereumAddress()
+    let senderAddress = UserAddress
+    let senderPgpPk = UserPrivateKey
+
+    let messageToSen1 = "Hello user --- Intent \(recipientAddress)"
+    let messageToSen2 = "Hello user --- Message \(recipientAddress)"
+
+    let _ = try await Push.Chats.send(
+      Chats.SendOptions(
+        messageContent: messageToSen1,
+        messageType: "Text",
+        receiverAddress: recipientAddress,
+        account: senderAddress,
+        pgpPrivateKey: senderPgpPk
+      ))
+
+    let latestFeed1 = try await Chats.getChats(
+      options: GetChatsOptions(
+        account: senderAddress, pgpPrivateKey: senderPgpPk, toDecrypt: true, page: 1, limit: 1,
+        env: .STAGING))
+    let latestMessage1 = latestFeed1[0].msg!.messageContent
+
+    let _ = try await Push.Chats.send(
+      Chats.SendOptions(
+        messageContent: messageToSen2,
+        messageType: "Text",
+        receiverAddress: recipientAddress,
+        account: senderAddress,
+        pgpPrivateKey: senderPgpPk
+      ))
+
+    let latestFeed2 = try await Chats.getChats(
+      options: GetChatsOptions(
+        account: senderAddress, pgpPrivateKey: senderPgpPk, toDecrypt: true, page: 1, limit: 1,
+        env: .STAGING))
+    let latestMessage2 = latestFeed2[0].msg!.messageContent
+
+    XCTAssertEqual(latestMessage1, messageToSen1)
+    XCTAssertEqual(latestMessage2, messageToSen2)
   }
 
 }
