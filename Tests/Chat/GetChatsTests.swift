@@ -13,7 +13,7 @@ class GetChatsTests: XCTestCase {
       encryptedPrivateKey: user.encryptedPrivateKey, signer: signer)
 
     let chats = try await Push.PushChat.getChats(
-      options: GetChatsOptions(
+      options: PushChat.GetChatsOptions(
         account: userAddress,
         pgpPrivateKey: pgpPrivateKey,
         toDecrypt: true,
@@ -47,4 +47,53 @@ class GetChatsTests: XCTestCase {
     }
   }
 
+  func testGetChatRequests() async throws {
+    // create new user and get pgp key
+    let userPk = getRandomAccount()
+    let signer = try SignerPrivateKey(
+      privateKey: userPk
+    )
+    let userAddress = try await signer.getAddress()
+    let user = try await PushUser.create(
+      options: PushUser.CreateUserOptions(
+        env: ENV.STAGING,
+        signer: SignerPrivateKey(
+          privateKey: userPk
+        ),
+        progressHook: nil
+      ))
+
+    let pgpKey = try await PushUser.DecryptPGPKey(
+      encryptedPrivateKey: user.encryptedPrivateKey, signer: signer)
+
+    let messageToSen1 = "Hello user --- Intent \(user.did)"
+
+    // send intent
+    let reqAddress = generateRandomEthereumAddress()
+    try await _ = PushUser.createUserEmpty(userAddress: reqAddress, env: .STAGING)
+    let _ = try await Push.PushChat.send(
+      PushChat.SendOptions(
+        messageContent: messageToSen1,
+        messageType: "Text",
+        receiverAddress: userAddress,
+        account: reqAddress,
+        pgpPrivateKey: ""
+      ))
+
+    let userReqs = try await PushChat.requests(
+      options: PushChat.RequestOptionsType(account: userAddress, pgpPrivateKey: pgpKey))
+    XCTAssertEqual(userReqs[0].msg!.messageContent, messageToSen1)
+
+    // accept intent
+    // let res = try await Push.PushChat.approve(
+    //   PushChat.ApproveOptions(
+    //     fromAddress: reqAddress, toAddress: userAddress, privateKey: pgpKey, env: .STAGING))
+
+    // print(res)
+    // assert combined DID
+    // XCTAssert(res.contains(userAddress))
+    // XCTAssert(res.contains(reqAddress))
+    // XCTAssert(res.contains("+"))
+
+  }
 }

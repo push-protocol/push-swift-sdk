@@ -26,8 +26,8 @@ let signer = SignerPrivateKey(
 ### **Create user for chat**
 
 ```swift
-let user:User = try await User.create(
-  options: CreateUserOptions(
+let user:PushUser = try await PushUser.create(
+  options: PushUser.CreateUserOptions(
     env: ENV.STAGING,
     account: userAddress,
     signer: SignerPrivateKey(
@@ -41,7 +41,7 @@ let user:User = try await User.create(
 
 
 ```swift
-public struct User{
+public struct PushUser{
   public let about: String?
   public let name: String?
   public let allowedNumMsg: Int
@@ -139,7 +139,7 @@ Example response normal user:
 
 ```swift
   let account:String = "0x03fAD591aEb926bFD95FE1E38D51811167a5ad5c"
-  let user:User? = try await User.get(account: account, env: ENV.STAGING)
+  let user:PushUser? = try await User.get(account: account, env: ENV.STAGING)
 ```
 
 | Param    | Remarks |
@@ -154,7 +154,7 @@ Example response normal user:
 
 > if user chat profile not registered then response is nil
 ```swift
-public struct User{
+public struct PushUser{
   public let about: String?
   public let name: String?
   public let allowedNumMsg: Int
@@ -197,13 +197,15 @@ Example response normal user:
 </details>
 
 -----
-  
+
+
+
 ### **Decrypting encrypted pgp private key from user data**
 
 ```swift
-let user = try await User.get(account: account, env: ENV.STAGING)
+let user = try await PushUser.get(account: account, env: ENV.STAGING)
 
-let pgpKey:String = await User.decryptPGPKey(
+let pgpKey:String = await PushUser.decryptPGPKey(
   encryptedPrivateKey: user.encryptedPrivateKey,
   signer: signer
 )
@@ -258,8 +260,8 @@ n4FxJNoL/lmuCqhQm4Zgduj3GdYUunMDID3k54J1FPGN+iCj
 ### **Fetching list of user chats**
 
 ```swift
-let chats:[Feeds] = try await Chats.getChats(
-  options: GetChatsOptions(
+let chats:[Feeds] = try await PushChat.getChats(
+  options: PushChat.GetChatsOptions(
     account: userAddress, 
     pgpPrivateKey: pgpPrivateKey,
     toDecrypt: true,
@@ -281,7 +283,7 @@ let chats:[Feeds] = try await Chats.getChats(
   <summary><b>Expected response (Get array of Feed of a specific user)</b></summary>
 
 ```swift
-struct Feeds{
+struct PushChat.Feeds{
   var msg: Message?
   var did: String
   var wallets: String
@@ -382,15 +384,73 @@ struct Feeds{
 | groupInformation | `GroupDTO` | if group chat, all group information |
 
 </details>
-
------
   
+### **Fetching list of user chat requests**
+
+```swift
+const chatsReqs:[PushChat.Feeds] = await PushChat.requests(PushChat.RequestOptionsType(
+  account: String;
+  pgpPrivateKey: String;
+  toDecrypt: boolean;
+  /**
+   * Environment variable
+   */
+  env?: ENV;
+));
+```
+
+| Param         | Type    | Default | Remarks                                                                |
+| ------------- | ------- | ------- | ---------------------------------------------------------------------- |
+| account       | string  | -       | user address (Partial CAIP)                                            |
+| toDecrypt     | boolean | false   | if "true" the method will return decrypted message content in response |
+| pgpPrivateKey | string  | null    | mandatory for users having pgp keys                                    |
+| env           | string  | 'prod'  | API env - 'prod', 'staging', 'dev'                                     |
+
+
+<details>
+  <summary><b>Expected response (Get chat requests of a specific user)</b></summary>
+
+```typescript
+// PushAPI_chat_requests | Response - 200 OK
+// Array of chat requests
+[
+  {
+    about: null,
+    did: 'eip155:0x69e666767Ba3a661369e1e2F572EdE7ADC926029',
+    intent: 'eip155:0x69e666767Ba3a661369e1e2F572EdE7ADC926029',
+    intentSentBy: 'eip155:0x69e666767Ba3a661369e1e2F572EdE7ADC926029',
+    intentTimestamp: '2023-01-07T03:51:11.000Z',
+    publicKey: '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' + '\n' + 'xsBNBGOhhq8BCADP5Nzw0jOXhKO86ndGkY/JlD8AadVXmsLA+Yvoc22LrNTU\n' + 'QrfcDWaMAzpmtMWJlNEHSTieUPEgODm/qj422+rdskSedum3gq1HWn2bmqEI\n' + 'LrFc+zR3B70Pe7saEEmC/hXG53/8m7V0HsOuvkEjBa3pW3KElZIhimVvcgYR\n' + '9AnLjUYKR/lci1eXXsAz+J+RjgPlFfiIE0/3KYXwkjt9meSJDPCIcEIZ1tqw\n' + 'IkGRINM5XINMvC+FxPNQ+jIHF9WIzmUg4YfYZQbMo96j4LAV0kYvAB0qI2Y8\n' + 'DHAjHXYQ+fafRGOJwePASjDHUjcB9QEr1EPIMG3i4iFaBV2ZmePjzE7XABEB\n' + 'AAHNAMLAigQQAQgAPgUCY6GGrwQLCQcICRCUVlBnqYwnwgMVCAoEFgACAQIZ\n' + 'AQIbAwIeARYhBPYJKSdUrZzVgB9jy5RWUGepjCfCAABLZAgAtVdxz75k3qFY\n' + 'qtwMdsrIPX4A7rpT/zCd2Yjl2asFdlkyAusfNdFEiff1dHz5+qBM88z/Zh+O\n' + '1FNDKS/WKL9qmZ+AceyidCjnRVTUeH6Mi/ZD/YZInJyLozCksb0Gciswl6Rp\n' + 'RHb6nXt0PebUFXTsOVxSeodaEGBgltd/V1bDHpfx8Wu03z3h/Jq2tI4s28XA\n' + 'S2lSZpG8+nC1zLOmpbYx8mdOe00ONBdnMvxAqckd437ns7Tu8sKW4SsRzjg1\n' + 'YHTmApRjai1L6bHn0P5Utz0BcynzrUn+bZ0cC+5Rq3kZvrjnaJOIutY+ALDF\n' + '4yWoVIz8KzzAUx1caVyVvwdFtjVTS87ATQRjoYavAQgA3nCB6WLASwBwp5r/\n' + 'WU8SiUzf/2srENNObpjxavmv2FVKcKfO0ehSi6ti22KSKnUgm5prlOMWsVl/\n' + 'wEClvpGw0Btdar4OQI7XdwkY8XUVB5Jff7cNpi4qE+4lIYqCTQief9H5GLC/\n' + 'QvpE53yZWGFK581OSaeomtibN5xAaUyEE8qITnYyjqA+SgffRFVN5/WOnnBK\n' + 'zbIHrXl2lXOFkegXaOk+Qxxikw9cSpHNV5YHVoDStRCJZKVU8JhKa7pYKkmC\n' + 'pSIiXT3IdSAqDiglDRxwX4KlFFhGZ1OGbBmPefN3pZ7/xvaM28TqSDNB7f89\n' + '/lc5UKLz5Em2aroEclT0YpKYGQARAQABwsB2BBgBCAAqBQJjoYavCRCUVlBn\n' + 'qYwnwgIbDBYhBPYJKSdUrZzVgB9jy5RWUGepjCfCAAC6rwgAji6/qPQn/BN/\n' + 'BbwGBN+A8tWRuQLwrgOilg8oHWkyCIUK7DeBp+gpkSghjsnaEAqc94xaGD3U\n' + 'AfgcPGmC/Jx92W+bX8P40Iq8OvPgLgvG1u5Rf1a1SNYAuypQemuHYu3HOvUU\n' + 'vP+0omoiTWyNZVqsZA0FGIYQk9uRg8KGsLvXwzPPLqC5Yo3fyfQUmytBZfEf\n' + 'OwYwuvzx1RBHtvyZ32sfq//q4t2fXY0d49rg6l475zo3JsZsYtqZJCf9h6uK\n' + 'MrSFgvn8mJFlpwI1+g7X46VB+t8D1Ac35r9Bn9UIWieIyS2Aux2UwBsY2iET\n' + 'CdgkH8gWFBU7bdKsFh7BQX2ZhrxHXQ==\n' + '=Lr7Q\n' + '-----END PGP PUBLIC KEY BLOCK-----\n',
+    profilePicture: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAA1UlEQVR4AcXBobGEMBSG0W//idlKiKARaohMAzEIzFoEhgaQ1EAV6xCkmn32PpMZZue9e87j9Xx/uKGkSMu6X9whnAlnwlkoKdKy7hdWnTJN+4hVUqRFOBPOhLPH6/n+YAznwl86+hFLOBPOhLNQUsRa+5GW4VxoOfqRlpIilnAmnAlnYd0v/tO6X1jCmXAmnIWSIladMtbRj3xjOBesbt6whDPhTDgLdcrc0c0bLQcXLXXKWMKZcCachW7esOqUsUqKWHXKtBQ2rMpv3bxhCWfCmXD2A590MfREqrg1AAAAAElFTkSuQmCC',
+    threadhash: 'bafyreigs26i7k3g5u4xmqg44tecmkfvelclp5lletnikfbsrj7dhg5oi4y',
+    wallets: 'eip155:0x69e666767Ba3a661369e1e2F572EdE7ADC926029',
+    combinedDID: 'eip155:0x69e666767Ba3a661369e1e2F572EdE7ADC926029_eip155:0xD8634C39BBFd4033c0d3289C4515275102423681',
+    name: 'copper-screeching-herring',
+    msg: {
+      link: 'bafyreibuez6o5hqqf6j45ekqxz7ixdtbxs6mhu3m6iv63etja6p2g43qom',
+      toDID: 'eip155:0x69e666767Ba3a661369e1e2F572EdE7ADC926029',
+      encType: 'pgp',
+      fromDID: 'eip155:0xD8634C39BBFd4033c0d3289C4515275102423681',
+      sigType: '-----BEGIN PGP SIGNATURE-----\n' + '\n' + 'wsBzBAEBCAAnBQJjuJ7WCRCszcBmB607ShYhBEWdLV876c+znjS0l6zNwGYH\n' + 'rTtKAAAEUQgAiSLgvLRf4UM/VIOImO4I/CHt5vBCqvOjq8068K5Bb2ciRn0o\n' + '8IqLV2eYKe8c0LK8Gf/CzZn7S13eux4FUlXcX7TlU9BpgHAVQIP4gDe7Q1XN\n' + '1+rXFH+QW4P/Zv0knObHAby/7wYfD1ZfBrLbo5SpZEBDYQNYZ5t29y7aVD5e\n' + 'QMOoSvj5+y6SLDLJalb5daeSfaZtpNBsTZvUBLndNomT///gzrXRutkgW4T4\n' + 'bDipFPUvLMNvWM1qXJjDyYbyQnr8J8aq3FKoGs4Qs5Z2wcwx9RF54Izh81vd\n' + 'Y5jkZdpULqxjB4BH2mFGyB9Cp2e5cIpKriY597JCAc6Y6WfhgbIZoA==\n' + '=n2B5\n' + '-----END PGP SIGNATURE-----\n',
+      toCAIP10: 'eip155:0x69e666767Ba3a661369e1e2F572EdE7ADC926029',
+      signature: '-----BEGIN PGP SIGNATURE-----\n' + '\n' + 'wsBzBAEBCAAnBQJjuJ7WCRCszcBmB607ShYhBEWdLV876c+znjS0l6zNwGYH\n' + 'rTtKAAAEUQgAiSLgvLRf4UM/VIOImO4I/CHt5vBCqvOjq8068K5Bb2ciRn0o\n' + '8IqLV2eYKe8c0LK8Gf/CzZn7S13eux4FUlXcX7TlU9BpgHAVQIP4gDe7Q1XN\n' + '1+rXFH+QW4P/Zv0knObHAby/7wYfD1ZfBrLbo5SpZEBDYQNYZ5t29y7aVD5e\n' + 'QMOoSvj5+y6SLDLJalb5daeSfaZtpNBsTZvUBLndNomT///gzrXRutkgW4T4\n' + 'bDipFPUvLMNvWM1qXJjDyYbyQnr8J8aq3FKoGs4Qs5Z2wcwx9RF54Izh81vd\n' + 'Y5jkZdpULqxjB4BH2mFGyB9Cp2e5cIpKriY597JCAc6Y6WfhgbIZoA==\n' + '=n2B5\n' + '-----END PGP SIGNATURE-----\n',
+      timestamp: 1673043671357,
+      fromCAIP10: 'eip155:0xD8634C39BBFd4033c0d3289C4515275102423681',
+      messageType: 'Text',
+      messageContent: 'hey',
+      encryptedSecret: '-----BEGIN PGP MESSAGE-----\n' + '\n' + 'wcBMAzJsNgcerTKoAQgAvzX9pBj4j7ytnwU7DwMsCMl6PUDx6qAQybQxrlby\n' + '+xkP1Cf1tOkLj1HP/oFHg3cX5HioM600jAaIYhCr8ib+M3ydvhKnti0mcpbn\n' + 'VnbWilrzyFUBE7T3eZY54JeFxIQ9mtjl/TmGryXpWD9FHjnSp22NRnbZIcZZ\n' + 'SHpatgDZYzRhHf9zqusBH2QUDKX1Ty7dIq9JD2AeS55l40IHNMPcP2btxfY1\n' + 'T7od8WvFYhlWQGtkbm8k42fwdK1mIJ3H/rOSeM8sTliYAECe+IhmpIevg4II\n' + 'Eel7eG81HjGciWt3Vs3FXkhuEUbQnMRAKfhaqalJNDriaWwzUMMt5a/rWdS1\n' + 'gMHATAN7roGwZ8OLswEH/2RmDHNAaDi11UT3uLAuQxNzlLeqxFaTPecSFaEW\n' + 'IFdJ+3ujcy3FHoyndK0S+ucFhP2V0hJRMHyyMiKNKSuUp6Q03NZ7Uqavqku3\n' + 'kVfAJ3tH6jlUWNetvV8t95OmYInqhC4MNk0nIhdI10bl89KmNRqsfQqKu5Hn\n' + '5b9Jy7B+XgjKNdj7iWx0FuFabVIQ3NIDnVBDLy8/mDTeB1HuAv/7KljBr0fC\n' + 'TtzSZij1Pu5+aIPWaGG2hJvxga9g5Zqfvdm79Wn3gfoOCz3FdXcp/n3732rY\n' + '+mrIE0DVUlWa0YbVotcSCzLlUpXlFts85Ok8W/N8ERtBMbbd2+e2tBKAP8Hs\n' + 'iYHSQAHz9V5LwQaFvujErtV5KZfD5DnB8RlUVJU4JKLDgYiXaP18O0fpsZyO\n' + '4fym770psCEPU4sc+flSJ0SxBa8m+yM=\n' + '=Cp3M\n' + '-----END PGP MESSAGE-----\n',
+    },
+    groupInformation: undefined,
+  },
+];
+```
+</details>
 
 
 ### **Fetching conversation hash between two users**
 
 ```swift
-let converationHash:String? = try await Chats.ConversationHash(
+let converationHash:String? = try await PushChat.ConversationHash(
   conversationId: "0xACFe0D180d0118FD4F3027Ab801cc862520570d1", 
   account: "0x03fAD591aEb926bFD95FE1E38D51811167a5ad5c",
   env: ENV.STAGING
@@ -457,14 +517,14 @@ let pgpPrivateKey = try User.DecryptPGPKey(
 )
 
 // conversation hash are also called link inside chat messages
-let converationHash = try await Chats.ConversationHash(
+let converationHash = try await PushChat.ConversationHash(
   conversationId: "0xACEe0D180d0118FD4F3027Ab801cc862520570d1", 
   account: userAddress
 )!
 
   
 // actual api
-let message = try await Chats.Latest(
+let message = try await PushChat.Latest(
   threadHash: converationHash,
   pgpPrivateKey: pgpPrivateKey,
   env: .STAGING
@@ -545,7 +605,7 @@ let message = try await Chats.Latest(
 
 
 ```swift
-const chatHistory:[Message] = await Chat.History(
+const chatHistory:[Message] = await PushChat.History(
   threadhash: String;
   limit: Int;
   pgpPrivateKey: String;
@@ -585,10 +645,10 @@ public struct Message{
 ```typescript
 // pre-requisite API calls that should be made before
 // need to get user and through that encryptedPvtKey of the user
-let user = try await User.get(account: userAddress, env: .STAGING)!
+let user = try await PushUser.get(account: userAddress, env: .STAGING)!
   
 // need to decrypt the encryptedPvtKey to pass in the api using helper function
-let pgpPrivateKey = try User.DecryptPGPKey(
+let pgpPrivateKey = try PushUser.DecryptPGPKey(
   encryptedPrivateKey: user.encryptedPrivateKey, 
   signer: signer
 )
@@ -596,14 +656,14 @@ let pgpPrivateKey = try User.DecryptPGPKey(
 // get threadhash, this will fetch the latest conversation hash
 // you can also use older conversation hash (called link) by iterating over to fetch more historical messages
 // conversation hash are also called link inside chat messages
-let converationHash = try await Chats.ConversationHash(
+let converationHash = try await PushChat.ConversationHash(
   conversationId:"0x4D5bE92D510300ceF50a2FC03534A95b60028950", 
   account: userAddress
 )
 
   
 // actual api
-let messages:[Message] = try await Chats.History(
+let messages:[Message] = try await PushChat.History(
   threadHash: converationHash,
   limit: 10, 
   pgpPrivateKey: pgpPrivateKey, 
@@ -693,8 +753,80 @@ let messages:[Message] = try await Chats.History(
 
 </details>
 
-
-
-
-
 -----
+
+### **To send a message**
+```swift
+// actual api
+const response:Message = try await PushChat.send(PushChat.SendOptions(
+  messageContent: "Gm gm! It's me... Mario",
+  messageType: 'Text',
+  receiverAddress: '0x0F1AAC847B5720DDf01BFa07B7a8Ee641690816d',
+  pgpPrivateKey: pgpDecrpyptedPvtKey,
+  env: 'staging',
+));
+```
+
+Allowed Options (params with _ are mandatory)
+| Param | Type | Default | Remarks |
+|----------|---------|---------|--------------------------------------------|
+| messageContent | string | '' | message to be sent |
+| messageType | 'Text' &#124;  | 'Text'| type of messageContent |
+| receiverAddress_ | string | - | user address|
+| pgpPrivateKey | string | - | mandatory for users having pgp keys|
+| env | string | 'prod' | API env - 'prod', 'staging', 'dev'|
+
+<details>
+  <summary><b>Expected response (send chat message or chat request to a wallet)</b></summary>
+
+```typescript
+// PushAPI_chat_send | Response - 200 OK
+{
+  fromCAIP10: 'eip155:0xb340E384FC4549591bc7994b0f90074753dEC72a',
+  toCAIP10: 'eip155:0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+  fromDID: 'eip155:0xb340E384FC4549591bc7994b0f90074753dEC72a',
+  toDID: 'eip155:0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+  messageContent: "Gm gm! It's me... Mario",
+  messageType: 'Text',
+  signature: '',
+  timestamp: 1677290956187,
+  sigType: 'pgp',
+  encType: 'PlainText',
+  encryptedSecret: '',
+  link: 'bafyreigcgszt6nvrkh2qitl3ppstlnl5jf246gj6udhiomkhjnfijsmb7m',
+  cid: 'bafyreih6ji4iwntsv6d6bqxggkdzubtvmhcy5hz2f6hda2ac2yf35hh63q'
+}
+
+```
+
+</details>
+
+---
+
+
+### **To approve a chat request**
+
+```swift
+const response:String = try await PushChat.approve(PushChat.ApproveOptions(
+  fromAddress: String, toAddress: String, privateKey: String, env: ENV
+));
+```
+
+Allowed Options (params with _ are mandatory)
+| Param | Type | Default | Remarks |
+|----------|---------|---------|--------------------------------------------|
+| fromAddress | string | - | chat request sender's address or chatId of a group |
+| toAddress | string | - | chat request sender's address or chatId of a group |
+| privateKey | string | - | users encrtyped pgp private key|
+| env | string | staging | API env - 'prod', 'staging', 'dev'|
+
+<details>
+  <summary><b>Expected response (approve chat request for a wallet / group chat id)</b></summary>
+
+```typescript
+// PushAPI_chat_approve | Response - 204 OK
+```
+
+</details>
+
+---

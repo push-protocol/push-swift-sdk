@@ -2,32 +2,6 @@ import Push
 import XCTest
 
 class SendChatsTests: XCTestCase {
-
-  func testSendIntent() async throws {
-    let recipientAddress = generateRandomEthereumAddress()
-    let senderAddress = UserAddress
-    let senderPgpPk = UserPrivateKey
-
-    let messageToSen = "Hello user \(recipientAddress)"
-
-    let _ = try await Push.PushChat.sendIntent(
-      PushChat.SendOptions(
-        messageContent: messageToSen,
-        messageType: "Text",
-        receiverAddress: recipientAddress,
-        account: senderAddress,
-        pgpPrivateKey: senderPgpPk
-      ))
-
-    let latestFeed = try await PushChat.getChats(
-      options: GetChatsOptions(
-        account: senderAddress, pgpPrivateKey: senderPgpPk, toDecrypt: true, page: 1, limit: 1,
-        env: .STAGING))
-    let latestMessage = latestFeed[0].msg!.messageContent
-
-    XCTAssertEqual(latestMessage, messageToSen)
-  }
-
   func testSendMessage() async throws {
     let recipientAddress = generateRandomEthereumAddress()
     let senderAddress = UserAddress
@@ -53,11 +27,36 @@ class SendChatsTests: XCTestCase {
         pgpPrivateKey: senderPgpPk
       ))
 
-    let latestFeed = try await PushChat.getChats(
-      options: GetChatsOptions(
-        account: senderAddress, pgpPrivateKey: senderPgpPk, toDecrypt: true, page: 1, limit: 1,
-        env: .STAGING))
-    let latestMessage = latestFeed[0].msg!.messageContent
+    let threadHash = try await PushChat.ConversationHash(
+      conversationId: recipientAddress, account: senderAddress)!
+    let latestMessage = try await PushChat.History(
+      threadHash: threadHash, limit: 1, pgpPrivateKey: senderPgpPk, env: .STAGING
+    ).first!.messageContent
+
+    XCTAssertEqual(latestMessage, messageToSen)
+  }
+
+  func testSendIntent() async throws {
+    let recipientAddress = generateRandomEthereumAddress()
+    let senderAddress = UserAddress
+    let senderPgpPk = UserPrivateKey
+
+    let messageToSen = "Hello user \(recipientAddress)"
+
+    let _ = try await Push.PushChat.sendIntent(
+      PushChat.SendOptions(
+        messageContent: messageToSen,
+        messageType: "Text",
+        receiverAddress: recipientAddress,
+        account: senderAddress,
+        pgpPrivateKey: senderPgpPk
+      ))
+
+    let threadHash = try await PushChat.ConversationHash(
+      conversationId: recipientAddress, account: senderAddress)!
+    let latestMessage = try await PushChat.History(
+      threadHash: threadHash, limit: 1, pgpPrivateKey: senderPgpPk, env: .STAGING
+    ).first!.messageContent
 
     XCTAssertEqual(latestMessage, messageToSen)
   }
@@ -79,11 +78,11 @@ class SendChatsTests: XCTestCase {
         pgpPrivateKey: senderPgpPk
       ))
 
-    let latestFeed1 = try await PushChat.getChats(
-      options: GetChatsOptions(
-        account: senderAddress, pgpPrivateKey: senderPgpPk, toDecrypt: true, page: 1, limit: 1,
-        env: .STAGING))
-    let latestMessage1 = latestFeed1[0].msg!.messageContent
+    let threadHash = try await PushChat.ConversationHash(
+      conversationId: recipientAddress, account: senderAddress)!
+    let latestMessage1 = try await PushChat.History(
+      threadHash: threadHash, limit: 1, pgpPrivateKey: senderPgpPk, env: .STAGING
+    ).first!.messageContent
 
     let _ = try await Push.PushChat.send(
       PushChat.SendOptions(
@@ -94,11 +93,11 @@ class SendChatsTests: XCTestCase {
         pgpPrivateKey: senderPgpPk
       ))
 
-    let latestFeed2 = try await PushChat.getChats(
-      options: GetChatsOptions(
-        account: senderAddress, pgpPrivateKey: senderPgpPk, toDecrypt: true, page: 1, limit: 1,
-        env: .STAGING))
-    let latestMessage2 = latestFeed2[0].msg!.messageContent
+    let threadHash2 = try await PushChat.ConversationHash(
+      conversationId: recipientAddress, account: senderAddress)!
+    let latestMessage2 = try await PushChat.History(
+      threadHash: threadHash2, limit: 1, pgpPrivateKey: senderPgpPk, env: .STAGING
+    ).first!.messageContent
 
     XCTAssertEqual(latestMessage1, messageToSen1)
     XCTAssertEqual(latestMessage2, messageToSen2)
@@ -106,17 +105,11 @@ class SendChatsTests: XCTestCase {
 
   func testApproveIntent() async throws {
     let reqAddress = generateRandomEthereumAddress()
-
-    // let res = try await User.create(options: CreateUserOptions(env: .STAGING, signer: Signer, version: PGP,)
-
     let userAddress = UserAddress
-    let userAddressPgpPk = UserPrivateKey
-
     let messageToSen1 = "Hello user --- Intent \(reqAddress)"
-    let messageToSen2 = "Hello user --- Message \(reqAddress)"
 
+    // send intent
     try await _ = PushUser.createUserEmpty(userAddress: reqAddress, env: .STAGING)
-
     let _ = try await Push.PushChat.send(
       PushChat.SendOptions(
         messageContent: messageToSen1,
@@ -126,8 +119,15 @@ class SendChatsTests: XCTestCase {
         pgpPrivateKey: ""
       ))
 
-    try await Push.PushChat.approve(
-      PushChat.ApproveOptions(fromAddress: reqAddress, toAddress: userAddress, privateKey:UserPrivateKey, env: .STAGING))
+    // accept intent
+    let res = try await Push.PushChat.approve(
+      PushChat.ApproveOptions(
+        fromAddress: reqAddress, toAddress: userAddress, privateKey: UserPrivateKey, env: .STAGING))
+
+    // assert combined DID
+    XCTAssert(res.contains(userAddress))
+    XCTAssert(res.contains(reqAddress))
+    XCTAssert(res.contains("+"))
 
   }
 }

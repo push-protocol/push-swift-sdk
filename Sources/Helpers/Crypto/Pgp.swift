@@ -118,7 +118,8 @@ public struct Pgp {
     // let myPk = try ObjectivePGP.readKeys(from: self.secretKey).first!
     let signature = try ObjectivePGP.sign(
       messageData, detached: true, using: [privateKey], passphraseForKey: useEmptyPassPhrase)
-    return Armor.armored(signature, as: .signature)
+    let signatureArmor = Armor.armored(signature, as: .signature)
+    return filterPgpInfo(signatureArmor)
   }
 
   public func getPublicKey() -> String {
@@ -127,13 +128,13 @@ public struct Pgp {
   }
 
   public func getSecretKey() -> String {
-    return
-      Armor.armored(self.secretKey, as: .secretKey)
+    let pgpsec = Armor.armored(self.secretKey, as: .secretKey)
+    return filterPgpInfo(pgpsec)
   }
 
   public static func GenerateNewPgpPair() throws -> Self {
     let key = KeyGenerator(
-      algorithm: .RSA, keyBitsLength: 2048, cipherAlgorithm: .AES256, hashAlgorithm: .SHA256
+      algorithm: .RSA, keyBitsLength: 2048, cipherAlgorithm: .AES128, hashAlgorithm: .SHA256
     ).generate(for: "", passphrase: "")
 
     let publicKey = try key.export(keyType: .public)
@@ -200,14 +201,20 @@ public struct Pgp {
     )
   }
 
-  static func filterMobilePgpInfo(_ inputString: String) -> String {
+  static func filterPgpInfo(_ inputString: String) -> String {
     var lines: [String] = inputString.components(separatedBy: .newlines)
-    if lines.count >= 2 && lines[1].contains("Version: openpgp-mobile") {
-      lines.remove(at: 1)
-      return lines.joined(separator: "\n")
-    } else {
-      return inputString
-    }
+    lines.remove(at: 1)
+    lines.remove(at: 1)
+    lines.remove(at: 1)
+    return lines.joined(separator: "\n")
+  }
+
+  func filterPgpInfo(_ inputString: String) -> String {
+    var lines: [String] = inputString.components(separatedBy: .newlines)
+    lines.remove(at: 1)
+    lines.remove(at: 1)
+    lines.remove(at: 1)
+    return lines.joined(separator: "\n")
   }
 
   public static func pgpDecrypt(cipherText: String, toPrivateKeyArmored: String) throws -> String {

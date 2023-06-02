@@ -9,7 +9,7 @@ class CreateUserTests: XCTestCase {
     let expectation = XCTestExpectation(description: "Creates user successfully with account")
     do {
       let _ = try await PushUser.create(
-        options: CreateUserOptions(
+        options: PushUser.CreateUserOptions(
           env: ENV.STAGING,
           signer: SignerPrivateKey(
             privateKey: "8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f"
@@ -32,7 +32,7 @@ class CreateUserTests: XCTestCase {
     let userCAIPAddress = walletToPCAIP10(account: addrs)
 
     let user = try await PushUser.create(
-      options: CreateUserOptions(
+      options: PushUser.CreateUserOptions(
         env: ENV.STAGING,
         signer: SignerPrivateKey(
           privateKey: userPk

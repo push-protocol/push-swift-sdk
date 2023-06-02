@@ -8,7 +8,7 @@ class GetFeedsTests: XCTestCase {
 
     let res = try await PushUser.getFeeds(
       options:
-        Push.FeedsOptionsType(
+        PushUser.FeedsOptionsType(
           user: user,
           env: ENV.STAGING
         )
@@ -23,7 +23,7 @@ class GetFeedsTests: XCTestCase {
     do {
       let _ = try await PushUser.getFeeds(
         options:
-          Push.FeedsOptionsType(
+          PushUser.FeedsOptionsType(
             user: user,
             env: ENV.STAGING
           )

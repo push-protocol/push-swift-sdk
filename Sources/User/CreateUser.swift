@@ -1,77 +1,78 @@
 import ObjectivePGP
 
-public enum ProgressLevel {
-  case INFO
-  case SUCCESS
-  case WARN
-  case ERROR
-}
-
-public struct ProgressHookType {
-  public var progressId: String
-  public var progressTitle: String
-  public var progressInfo: String
-  public var level: ProgressLevel
-}
-
-public struct CreateUserOptions {
-  var env: ENV = ENV.STAGING
-  var signer: Signer
-  var version: ENCRYPTION_TYPE = ENCRYPTION_TYPE.PGP_V3
-  var progressHook: ((ProgressHookType) -> Void)?
-
-  public init(
-    env: ENV = ENV.STAGING,
-    signer: Signer,
-    version: ENCRYPTION_TYPE = ENCRYPTION_TYPE.PGP_V3,
-    progressHook: ((ProgressHookType) -> Void)?
-  ) {
-    self.env = env
-    self.signer = signer
-    self.version = version
-    self.progressHook = progressHook
-  }
-}
-
-public enum UserError: Error {
-  case ONE_OF_ACCOUNT_OR_SIGNER_REQUIRED
-  case INVALID_ETH_ADDRESS
-  case RUNTIME_ERROR(String)
-}
-
-private struct CreateUserHashData: Encodable {
-  var caip10: String
-  var did: String
-  var publicKey: String
-  var encryptedPrivateKey: String
-}
-
-private struct CreateUserAPIOptions: Encodable {
-  var caip10: String
-  var did: String
-  var publicKey: String
-  var encryptedPrivateKey: String
-  var encryptionType: String
-  var name: String?
-  var encryptedPassword: String?
-  var verificationProof: String?
-  var signature: String?
-  var sigType: String?
-}
-
-public struct CreateUserResponse: Decodable {
-  public var publicKey: String
-  public var encryptionType: ENCRYPTION_TYPE
-  public var did: String
-  public var wallets: String
-  public var name: String
-  public var signature: String
-  public var profilePicture: String
-  public var numMsg: Int
-  public var allowedNumMsg: Int
-}
-
 extension PushUser {
+
+  public enum ProgressLevel {
+    case INFO
+    case SUCCESS
+    case WARN
+    case ERROR
+  }
+
+  public struct ProgressHookType {
+    public var progressId: String
+    public var progressTitle: String
+    public var progressInfo: String
+    public var level: ProgressLevel
+  }
+
+  public enum UserError: Error {
+    case ONE_OF_ACCOUNT_OR_SIGNER_REQUIRED
+    case INVALID_ETH_ADDRESS
+    case RUNTIME_ERROR(String)
+  }
+
+  private struct CreateUserHashData: Encodable {
+    var caip10: String
+    var did: String
+    var publicKey: String
+    var encryptedPrivateKey: String
+  }
+
+  private struct CreateUserAPIOptions: Encodable {
+    var caip10: String
+    var did: String
+    var publicKey: String
+    var encryptedPrivateKey: String
+    var encryptionType: String
+    var name: String?
+    var encryptedPassword: String?
+    var verificationProof: String?
+    var signature: String?
+    var sigType: String?
+  }
+
+  public struct CreateUserResponse: Decodable {
+    public var publicKey: String
+    public var encryptionType: ENCRYPTION_TYPE
+    public var did: String
+    public var wallets: String
+    public var name: String
+    public var signature: String
+    public var profilePicture: String
+    public var numMsg: Int
+    public var allowedNumMsg: Int
+  }
+
+  public struct CreateUserOptions {
+    var env: ENV = ENV.STAGING
+    var signer: Signer
+    var version: ENCRYPTION_TYPE = ENCRYPTION_TYPE.PGP_V3
+    var progressHook: ((ProgressHookType) -> Void)?
+
+    public init(
+      env: ENV = ENV.STAGING,
+      signer: Signer,
+      version: ENCRYPTION_TYPE = ENCRYPTION_TYPE.PGP_V3,
+      progressHook: ((ProgressHookType) -> Void)?
+    ) {
+      self.env = env
+      self.signer = signer
+      self.version = version
+      self.progressHook = progressHook
+    }
+  }
+
   public static func create(options: CreateUserOptions) async throws -> PushUser {
     do {
       let wallet = try await Wallet(signer: options.signer)

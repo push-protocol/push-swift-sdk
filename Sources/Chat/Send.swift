@@ -162,20 +162,17 @@ extension PushChat {
     return try await sendIntentService(payload: sendMessagePayload, env: sendOptions.env)
   }
 
-  public static func approve(_ approveOptions: ApproveOptions) async throws {
+  public static func approve(_ approveOptions: ApproveOptions) async throws -> String {
     let acceptIntentPayload = try await getApprovePayload(approveOptions)
-    print(acceptIntentPayload)
 
     let url = try PushEndpoint.acceptChatRequest(env: approveOptions.env).url
     var request = URLRequest(url: url)
     request.httpMethod = "PUT"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.httpBody = try JSONEncoder().encode(acceptIntentPayload)
-    print(url)
 
     let (data, res) = try await URLSession.shared.data(for: request)
 
-    print(String(data: data, encoding: .utf8)!)
     guard let httpResponse = res as? HTTPURLResponse else {
       throw URLError(.badServerResponse)
     }
@@ -184,13 +181,7 @@ extension PushChat {
       throw URLError(.badServerResponse)
     }
 
-    // do {
-    //   return try JSONDecoder().decode(Message.self, from: data)
-    // } catch {
-    //   print("[Push SDK] - API \(error.localizedDescription)")
-    //   throw error
-    // }
-
+    return String(data: data, encoding: .utf8)!
   }
 
   static func getApprovePayload(_ approveOptions: ApproveOptions) async throws
@@ -211,10 +202,11 @@ extension PushChat {
         String(data: try JSONEncoder().encode(apiData), encoding: .utf8)!
     )
 
+    print("hahs", hash)
+    print("fff", approveOptions.privateKey)
+
     let sig = try Pgp.sign(message: hash, privateKey: approveOptions.privateKey)
-    print("mess",String(data: try JSONEncoder().encode(apiData), encoding: .utf8)!)
-    print("hash",hash)
-    print("sig",sig)
+    print(sig)
 
     return ApproveRequestPayload(
       fromDID: approveOptions.fromDID, toDID: approveOptions.toDID, signature: sig,
