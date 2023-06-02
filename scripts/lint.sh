@@ -1,1 +1,1 @@
-swift-format format -rip **/* 
+swift-format format -rip **/*

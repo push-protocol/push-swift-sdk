@@ -43,7 +43,7 @@ extension PushEndpoint {
   }
 
   static func getFeeds(
-    options: FeedsOptionsType,
+    options: PushUser.FeedsOptionsType,
     env: ENV
   ) throws -> Self {
     let userAddressCaip10 = try addressToCaip10(env: env, address: options.user)
@@ -71,6 +71,23 @@ extension PushEndpoint {
     PushEndpoint(
       env: env,
       path: "users"
+    )
+  }
+
+  static func getRequests(account: String, env: ENV, page: Int, limit: Int) -> Self {
+    return PushEndpoint(
+      env: env,
+      path: "chat/users/\(account)/requests",
+      queryItems: [
+        URLQueryItem(
+          name: "page",
+          value: String(page)
+        ),
+        URLQueryItem(
+          name: "limit",
+          value: String(limit)
+        ),
+      ]
     )
   }
 }

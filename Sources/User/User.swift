@@ -1,6 +1,6 @@
 import Foundation
 
-public struct User: Decodable {
+public struct PushUser: Decodable {
   public let about: String?
   public let name: String?
   public let allowedNumMsg: Int
@@ -19,11 +19,11 @@ public struct User: Decodable {
   public let nfts: [String]?
 }
 
-extension User {
+extension PushUser {
   public static func get(
     account userAddress: String,
     env: ENV
-  ) async throws -> User? {
+  ) async throws -> PushUser? {
     let caipAddress = walletToPCAIP10(account: userAddress)
     let url = PushEndpoint.user(
       account: caipAddress,
@@ -45,8 +45,13 @@ extension User {
       return nil
     }
 
-    let userProfile = try JSONDecoder().decode(User.self, from: data)
+    let userProfile = try JSONDecoder().decode(PushUser.self, from: data)
     return userProfile
 
+  }
+
+  public static func userProfileCreated(account: String, env: ENV) async throws -> Bool {
+    let userInfo = try await PushUser.get(account: account, env: env)
+    return userInfo != nil
   }
 }

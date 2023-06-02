@@ -1,6 +1,5 @@
 import CryptoKit
 import ObjectivePGP
-import web3
 
 let KDFSaltSize = 32  // bytes
 let AESGCMNonceSize = 12  // property iv
@@ -43,6 +42,10 @@ public struct EncryptedPrivateKeyV2: Encodable {
   var nonce: String
   var version: ENCRYPTION_TYPE?
   var preKey: String?
+}
+
+func useEmptyPassPhrase(key: Key?) -> String? {
+  return ""
 }
 
 public struct Pgp {
@@ -106,19 +109,32 @@ public struct Pgp {
     return Armor.armored(signature, as: .signature)
   }
 
+  public static func sign(message: String, privateKey: String) throws -> String {
+    let messageData = message.data(using: .utf8)!
+
+    let pkData = try Armor.readArmored(privateKey)
+    let privateKey = try ObjectivePGP.readKeys(from: pkData).first!
+
+    // let myPk = try ObjectivePGP.readKeys(from: self.secretKey).first!
+    let signature = try ObjectivePGP.sign(
+      messageData, detached: true, using: [privateKey], passphraseForKey: useEmptyPassPhrase)
+    let signatureArmor = Armor.armored(signature, as: .signature)
+    return filterPgpInfo(signatureArmor)
+  }
+
   public func getPublicKey() -> String {
     return
       Armor.armored(self.publicKey, as: .publicKey)
   }
 
   public func getSecretKey() -> String {
-    return
-      Armor.armored(self.secretKey, as: .secretKey)
+    let pgpsec = Armor.armored(self.secretKey, as: .secretKey)
+    return filterPgpInfo(pgpsec)
   }
 
   public static func GenerateNewPgpPair() throws -> Self {
     let key = KeyGenerator(
-      algorithm: .RSA, keyBitsLength: 2048, cipherAlgorithm: .AES256, hashAlgorithm: .SHA256
+      algorithm: .RSA, keyBitsLength: 2048, cipherAlgorithm: .AES128, hashAlgorithm: .SHA256
     ).generate(for: "", passphrase: "")
 
     let publicKey = try key.export(keyType: .public)
@@ -157,10 +173,6 @@ public struct Pgp {
     }
   }
 
-  func useEmptyPassPhrase(key: Key?) -> String? {
-    return ""
-  }
-
   public func encryptPGPKey(wallet: Push.Wallet) async throws -> EncryptedPrivateKeyV2 {
     var array = [UInt8](repeating: 0, count: 32)
     getRandomValues(array: &array)
@@ -189,19 +201,27 @@ public struct Pgp {
     )
   }
 
-  public static func pgpDecrypt(cipherText: String, toPrivateKeyArmored: String) throws -> String {
-    // print("cipherText: \(cipherText)")
-    // print("toPrivateKeyArmored: \(toPrivateKeyArmored)")
+  static func filterPgpInfo(_ inputString: String) -> String {
+    var lines: [String] = inputString.components(separatedBy: .newlines)
+    lines.remove(at: 1)
+    lines.remove(at: 1)
+    lines.remove(at: 1)
+    return lines.joined(separator: "\n")
+  }
 
-    // guard let privateKeyData = toPrivateKeyArmored.data(using: .utf8) else {
-    //   throw PgpError.INVALID_PRIVATE_KEY
-    // }
-    // print("privateKeyData: \(privateKeyData)")
+  func filterPgpInfo(_ inputString: String) -> String {
+    var lines: [String] = inputString.components(separatedBy: .newlines)
+    lines.remove(at: 1)
+    lines.remove(at: 1)
+    lines.remove(at: 1)
+    return lines.joined(separator: "\n")
+  }
+
+  public static func pgpDecrypt(cipherText: String, toPrivateKeyArmored: String) throws -> String {
 
     let pkData = try Armor.readArmored(toPrivateKeyArmored)
     let privateKey = try ObjectivePGP.readKeys(from: pkData).first!
 
-    // print("privateKey: \(privateKey)")
     let decryptData = try Armor.readArmored(cipherText)
     let decryptedData = try ObjectivePGP.decrypt(
       decryptData, andVerifySignature: false, using: [privateKey])

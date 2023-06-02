@@ -1,26 +1,15 @@
 import Push
+import Web3Core
 import XCTest
-import web3
+import web3swift
 
 class CreateUserTests: XCTestCase {
-  func getRandomAccount() -> (String, String) {
-    let length = 64
-    let letters = "abcdef0123456789"
-    let keyStorage = EthereumKeyLocalStorage()
-    let privateKey = String((0..<length).map { _ in letters.randomElement()! })
-
-    let account = try! EthereumAccount.importAccount(
-      addingTo: keyStorage, privateKey: privateKey, keystorePassword: privateKey)
-
-    let address = account.address.toChecksumAddress()
-    return (address, privateKey)
-  }
 
   func testUserCreateFailsIfAlreadyExists() async throws {
     let expectation = XCTestExpectation(description: "Creates user successfully with account")
     do {
-      let _ = try await User.create(
-        options: CreateUserOptions(
+      let _ = try await PushUser.create(
+        options: PushUser.CreateUserOptions(
           env: ENV.STAGING,
           signer: SignerPrivateKey(
             privateKey: "8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f"
@@ -35,11 +24,15 @@ class CreateUserTests: XCTestCase {
   }
 
   func testCreateNewUser() async throws {
-    let (userAddress, userPk) = getRandomAccount()
-    let userCAIPAddress = walletToPCAIP10(account: userAddress)
+    let userPk = getRandomAccount()
+    let signer = try SignerPrivateKey(
+      privateKey: userPk
+    )
+    let addrs = try await signer.getAddress()
+    let userCAIPAddress = walletToPCAIP10(account: addrs)
 
-    let user = try await User.create(
-      options: CreateUserOptions(
+    let user = try await PushUser.create(
+      options: PushUser.CreateUserOptions(
         env: ENV.STAGING,
         signer: SignerPrivateKey(
           privateKey: userPk
@@ -50,5 +43,18 @@ class CreateUserTests: XCTestCase {
     XCTAssertEqual(user.did, userCAIPAddress)
     XCTAssertEqual(user.wallets, userCAIPAddress)
     XCTAssert(user.encryptedPrivateKey.count > 0)
+  }
+
+  func testCreateUserEmpty() async throws {
+    let userAddress = generateRandomEthereumAddress()
+    let userCAIPAddress = walletToPCAIP10(account: userAddress)
+
+    let user = try await PushUser.createUserEmpty(userAddress: userAddress, env: .STAGING)
+
+    XCTAssertEqual(user.did, userCAIPAddress)
+    XCTAssertEqual(user.wallets, userCAIPAddress)
+    XCTAssertEqual(user.encryptedPrivateKey, "")
+    XCTAssertEqual(user.publicKey, "")
+
   }
 }

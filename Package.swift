@@ -11,10 +11,10 @@ let package = Package(
   ],
   dependencies: [
     .package(url: "https://github.com/krzyzanowskim/ObjectivePGP.git", from: "0.99.4"),
-    .package(url: "https://github.com/GigaBitcoin/secp256k1.swift.git", exact: "0.10.0"),
-    .package(url: "https://github.com/argentlabs/web3.swift", from: "1.1.0"),
     .package(
       url: "https://github.com/krzyzanowskim/CryptoSwift.git", .upToNextMajor(from: "1.5.1")),
+    .package(url: "https://github.com/web3swift-team/web3swift.git", .upToNextMajor(from: "3.0.0")),
+
   ],
   targets: [
     // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -23,17 +23,15 @@ let package = Package(
       name: "Push",
       dependencies: [
         .product(name: "ObjectivePGP", package: "ObjectivePGP"),
-        .product(name: "secp256k1", package: "secp256k1.swift"),
-        "web3.swift",
         "CryptoSwift",
       ],
       path: "Sources"
     ),
-
     .testTarget(
       name: "PushTests",
       dependencies: [
-        "Push"
+        "Push",
+        .product(name: "web3swift", package: "web3swift"),
       ], path: "Tests"),
   ]
 )

@@ -11,6 +11,11 @@ public struct AESCBCHelper {
     return dec
   }
 
+  public static func encrypt(messageText: String, secretKey: String) -> Data? {
+    // derive AES-256 key and salt
+    return Data([1])
+  }
+
   static func _encrypt(data: Data, key: Data, iv: Data) -> Data? {
     // Output buffer (with padding)
     let outputLength = data.count + kCCBlockSizeAES128
@@ -39,7 +44,6 @@ public struct AESCBCHelper {
 
   static func _decrypt(data cipherData: Data, key: Data, iv: Data) -> Data? {
     // Split IV and cipher text
-
     let cipherTextLength = cipherData.count
     // Output buffer
     var outputBuffer = [UInt8](
@@ -71,7 +75,7 @@ public struct AESCBCHelper {
   ) {
     func genMd5(data: Data) -> Data {
       let computed = Insecure.MD5.hash(data: data)
-      return Data(computed.bytes)
+      return Data(computed)
     }
 
     let cipherDataAll = Data(base64Encoded: ciphertextCombined)!

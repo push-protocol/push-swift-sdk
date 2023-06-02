@@ -23,88 +23,43 @@ private func decryptAndVerifySignature(
   message: Message
 ) async throws -> String {
   do {
+    print("doing")
     let secretKey: String = try Pgp.pgpDecrypt(
       cipherText: encryptedSecretKey, toPrivateKeyArmored: privateKeyArmored)
 
-    // Msg sig verification
-    // if message.link == nil {
-    //   let bodyToBeHashed = BodyToHashInboxList(
-    //     fromDID: message.fromDID,
-    //     toDID: message.toDID,
-    //     messageContent: message.messageContent,
-    //     messageType: message.messageType
-    //   )
-    //   let hash = generateSHA256Hash(
-    //     msg: String(data: try JSONEncoder().encode(bodyToBeHashed), encoding: .utf8) ?? "")
-    //   do {
-    //     try verifySignature(
-    //       messageContent: hash,
-    //       signatureArmored: signatureArmored,
-    //       publicKeyArmored: publicKeyArmored
-    //     )
-    //   } catch {
-    //     try verifySignature(
-    //       messageContent: cipherText,
-    //       signatureArmored: signatureArmored,
-    //       publicKeyArmored: publicKeyArmored
-    //     )
-    //   }
-    // } else {
-    //   try verifySignature(
-    //     messageContent: cipherText,
-    //     signatureArmored: signatureArmored,
-    //     publicKeyArmored: publicKeyArmored
-    //   )
-    // }
+    print("doing")
     let userMsg = AESCBCHelper.decrypt(cipherText: cipherText, secretKey: secretKey)!
+    print("doing")
     let userMsgStr = String(data: userMsg, encoding: .utf8)!
-
+    print("User", userMsg)
     return userMsgStr
   } catch {
-    return "Unable to decrypt message"
+    return "Abishek Unable to decrypt message \(error)"
   }
 }
 
 private func decryptFeeds(
-  feeds: [Feeds],
-  connectedUser: User,
+  feeds: [PushChat.Feeds],
+  connectedUser: PushUser,
   pgpPrivateKey: String?,
   env: ENV
-) async throws -> [Feeds] {
-  var otherPeer: User?
-  var signatureValidationPubliKey: String = ""
-  var updatedFeeds: [Feeds] = []
+) async throws -> [PushChat.Feeds] {
+  var updatedFeeds: [PushChat.Feeds] = []
   for feed in feeds {
-    var gotOtherPeer = false
     var currentFeed = feed
+    // print(feed.chatId, feed.publicKey?.count, feed.msg?.encType)
     if currentFeed.msg == nil {
       updatedFeeds.append(currentFeed)
       continue
     }
     if currentFeed.msg!.encType == "pgp" {
       if pgpPrivateKey == nil {
-        throw ChatError.decryptedPrivateKeyNecessary
+        throw PushChat.ChatError.decryptedPrivateKeyNecessary
       }
 
-      // sender is not me
-      // get the sender public key
-      if currentFeed.msg!.fromCAIP10 != connectedUser.wallets.split(separator: ",")[0] {
-        if !gotOtherPeer {
-          otherPeer = try await User.get(account: currentFeed.msg!.fromCAIP10, env: env)
-          gotOtherPeer = true
-        }
-        signatureValidationPubliKey = otherPeer!.publicKey
-      } else {
-        signatureValidationPubliKey = connectedUser.publicKey
-      }
-      currentFeed.msg!.messageContent = try await decryptAndVerifySignature(
-        cipherText: currentFeed.msg!.messageContent,
-        encryptedSecretKey: currentFeed.msg!.encryptedSecret,
-        publicKeyArmored: signatureValidationPubliKey,
-        signatureArmored: currentFeed.msg!.signature,
-        privateKeyArmored: pgpPrivateKey!,
-        message: currentFeed.msg!
-      )
+      let decryptedMsg = try PushChat.decryptMessage(
+        message: currentFeed.msg!, privateKeyArmored: pgpPrivateKey!)
+      currentFeed.msg?.messageContent = decryptedMsg
     }
     updatedFeeds.append(currentFeed)
   }
@@ -112,17 +67,17 @@ private func decryptFeeds(
 }
 
 public func getInboxLists(
-  chats: [Feeds],
+  chats: [PushChat.Feeds],
   user: String,
   toDecrypt: Bool,
   pgpPrivateKey: String?,
   env: ENV
-) async throws -> [Feeds] {
-  let connectedUser = try await User.get(account: user, env: env)
+) async throws -> [PushChat.Feeds] {
+  let connectedUser = try await PushUser.get(account: user, env: env)
   if connectedUser == nil {
-    throw ChatError.invalidAddress
+    throw PushChat.ChatError.invalidAddress
   }
-  var feeds: [Feeds] = []
+  var feeds: [PushChat.Feeds] = []
   for list in chats {
     var message: Message
 
@@ -145,7 +100,7 @@ public func getInboxLists(
       )
     }
     feeds.append(
-      Feeds(
+      PushChat.Feeds(
         msg: message,
         did: list.did,
         wallets: list.wallets,

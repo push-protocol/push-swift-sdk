@@ -6,9 +6,9 @@ class GetFeedsTests: XCTestCase {
   func testUserFeedsReturns() async throws {
     let user = "eip155:0x3aae65DF8424b0Bb80C1f74dD480b04dbEA54213"
 
-    let res = try await User.getFeeds(
+    let res = try await PushUser.getFeeds(
       options:
-        Push.FeedsOptionsType(
+        PushUser.FeedsOptionsType(
           user: user,
           env: ENV.STAGING
         )
@@ -21,9 +21,9 @@ class GetFeedsTests: XCTestCase {
     let user = "eip155:0x3aae65DF8424b0B"
     let expectation = XCTestExpectation(description: "Throws error")
     do {
-      let _ = try await User.getFeeds(
+      let _ = try await PushUser.getFeeds(
         options:
-          Push.FeedsOptionsType(
+          PushUser.FeedsOptionsType(
             user: user,
             env: ENV.STAGING
           )
