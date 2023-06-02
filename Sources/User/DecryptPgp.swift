@@ -1,6 +1,6 @@
 import Foundation
 
-extension User {
+extension PushUser {
   struct EncryptedPrivateKey: Codable {
     var ciphertext: String
     var version: String

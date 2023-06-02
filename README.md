@@ -543,6 +543,7 @@ let message = try await Chats.Latest(
  
 ### **Fetching chat history between two users**
 
+
 ```swift
 const chatHistory:[Message] = await Chat.History(
   threadhash: String;
@@ -691,5 +692,9 @@ let messages:[Message] = try await Chats.History(
 | `encryptedSecret` | string  | encrypted secret |
 
 </details>
+
+
+
+
 
 -----

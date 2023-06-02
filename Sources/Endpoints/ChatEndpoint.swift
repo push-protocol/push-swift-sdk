@@ -69,4 +69,13 @@ extension PushEndpoint {
     )
   }
 
+  static func acceptChatRequest(
+    env: ENV
+  ) throws -> Self {
+    return PushEndpoint(
+      env: env,
+      path: "chat/request/accept"
+    )
+  }
+
 }

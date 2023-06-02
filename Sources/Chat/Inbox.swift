@@ -54,7 +54,7 @@ enum ChatError: Error {
   case chatError(String)
 }
 
-public struct Chats {
+public struct PushChat {
   public static func getChats(options: GetChatsOptions) async throws -> [Feeds] {
     if !isValidETHAddress(address: options.account) {
       throw ChatError.invalidAddress

@@ -59,6 +59,34 @@ class PgpTests: XCTestCase {
 
   }
 
+  struct AcceptHashData: Encodable {
+    var fromDID: String
+    var toDID: String
+    var status: String
+  }
+
+  func testPgpSig() async throws {
+    let message = "af0e555cc21ad40b2eec3b8453e4f206a43483be95accfe320e657941d63c77a"
+
+    let fromDID = walletToPCAIP10(account: "0xD26A7BF7fa0f8F1f3f73B056c9A67565A6aFE63c")
+    let toDID = walletToPCAIP10(account: "0xA7226C6227A2afe0556020Eb02F1524e41fc4F9c")
+
+    let apiData = AcceptHashData(
+      fromDID: fromDID,
+      toDID: toDID, status: "Approved")
+
+    let hash = generateSHA256Hash(
+      msg:
+        String(data: try JSONEncoder().encode(apiData), encoding: .utf8)!
+    )
+
+    let signature = try Pgp.sign(message: hash, privateKey: secKey)
+
+    XCTAssertEqual(message, hash)
+
+    print(signature)
+
+  }
 }
 
 let pubKey = """

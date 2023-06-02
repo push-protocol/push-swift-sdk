@@ -8,7 +8,7 @@ class CreateUserTests: XCTestCase {
   func testUserCreateFailsIfAlreadyExists() async throws {
     let expectation = XCTestExpectation(description: "Creates user successfully with account")
     do {
-      let _ = try await User.create(
+      let _ = try await PushUser.create(
         options: CreateUserOptions(
           env: ENV.STAGING,
           signer: SignerPrivateKey(
@@ -31,7 +31,7 @@ class CreateUserTests: XCTestCase {
     let addrs = try await signer.getAddress()
     let userCAIPAddress = walletToPCAIP10(account: addrs)
 
-    let user = try await User.create(
+    let user = try await PushUser.create(
       options: CreateUserOptions(
         env: ENV.STAGING,
         signer: SignerPrivateKey(
@@ -49,7 +49,7 @@ class CreateUserTests: XCTestCase {
     let userAddress = generateRandomEthereumAddress()
     let userCAIPAddress = walletToPCAIP10(account: userAddress)
 
-    let user = try await User.createUserEmpty(userAddress: userAddress, env: .STAGING)
+    let user = try await PushUser.createUserEmpty(userAddress: userAddress, env: .STAGING)
 
     XCTAssertEqual(user.did, userCAIPAddress)
     XCTAssertEqual(user.wallets, userCAIPAddress)

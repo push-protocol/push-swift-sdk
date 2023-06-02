@@ -10,8 +10,8 @@ class SendChatsTests: XCTestCase {
 
     let messageToSen = "Hello user \(recipientAddress)"
 
-    let _ = try await Push.Chats.sendIntent(
-      Chats.SendOptions(
+    let _ = try await Push.PushChat.sendIntent(
+      PushChat.SendOptions(
         messageContent: messageToSen,
         messageType: "Text",
         receiverAddress: recipientAddress,
@@ -19,7 +19,7 @@ class SendChatsTests: XCTestCase {
         pgpPrivateKey: senderPgpPk
       ))
 
-    let latestFeed = try await Chats.getChats(
+    let latestFeed = try await PushChat.getChats(
       options: GetChatsOptions(
         account: senderAddress, pgpPrivateKey: senderPgpPk, toDecrypt: true, page: 1, limit: 1,
         env: .STAGING))
@@ -35,8 +35,8 @@ class SendChatsTests: XCTestCase {
 
     let messageToSen = "Hello user \(recipientAddress)"
 
-    let _ = try await Push.Chats.sendIntent(
-      Chats.SendOptions(
+    let _ = try await Push.PushChat.sendIntent(
+      PushChat.SendOptions(
         messageContent: messageToSen,
         messageType: "Text",
         receiverAddress: recipientAddress,
@@ -44,8 +44,8 @@ class SendChatsTests: XCTestCase {
         pgpPrivateKey: senderPgpPk
       ))
 
-    let _ = try await Push.Chats.sendMessage(
-      Chats.SendOptions(
+    let _ = try await Push.PushChat.sendMessage(
+      PushChat.SendOptions(
         messageContent: messageToSen,
         messageType: "Text",
         receiverAddress: recipientAddress,
@@ -53,7 +53,7 @@ class SendChatsTests: XCTestCase {
         pgpPrivateKey: senderPgpPk
       ))
 
-    let latestFeed = try await Chats.getChats(
+    let latestFeed = try await PushChat.getChats(
       options: GetChatsOptions(
         account: senderAddress, pgpPrivateKey: senderPgpPk, toDecrypt: true, page: 1, limit: 1,
         env: .STAGING))
@@ -70,8 +70,8 @@ class SendChatsTests: XCTestCase {
     let messageToSen1 = "Hello user --- Intent \(recipientAddress)"
     let messageToSen2 = "Hello user --- Message \(recipientAddress)"
 
-    let _ = try await Push.Chats.send(
-      Chats.SendOptions(
+    let _ = try await Push.PushChat.send(
+      PushChat.SendOptions(
         messageContent: messageToSen1,
         messageType: "Text",
         receiverAddress: recipientAddress,
@@ -79,14 +79,14 @@ class SendChatsTests: XCTestCase {
         pgpPrivateKey: senderPgpPk
       ))
 
-    let latestFeed1 = try await Chats.getChats(
+    let latestFeed1 = try await PushChat.getChats(
       options: GetChatsOptions(
         account: senderAddress, pgpPrivateKey: senderPgpPk, toDecrypt: true, page: 1, limit: 1,
         env: .STAGING))
     let latestMessage1 = latestFeed1[0].msg!.messageContent
 
-    let _ = try await Push.Chats.send(
-      Chats.SendOptions(
+    let _ = try await Push.PushChat.send(
+      PushChat.SendOptions(
         messageContent: messageToSen2,
         messageType: "Text",
         receiverAddress: recipientAddress,
@@ -94,7 +94,7 @@ class SendChatsTests: XCTestCase {
         pgpPrivateKey: senderPgpPk
       ))
 
-    let latestFeed2 = try await Chats.getChats(
+    let latestFeed2 = try await PushChat.getChats(
       options: GetChatsOptions(
         account: senderAddress, pgpPrivateKey: senderPgpPk, toDecrypt: true, page: 1, limit: 1,
         env: .STAGING))
@@ -104,6 +104,32 @@ class SendChatsTests: XCTestCase {
     XCTAssertEqual(latestMessage2, messageToSen2)
   }
 
+  func testApproveIntent() async throws {
+    let reqAddress = generateRandomEthereumAddress()
+
+    // let res = try await User.create(options: CreateUserOptions(env: .STAGING, signer: Signer, version: PGP,)
+
+    let userAddress = UserAddress
+    let userAddressPgpPk = UserPrivateKey
+
+    let messageToSen1 = "Hello user --- Intent \(reqAddress)"
+    let messageToSen2 = "Hello user --- Message \(reqAddress)"
+
+    try await _ = PushUser.createUserEmpty(userAddress: reqAddress, env: .STAGING)
+
+    let _ = try await Push.PushChat.send(
+      PushChat.SendOptions(
+        messageContent: messageToSen1,
+        messageType: "Text",
+        receiverAddress: userAddress,
+        account: reqAddress,
+        pgpPrivateKey: ""
+      ))
+
+    try await Push.PushChat.approve(
+      PushChat.ApproveOptions(fromAddress: reqAddress, toAddress: userAddress, privateKey:UserPrivateKey, env: .STAGING))
+
+  }
 }
 
 let UserAddress = "0xD26A7BF7fa0f8F1f3f73B056c9A67565A6aFE63c"
@@ -166,4 +192,37 @@ let UserPrivateKey = """
   Ow0PNfWBEIXKzpU+pdxSjyFbgg9NGOczMtYUTkheIQeBerPjFWsoCEtHMcE=
   =aUD6
   -----END PGP PRIVATE KEY BLOCK-----
+  """
+
+let UserPublicKey = """
+  -----BEGIN PGP PUBLIC KEY BLOCK-----
+  Version: openpgp-mobile
+
+  xsBNBGM0d6MBCACxjqDjA0lpIETCEYjgg5IwnXzm3Kp1ruKiNcsGV5O682ywYhYK
+  lSeAA4U5fQUAhyzlHUmTXnLZv8TgNlQSenkuLBRJgJ6xAMKcgKVz5RP3d6hkQpnX
+  BygVL6mr7ZycGEYda0VwZk8zD6a6hBdv4+hlVrhz+8hVsC6LhTprhCaO7qheotG/
+  seG4sv+0OV1yN7QB1gyQusz93Cui7f9VJ4cf3h981nGEFZmncel9SIZ9r75p9s+L
+  TXAzr3pj3HOUGig9ZdVldQw++reW7RJSipNOM8tuYcyi08Q8ZYpAX0VZwpQeWHNS
+  /rdhnr9ig0tbDF7lDMvKESP36yjsSC7qvi7JABEBAAHNAMLAiAQTAQgAPAUCYzR3
+  owmQTKJxiypD3PwWIQTYKfOVquMJtYIiiRFMonGLKkPc/AIbAwIeAQIZAQILBwIV
+  CAIWAAIiAQAA93cH/AxI78v+dcgOUazw5o8VKTzDvh1i/q6Xrolu6miYmuepjosE
+  lPMlhXVL3woznbMxMRqh4stOgB+VvsRjZ0mVTmEYFew5Vlk3h4jW6Am9kqoLKR3v
+  TDRcQY8fHThgpQkW+OrSPGanba0XhqVmuc8BnLr1RyrFBnEq5mcEbQLhXm1/Hvky
+  K0cbhG91CIF6+yOt1bCe7Vop0rvrEx8w+si9uMQ11zwHyUa5SWKjPN1AzUhdu6v7
+  deihTBdGxiDUMwlh0tNiYQmqhLysCrqblBQVczWw4vxmSR2hZ9+qfoL6PPu49kVj
+  VxIhowAW4EuvrMzmc+JOJj264W5es0T8CVnI5wrOwE0EYzR3owEIAMj5cXvC3UUg
+  kFb/WgfCvbXZdcPNUUOfNo3ABrfQolT5AMRxuEI6564IDAqIHbS0YDH6H9ZydGcU
+  YKJcC7m3FApHsJKP5RQlHdFlzsDU4HhOPc8Zv8k1fY+8fcbJ4dqcLZSLo4rP2X4S
+  Wob7ub8b3f6TJvhMETZ2/1M2UvFNV36UIVcmUM0H9/Z23ze1YJX+0Ocn+m9NGdJD
+  QXNieRMAoevU1dJIcebctmh6zyNaHeIW8T6HYsaduNfsn2E+rNHtVFH1UZEkN9tg
+  VQtw7boSMZq6M0k8AO+ttkgCRixKQJ7DRzNW9ZFer2G0jp5RnqcZaA9WLsOhN0rw
+  ubjg2ezMD+sAEQEAAcLAdgQYAQgAKgUCYzR3owmQTKJxiypD3PwWIQTYKfOVquMJ
+  tYIiiRFMonGLKkPc/AIbDAAAJFcH/RWxYt53nhU/enOaT7NXRqOnkxC7qppB8ITb
+  DbDLUrfgnKZDAr3+1yL2lOauqSwhiLVITWtVAQ/fiFYU6B2c7emv4SwRXt0vzodX
+  vASSvPcqnXS5vetKXetQY69z9kGtETzeV5ww3gf92nsHoMkT9helVa64nZJC5CPa
+  E9aL7drb4L/4ZQ9ZvKilPrfpkbXbRfNub1wJKCQVFnXxtXB83hlyq/tqrzeXjZai
+  8+HQfOVr7NE7e20Vtat7P51yzZTBCPfOsPdHPRdJeWrIS76DmfKF0ATKOw0PNfWB
+  EIXKzpU+pdxSjyFbgg9NGOczMtYUTkheIQeBerPjFWsoCEtHMcE=
+  =5cZE
+  -----END PGP PUBLIC KEY BLOCK-----"
   """

@@ -71,8 +71,8 @@ public struct CreateUserResponse: Decodable {
   public var allowedNumMsg: Int
 }
 
-extension User {
-  public static func create(options: CreateUserOptions) async throws -> User {
+extension PushUser {
+  public static func create(options: CreateUserOptions) async throws -> PushUser {
     do {
       let wallet = try await Wallet(signer: options.signer)
       let address = wallet.account
@@ -169,7 +169,7 @@ extension User {
       }
 
       // orut
-      let createdUser = try JSONDecoder().decode(User.self, from: data)
+      let createdUser = try JSONDecoder().decode(PushUser.self, from: data)
 
       options.progressHook?(
         ProgressHookType(
@@ -193,7 +193,7 @@ extension User {
     }
   }
 
-  public static func createUserEmpty(userAddress: String, env: ENV) async throws -> User {
+  public static func createUserEmpty(userAddress: String, env: ENV) async throws -> PushUser {
     let caip10 = walletToPCAIP10(account: userAddress)
 
     let updatedData = CreateUserAPIOptions(
@@ -224,7 +224,7 @@ extension User {
     }
 
     // orut
-    let createdUser = try JSONDecoder().decode(User.self, from: data)
+    let createdUser = try JSONDecoder().decode(PushUser.self, from: data)
     return createdUser
   }
 }

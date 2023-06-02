@@ -129,7 +129,7 @@ public struct FeedsOptionsType {
   }
 }
 
-extension User {
+extension PushUser {
   public static func getFeeds(
     options: FeedsOptionsType
   ) async throws -> FeedResponse {

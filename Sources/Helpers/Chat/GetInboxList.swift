@@ -40,7 +40,7 @@ private func decryptAndVerifySignature(
 
 private func decryptFeeds(
   feeds: [Feeds],
-  connectedUser: User,
+  connectedUser: PushUser,
   pgpPrivateKey: String?,
   env: ENV
 ) async throws -> [Feeds] {
@@ -57,7 +57,7 @@ private func decryptFeeds(
         throw ChatError.decryptedPrivateKeyNecessary
       }
 
-      let decryptedMsg = try Chats.decryptMessage(
+      let decryptedMsg = try PushChat.decryptMessage(
         message: currentFeed.msg!, privateKeyArmored: pgpPrivateKey!)
       currentFeed.msg?.messageContent = decryptedMsg
     }
@@ -73,7 +73,7 @@ public func getInboxLists(
   pgpPrivateKey: String?,
   env: ENV
 ) async throws -> [Feeds] {
-  let connectedUser = try await User.get(account: user, env: env)
+  let connectedUser = try await PushUser.get(account: user, env: env)
   if connectedUser == nil {
     throw ChatError.invalidAddress
   }

@@ -1,6 +1,6 @@
 import Foundation
 
-extension Chats {
+extension PushChat {
   struct Hash: Codable { var threadHash: String? }
 
   public static func ConversationHash(
