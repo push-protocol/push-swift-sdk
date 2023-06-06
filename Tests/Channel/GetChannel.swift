@@ -19,7 +19,8 @@ class GetChannelTests: XCTestCase {
   }
 
   func testGetChannels() async throws {
-    let res = try await PushChannel.getChannels(option: PushChannel.GetChannelsOptions(page: 1, limit: 10, env:.STAGING))
+    let res = try await PushChannel.getChannels(
+      option: PushChannel.GetChannelsOptions(page: 1, limit: 10, env: .STAGING))
 
     XCTAssert(res.itemcount > 0)
     XCTAssert(res.channels.count == 10)

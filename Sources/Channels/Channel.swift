@@ -66,4 +66,28 @@ extension PushChannel {
     }
 
   }
+
+  public static func getChannels(option: GetChannelsOptions) async throws -> Channels {
+
+    let url = try PushEndpoint.getChannels(page: option.page, limit: option.limit, env: option.env)
+      .url
+
+    var request = URLRequest(url: url)
+    request.httpMethod = "GET"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+    let (data, res) = try await URLSession.shared.data(for: request)
+
+    guard let httpResponse = res as? HTTPURLResponse else {
+      throw URLError(.badServerResponse)
+    }
+
+    guard (200...299).contains(httpResponse.statusCode) else {
+      throw URLError(.badServerResponse)
+    }
+
+    return try JSONDecoder().decode(Channels.self, from: data)
+
+  }
+
 }

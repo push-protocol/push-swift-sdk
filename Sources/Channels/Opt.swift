@@ -24,7 +24,7 @@ extension PushChannel {
     }
 
     return
-      "{\"types\":{\"Subscribe\":[{\"name\":\"channel\",\"type\":\"address\"},{\"name\":\"subscriber\",\"type\":\"address\"},{\"name\":\"action\",\"type\":\"string\"}],\"EIP712Domain\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"chainId\",\"type\":\"uint256\"},{\"name\":\"verifyingContract\",\"type\":\"address\"}]},\"primaryType\":\"Subscribe\",\"domain\":{\"name\":\"EPNS COMM V1\",\"chainId\":\(_chainId),\"verifyingContract\":\"0xb3971BCef2D791bc4027BbfedFb47319A4AAaaAa\"},\"message\":{\"channel\":\"\(_channel)\",\"subscriber\":\"\(_subscriber)\",\"action\":\"Unsubscribe\"}}"
+      "{\"types\":{\"Unsubscribe\":[{\"name\":\"channel\",\"type\":\"address\"},{\"name\":\"unsubscriber\",\"type\":\"address\"},{\"name\":\"action\",\"type\":\"string\"}],\"EIP712Domain\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"chainId\",\"type\":\"uint256\"},{\"name\":\"verifyingContract\",\"type\":\"address\"}]},\"primaryType\":\"Unsubscribe\",\"domain\":{\"name\":\"EPNS COMM V1\",\"chainId\":\(_chainId),\"verifyingContract\":\"0xb3971BCef2D791bc4027BbfedFb47319A4AAaaAa\"},\"message\":{\"channel\":\"\(_channel)\",\"ubsubscriber\":\"\(_subscriber)\",\"action\":\"Unsubscribe\"}}"
   }
 
   public struct SubscribeOption {
@@ -137,14 +137,15 @@ struct OptMessage: Codable {
   let channel: String
   let subscriber: String?
   let unsubscriber: String?
-  
 
   public static func getOptInMessage(channel: String, subscriber: String) -> Self {
-    return OptMessage(action: "Subscribe", channel: channel, subscriber: subscriber, unsubscriber: nil)
+    return OptMessage(
+      action: "Subscribe", channel: channel, subscriber: subscriber, unsubscriber: nil)
   }
 
   public static func getOptOutMessage(channel: String, subscriber: String) -> Self {
-    return OptMessage(action: "Unsubscribe", channel: channel,subscriber: nil, unsubscriber: subscriber)
+    return OptMessage(
+      action: "Unsubscribe", channel: channel, subscriber: nil, unsubscriber: subscriber)
   }
 }
 

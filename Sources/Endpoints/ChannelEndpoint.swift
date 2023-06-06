@@ -25,7 +25,7 @@ extension PushEndpoint {
     )
   }
 
-  static func getSubscribers(channel: String, page:Int, limit:Int, env: ENV) throws -> Self {
+  static func getSubscribers(channel: String, page: Int, limit: Int, env: ENV) throws -> Self {
     return PushEndpoint(
       env: env,
       path: "channels/\(channel)/subscribers",
@@ -42,7 +42,7 @@ extension PushEndpoint {
     )
   }
 
-  static func getChannels(page:Int, limit:Int, env: ENV) throws -> Self {
+  static func getChannels(page: Int, limit: Int, env: ENV) throws -> Self {
     return PushEndpoint(
       env: env,
       path: "channels",
@@ -67,7 +67,7 @@ extension PushEndpoint {
     )
   }
 
-  static func getSearch(query:String,page:Int, limit:Int, env: ENV) throws -> Self {
+  static func getSearch(query: String, page: Int, limit: Int, env: ENV) throws -> Self {
     return PushEndpoint(
       env: env,
       path: "channels/search",
@@ -82,7 +82,7 @@ extension PushEndpoint {
         ),
         URLQueryItem(
           name: "query",
-          value:query
+          value: query
         ),
         URLQueryItem(
           name: "order",
@@ -92,11 +92,8 @@ extension PushEndpoint {
     )
   }
 
-
-
-
   static func getIsSubscribed(env: ENV) throws -> URL {
-    let endPoint = "https://"+ENV.getHost(withEnv: env) + "/apis/channels/_is_user_subscribed"
+    let endPoint = "https://" + ENV.getHost(withEnv: env) + "/apis/channels/_is_user_subscribed"
     return URL(string: endPoint)!
   }
 
