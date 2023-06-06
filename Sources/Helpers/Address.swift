@@ -69,6 +69,15 @@ public func walletToPCAIP10(account: String) -> String {
   return "eip155:\(account)"
 }
 
+public func walletToCAIPEth(account: String, env: ENV) -> String {
+  let splittedAddress = account.split(separator: ":")
+  let chainId = env == ENV.PROD ? "1" : "5"
+  if splittedAddress.count == 3 {
+    return account
+  }
+  return "eip155:\(chainId):\(account)"
+}
+
 public func getUserDID(address: String) -> String {
   if isValidETHAddress(address: address) {
     return walletToPCAIP10(account: address)

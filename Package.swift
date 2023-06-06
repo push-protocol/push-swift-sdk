@@ -13,7 +13,7 @@ let package = Package(
     .package(url: "https://github.com/krzyzanowskim/ObjectivePGP.git", from: "0.99.4"),
     .package(
       url: "https://github.com/krzyzanowskim/CryptoSwift.git", .upToNextMajor(from: "1.5.1")),
-    .package(url: "https://github.com/web3swift-team/web3swift.git", .upToNextMajor(from: "3.0.0")),
+    .package(url: "https://github.com/web3swift-team/web3swift.git",.upToNextMajor(from: "3.0.0")),
 
   ],
   targets: [
