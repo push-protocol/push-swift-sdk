@@ -61,7 +61,7 @@ class SendChatsTests: XCTestCase {
     XCTAssertEqual(latestMessage, messageToSen)
   }
 
-  func testSend() async throws {
+  func testSendMG() async throws {
     let recipientAddress = generateRandomEthereumAddress()
     let senderAddress = UserAddress
     let senderPgpPk = UserPrivateKey
@@ -101,15 +101,27 @@ class SendChatsTests: XCTestCase {
 
     XCTAssertEqual(latestMessage1, messageToSen1)
     XCTAssertEqual(latestMessage2, messageToSen2)
+
   }
 
   func testApproveIntent() async throws {
-    let reqAddress = generateRandomEthereumAddress()
+    let userPk = getRandomAccount()
+    let signer = try SignerPrivateKey(
+      privateKey: userPk
+    )
+    let reqAddress = try await signer.getAddress()
+
+    let _ = try await PushUser.create(
+      options: PushUser.CreateUserOptions(
+        env: ENV.STAGING,
+        signer: SignerPrivateKey(
+          privateKey: userPk
+        ),
+        progressHook: nil
+      ))
     let userAddress = UserAddress
     let messageToSen1 = "Hello user --- Intent \(reqAddress)"
 
-    // send intent
-    try await _ = PushUser.createUserEmpty(userAddress: reqAddress, env: .STAGING)
     let _ = try await Push.PushChat.send(
       PushChat.SendOptions(
         messageContent: messageToSen1,
@@ -128,7 +140,54 @@ class SendChatsTests: XCTestCase {
     XCTAssert(res.contains(userAddress))
     XCTAssert(res.contains(reqAddress))
     XCTAssert(res.contains("+"))
+  }
 
+  func testSendMessageEncrypted() async throws {
+    let userPk = getRandomAccount()
+    let signer = try SignerPrivateKey(
+      privateKey: userPk
+    )
+    let reqAddress = try await signer.getAddress()
+
+    let _ = try await PushUser.create(
+      options: PushUser.CreateUserOptions(
+        env: ENV.STAGING,
+        signer: SignerPrivateKey(
+          privateKey: userPk
+        ),
+        progressHook: nil
+      ))
+
+    let userAddress = UserAddress
+    let messageToSen1 = "Hello user --- Intent \(reqAddress)"
+    let messageToSen2 = "Hellow user --- Message \(reqAddress)"
+
+    let _ = try await Push.PushChat.send(
+      PushChat.SendOptions(
+        messageContent: messageToSen1,
+        messageType: "Text",
+        receiverAddress: userAddress,
+        account: reqAddress,
+        pgpPrivateKey: ""
+      ))
+
+    // accept intent
+    let _ = try await Push.PushChat.approve(
+      PushChat.ApproveOptions(
+        fromAddress: reqAddress, toAddress: userAddress, privateKey: UserPrivateKey, env: .STAGING))
+
+    let msg = try await Push.PushChat.send(
+      PushChat.SendOptions(
+        messageContent: messageToSen2,
+        messageType: "Text",
+        receiverAddress: reqAddress,
+        account: userAddress,
+        pgpPrivateKey: UserPrivateKey
+      ))
+
+    let res = try PushChat.decryptMessage(message: msg, privateKeyArmored: UserPrivateKey)
+
+    XCTAssertEqual(res, messageToSen2)
   }
 }
 

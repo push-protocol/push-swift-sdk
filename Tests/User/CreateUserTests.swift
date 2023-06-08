@@ -54,7 +54,7 @@ class CreateUserTests: XCTestCase {
     XCTAssertEqual(user.did, userCAIPAddress)
     XCTAssertEqual(user.wallets, userCAIPAddress)
     XCTAssertEqual(user.encryptedPrivateKey, "")
-    XCTAssertEqual(user.publicKey, "")
+    XCTAssertEqual(user.getPGPPublickey(), "")
 
   }
 }

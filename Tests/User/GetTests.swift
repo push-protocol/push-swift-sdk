@@ -23,7 +23,7 @@ class GetUserTests: XCTestCase {
     XCTAssertEqual(account, user.wallets, "Expected the User wallet to match.")
     XCTAssertEqual(account, user.wallets, "Expected the User wallet to match.")
     XCTAssertTrue(
-      user.publicKey.contains("-----BEGIN PGP PUBLIC KEY BLOCK-----"),
+      user.getPGPPublickey().contains("-----BEGIN PGP PUBLIC KEY BLOCK-----"),
       "Expected user to have valid public key")
     XCTAssertTrue(user.profilePicture.contains("data:image/png;base64,"))
   }
@@ -35,7 +35,7 @@ class GetUserTests: XCTestCase {
 
     XCTAssertNotNil(user, "Expected the User not to be nil.")
     XCTAssertTrue(
-      user.publicKey.contains("-----BEGIN PGP PUBLIC KEY BLOCK-----"),
+      user.getPGPPublickey().contains("-----BEGIN PGP PUBLIC KEY BLOCK-----"),
       "Expected user to have valid public key")
     XCTAssertTrue(user.profilePicture.contains("data:image/png;base64,"))
   }

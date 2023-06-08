@@ -1,6 +1,11 @@
 import Foundation
 
 public struct PushUser: Decodable {
+  public struct PGPPublicKey: Decodable {
+    public let key: String
+    public let signature: String
+  }
+
   public let about: String?
   public let name: String?
   public let allowedNumMsg: Int
@@ -17,6 +22,20 @@ public struct PushUser: Decodable {
   public let wallets: String
   public let linkedListHash: String?
   public let nfts: [String]?
+
+  public func getPGPPublickey() -> String {
+    return PushUser.getPGPPublickey(publicKey: self.publicKey)
+  }
+
+  public static func getPGPPublickey(publicKey: String) -> String {
+    do {
+      return try JSONDecoder().decode(PGPPublicKey.self, from: publicKey.data(using: .utf8)!)
+        .key
+
+    } catch {
+      return publicKey
+    }
+  }
 }
 
 extension PushUser {
