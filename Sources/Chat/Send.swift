@@ -25,6 +25,8 @@ extension PushChat {
     public var receiverAddress: String
     public var account: String
     public var pgpPrivateKey: String
+    public var senderPgpPubicKey: String?
+    public var receiverPgpPubicKey: String?
     public var env: ENV = .STAGING
 
     public init(
@@ -90,25 +92,59 @@ extension PushChat {
     }
   }
 
+  static func encryptAndSign(
+    messageContent: String, senderPgpPrivateKey: String, senderPublicKey: String,
+    receiverPublicKey: String
+  ) throws -> (String, String, String) {
+
+    let aesKey = getRandomHexString(length: 15)
+    let cipherText = AESCBCHelper.encrypt(messageText: messageContent, secretKey: aesKey)
+    let encryptedAES = try Pgp.pgpEncryptV2(
+      message: aesKey, userPublicPGP: senderPublicKey,
+      anotherUserPublicPGPG: receiverPublicKey)
+
+    let sig = try Pgp.sign(message: cipherText, privateKey: senderPgpPrivateKey)
+
+    return (
+      cipherText,
+      encryptedAES,
+      sig
+    )
+  }
+
   static func getSendMessagePayload(_ options: SendOptions, shouldEncrypt: Bool = true) async throws
     -> SendMessagePayload
   {
-    if !shouldEncrypt {
-      return SendMessagePayload(
-        fromDID: options.account, toDID: options.receiverAddress,
-        fromCAIP10: options.account, toCAIP10: options.receiverAddress,
-        messageContent: options.messageContent, messageType: options.messageType,
-        signature: "", encType: "PlainText", encryptedSecret: "", sigType: "pgp")
+
+    var encType = "PlainText"
+    var (signature, encryptedSecret, messageConent) = ("", "", options.messageContent)
+
+    if shouldEncrypt {
+      let anotherUser = try await PushUser.get(account: options.receiverAddress, env: options.env)!
+      let senderUser = try await PushUser.get(account: options.account, env: options.env)!
+
+      if anotherUser.getPGPPublickey().contains("-----BEGIN PGP") {
+        encType = "pgp"
+
+        (messageConent, encryptedSecret, signature) = try PushChat.encryptAndSign(
+          messageContent: options.messageContent,
+          senderPgpPrivateKey: options.pgpPrivateKey,
+          senderPublicKey: senderUser.getPGPPublickey(),
+          receiverPublicKey: anotherUser.getPGPPublickey()
+        )
+      }
+
     }
 
     return SendMessagePayload(
       fromDID: options.account, toDID: options.receiverAddress,
       fromCAIP10: options.account, toCAIP10: options.receiverAddress,
-      messageContent: options.messageContent, messageType: options.messageType,
-      signature: "", encType: "PlainText", encryptedSecret: "", sigType: "pgp")
+      messageContent: messageConent, messageType: options.messageType,
+      signature: signature, encType: encType, encryptedSecret: encryptedSecret, sigType: "pgp")
   }
 
   public static func send(_ chatOptions: SendOptions) async throws -> Message {
+
     let senderAddress = walletToPCAIP10(account: chatOptions.account)
     let receiverAddress = walletToPCAIP10(account: chatOptions.receiverAddress)
 
@@ -124,8 +160,7 @@ extension PushChat {
   }
 
   public static func sendMessage(_ sendOptions: SendOptions) async throws -> Message {
-    let enctyptMessage = false
-
+    let enctyptMessage = true
     let sendMessagePayload = try await getSendMessagePayload(
       sendOptions, shouldEncrypt: enctyptMessage)
     return try await sendMessageService(payload: sendMessagePayload, env: sendOptions.env)
@@ -136,29 +171,16 @@ extension PushChat {
     let anotherUser = try await PushUser.get(account: sendOptions.receiverAddress, env: .STAGING)
 
     // else create the user frist and send unencrypted intent message
-    var enctyptMessage = true
+    // var enctyptMessage = true
 
     if anotherUser == nil {
       let _ = try await PushUser.createUserEmpty(
         userAddress: sendOptions.receiverAddress, env: sendOptions.env)
-      enctyptMessage = false
+      // enctyptMessage = false
     }
 
-    // if anotherUser == nil {
-    //   let _ = try await User.createUserEmpty(
-    //     userAddress: sendOptions.receiverAddress, env: sendOptions.env)
-    //   enctyptMessage = false
-    // } else {
-    //   if anotherUser!.publicKey.count == 0 {
-    //     enctyptMessage = false
-    //   }
-    // }
-    // if enctyptMessage {
-    //   let anotherUserPublicKey = anotherUser!.publicKey
-    // }
-
     let sendMessagePayload = try await getSendMessagePayload(
-      sendOptions, shouldEncrypt: enctyptMessage)
+      sendOptions, shouldEncrypt: false)
     return try await sendIntentService(payload: sendMessagePayload, env: sendOptions.env)
   }
 
@@ -202,11 +224,7 @@ extension PushChat {
         String(data: try JSONEncoder().encode(apiData), encoding: .utf8)!
     )
 
-    print("hahs", hash)
-    print("fff", approveOptions.privateKey)
-
     let sig = try Pgp.sign(message: hash, privateKey: approveOptions.privateKey)
-    print(sig)
 
     return ApproveRequestPayload(
       fromDID: approveOptions.fromDID, toDID: approveOptions.toDID, signature: sig,

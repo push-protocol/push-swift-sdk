@@ -14,8 +14,15 @@ class AESCBC: XCTestCase {
   }
 
   func testAESEncrypt() async throws {
-    let _ = "U2FsdGVkX18/SWOonW/UfODCpIrRFuOUKITIvRob3iE="
-    let _ = "XxJNyUTlCFrrbTG"
+    let message = "This is good place to find a city"
+    let passPhrase = getRandomString(withLength: 15)
+
+    let res = AESCBCHelper.encrypt(messageText: message, secretKey: passPhrase)
+
+    let msg = AESCBCHelper.decrypt(cipherText: res, secretKey: passPhrase)!
+    let msgString = String(data: msg, encoding: .utf8)!
+
+    XCTAssertEqual(msgString, message)
   }
 
   func testKeyGen() async throws {

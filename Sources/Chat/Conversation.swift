@@ -79,13 +79,17 @@ extension PushChat {
         return message.messageContent
       }
 
-      let secretKey: String = try Pgp.pgpDecrypt(
+      let secretKey = try Pgp.pgpDecrypt(
         cipherText: message.encryptedSecret, toPrivateKeyArmored: privateKeyArmored)
 
       let userMsg = AESCBCHelper.decrypt(cipherText: message.messageContent, secretKey: secretKey)!
-      let userMsgStr = String(data: userMsg, encoding: .utf8)!
+      let userMsgStr = String(data: userMsg, encoding: .utf8)
 
-      return userMsgStr
+      if userMsgStr == nil {
+        return "Unable to decrypt message"
+      }
+
+      return userMsgStr!
     } catch {
       return "Unable to decrypt message"
     }

@@ -231,4 +231,20 @@ public struct Pgp {
     }
     return decryptedString
   }
+
+  public static func pgpEncryptV2(
+    message: String, userPublicPGP: String, anotherUserPublicPGPG: String
+  ) throws -> String {
+
+    let pkData1 = try Armor.readArmored(userPublicPGP)
+    let publicKey1 = try ObjectivePGP.readKeys(from: pkData1).first!
+
+    let pkData2 = try Armor.readArmored(anotherUserPublicPGPG)
+    let publicKey2 = try ObjectivePGP.readKeys(from: pkData2).first!
+
+    let messsageData = message.data(using: .utf8)!
+    let encrypted = try ObjectivePGP.encrypt(
+      messsageData, addSignature: false, using: [publicKey1, publicKey2])
+    return Armor.armored(encrypted, as: .message)
+  }
 }
