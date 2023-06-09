@@ -30,7 +30,7 @@ class SendChatsTests: XCTestCase {
     let threadHash = try await PushChat.ConversationHash(
       conversationId: recipientAddress, account: senderAddress)!
     let latestMessage = try await PushChat.History(
-      threadHash: threadHash, limit: 1, pgpPrivateKey: senderPgpPk, env: .STAGING
+      threadHash: threadHash, limit: 1, pgpPrivateKey: senderPgpPk, toDecrypt: true, env: .STAGING
     ).first!.messageContent
 
     XCTAssertEqual(latestMessage, messageToSen)
@@ -55,7 +55,7 @@ class SendChatsTests: XCTestCase {
     let threadHash = try await PushChat.ConversationHash(
       conversationId: recipientAddress, account: senderAddress)!
     let latestMessage = try await PushChat.History(
-      threadHash: threadHash, limit: 1, pgpPrivateKey: senderPgpPk, env: .STAGING
+      threadHash: threadHash, limit: 1, pgpPrivateKey: senderPgpPk, toDecrypt: true, env: .STAGING
     ).first!.messageContent
 
     XCTAssertEqual(latestMessage, messageToSen)
@@ -81,7 +81,7 @@ class SendChatsTests: XCTestCase {
     let threadHash = try await PushChat.ConversationHash(
       conversationId: recipientAddress, account: senderAddress)!
     let latestMessage1 = try await PushChat.History(
-      threadHash: threadHash, limit: 1, pgpPrivateKey: senderPgpPk, env: .STAGING
+      threadHash: threadHash, limit: 1, pgpPrivateKey: senderPgpPk, toDecrypt: true, env: .STAGING
     ).first!.messageContent
 
     let _ = try await Push.PushChat.send(
@@ -96,7 +96,7 @@ class SendChatsTests: XCTestCase {
     let threadHash2 = try await PushChat.ConversationHash(
       conversationId: recipientAddress, account: senderAddress)!
     let latestMessage2 = try await PushChat.History(
-      threadHash: threadHash2, limit: 1, pgpPrivateKey: senderPgpPk, env: .STAGING
+      threadHash: threadHash2, limit: 1, pgpPrivateKey: senderPgpPk, toDecrypt: true, env: .STAGING
     ).first!.messageContent
 
     XCTAssertEqual(latestMessage1, messageToSen1)

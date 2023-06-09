@@ -40,7 +40,8 @@ class GetChatsTests: XCTestCase {
       conversationId: "0x4D5bE92D510300ceF50a2FC03534A95b60028950", account: userAddress)!
 
     let messages = try await PushChat.History(
-      threadHash: converationHash, limit: 5, pgpPrivateKey: pgpPrivateKey, env: .STAGING)
+      threadHash: converationHash, limit: 5, pgpPrivateKey: pgpPrivateKey, toDecrypt: true,
+      env: .STAGING)
 
     for msg in messages {
       XCTAssert(msg.messageContent.count > 0)
