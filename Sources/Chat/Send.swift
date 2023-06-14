@@ -144,6 +144,12 @@ extension PushChat {
   }
 
   public static func send(_ chatOptions: SendOptions) async throws -> Message {
+    if isGroupChatId(chatOptions.receiverAddress){
+      // do the group chat
+      // find the group type
+      // if group is public then no encryption
+      // if group private then do the encryption
+    }
 
     let senderAddress = walletToPCAIP10(account: chatOptions.account)
     let receiverAddress = walletToPCAIP10(account: chatOptions.receiverAddress)
@@ -255,6 +261,3 @@ extension PushChat {
   }
 
 }
-
-// let bodyToBeHashed = "{\"fromDID\":\"\(sendOptions.account)\",\"toDID\":\"\(sendOptions.receiverAddress)\",\"messageContent\":\"\(sendOptions.messageContent)\",\"messageType\":\"\(sendOptions.messageType)\"}"
-//let messageHash = generateSHA256Hash(msg: bodyToBeHashed)

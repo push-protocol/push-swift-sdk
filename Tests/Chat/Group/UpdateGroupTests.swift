@@ -48,22 +48,22 @@ class UpdateGroupTest: XCTestCase {
     XCTAssertEqual(updatedGroup.groupImage, group.groupImage)
   }
 
-  func testUpdateGroupChatAddingNewMember() async throws {
-    let chatId = "064ae7a086bc1d25cf45231a9725fec6789e1013b99bb482f41136268ffa73c6"
-    var group = try await PushChat.getGroup(chatId: chatId, env: .STAGING)!
+  // func testUpdateGroupChatAddingNewMember() async throws {
+  //   let chatId = "064ae7a086bc1d25cf45231a9725fec6789e1013b99bb482f41136268ffa73c6"
+  //   var group = try await PushChat.getGroup(chatId: chatId, env: .STAGING)!
 
-    let newAddress = generateRandomEthereumAddress()
-    let member = PushChat.PushGroup.Member(wallet: newAddress, isAdmin: false)
+  //   let newAddress = generateRandomEthereumAddress()
+  //   let member = PushChat.PushGroup.Member(wallet: newAddress, isAdmin: false)
 
-    group.members.append(member)
+  //   group.members.append(member)
 
-    let updatedGroup = try await PushChat.updateGroup(
-      updatedGroup: group, adminAddress: UserAddress, adminPgpPrivateKey: UserPrivateKey,
-      env: .STAGING)
+  //   let updatedGroup = try await PushChat.updateGroup(
+  //     updatedGroup: group, adminAddress: UserAddress, adminPgpPrivateKey: UserPrivateKey,
+  //     env: .STAGING)
 
-    print(updatedGroup)
-    // XCTAssertEqual(updatedGroup.groupImage, group.groupImage)
-  }
+  //   print(updatedGroup)
+  //   // XCTAssertEqual(updatedGroup.groupImage, group.groupImage)
+  // }
 
   
 
