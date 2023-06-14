@@ -54,6 +54,16 @@ public func addressToCaip10(env: ENV, address: String) throws -> String {
   throw AddressError.InvalidAddress
 }
 
+public func addressesToCaip10(env: ENV, addresses: [String]) throws -> [String] {
+  var _addresses: [String] = []
+
+  for addrs in addresses {
+    try _addresses.append(addressToCaip10(env: env, address: addrs))
+  }
+
+  return _addresses
+}
+
 public func pCAIP10ToWallet(address: String) -> String {
   return address.replacingOccurrences(of: "eip155:", with: "")
 }
@@ -67,6 +77,16 @@ public func walletToPCAIP10(account: String) -> String {
     return account
   }
   return "eip155:\(account)"
+}
+
+public func walletsToPCAIP10(accounts: [String]) -> [String] {
+  var _addresses: [String] = []
+
+  for acc in accounts {
+    _addresses.append(walletToPCAIP10(account: acc))
+  }
+
+  return _addresses
 }
 
 public func walletToCAIPEth(account: String, env: ENV) -> String {
