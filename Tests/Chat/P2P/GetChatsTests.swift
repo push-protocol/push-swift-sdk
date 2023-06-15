@@ -83,7 +83,7 @@ class GetChatsTests: XCTestCase {
 
     let userReqs = try await PushChat.requests(
       options: PushChat.RequestOptionsType(account: userAddress, pgpPrivateKey: pgpKey))
-    
+
     XCTAssertEqual(userReqs[0].msg!.messageContent, messageToSen1)
   }
 

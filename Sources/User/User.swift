@@ -22,6 +22,7 @@ public struct PushUser: Decodable {
   public let wallets: String
   public let linkedListHash: String?
   public let nfts: [String]?
+  public let blockedUsersList: [String]?
 
   public func getPGPPublickey() -> String {
     return PushUser.getPGPPublickey(publicKey: self.publicKey)
