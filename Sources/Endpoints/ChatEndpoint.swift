@@ -78,4 +78,33 @@ extension PushEndpoint {
     )
   }
 
+  static func createChatGroup(
+    env: ENV
+  ) throws -> Self {
+    return PushEndpoint(
+      env: env,
+      path: "chat/groups"
+    )
+  }
+
+  static func updatedChatGroup(
+    chatId: String,
+    env: ENV
+  ) throws -> Self {
+    return PushEndpoint(
+      env: env,
+      path: "chat/groups/\(chatId)"
+    )
+  }
+
+  static func getGroup(
+    chatId: String,
+    env: ENV
+  ) throws -> Self {
+    return PushEndpoint(
+      env: env,
+      path: "chat/groups/\(chatId)"
+    )
+  }
+
 }

@@ -3,8 +3,8 @@ import Foundation
 public struct PushChat {
   public struct Feeds: Decodable {
     public var msg: Message?
-    public var did: String
-    public var wallets: String
+    public var did: String?
+    public var wallets: String?
     public var profilePicture: String?
     public var publicKey: String?
     public var about: String?
@@ -71,7 +71,6 @@ public struct PushChat {
     do {
       let (data, _) = try await URLSession.shared.data(from: url)
       let response = try JSONDecoder().decode(GetChatsResponse.self, from: data)
-
       // TODO:
       let feeds: [Feeds] = try await getInboxLists(
         chats: response.chats,

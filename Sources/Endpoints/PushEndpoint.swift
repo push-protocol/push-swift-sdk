@@ -42,6 +42,15 @@ extension PushEndpoint {
     )
   }
 
+  static func updateUser(
+    account userAddress: String,
+    env: ENV
+  ) -> URL {
+
+    let endPoint = "https://" + ENV.getHost(withEnv: env) + "/apis/v2/users/\(userAddress)/profile"
+    return URL(string: endPoint)!
+  }
+
   static func getFeeds(
     options: PushUser.FeedsOptionsType,
     env: ENV

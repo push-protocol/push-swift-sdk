@@ -30,6 +30,10 @@ public func getFallbackETHCAIPAddress(env: ENV, address: String) -> String {
   return "eip155:\(chainId):\(address)"
 }
 
+public func isGroupChatId(_ chatId: String) -> Bool {
+  return chatId.count == 64
+}
+
 public func validateCAIP(env: ENV, address: String) -> Bool {
   let splittedAddress = address.split(separator: ":")
   if splittedAddress.count == 3 {
@@ -45,6 +49,10 @@ public func validateCAIP(env: ENV, address: String) -> Bool {
 }
 
 public func addressToCaip10(env: ENV, address: String) throws -> String {
+  if isGroupChatId(address) {
+    return address
+  }
+
   if validateCAIP(env: env, address: address) {
     return address
   }
@@ -54,11 +62,27 @@ public func addressToCaip10(env: ENV, address: String) throws -> String {
   throw AddressError.InvalidAddress
 }
 
+public func addressesToCaip10(env: ENV, addresses: [String]) throws -> [String] {
+  var _addresses: [String] = []
+
+  for addrs in addresses {
+    try _addresses.append(addressToCaip10(env: env, address: addrs))
+  }
+
+  return _addresses
+}
+
 public func pCAIP10ToWallet(address: String) -> String {
+  if isGroupChatId(address) {
+    return address
+  }
   return address.replacingOccurrences(of: "eip155:", with: "")
 }
 
 public func walletToPCAIP10(account: String) -> String {
+  if isGroupChatId(account) {
+    return account
+  }
   let splittedAddress = account.split(separator: ":")
   if splittedAddress.count == 3 {
     return "eip155:" + splittedAddress[2]
@@ -67,6 +91,16 @@ public func walletToPCAIP10(account: String) -> String {
     return account
   }
   return "eip155:\(account)"
+}
+
+public func walletsToPCAIP10(accounts: [String]) -> [String] {
+  var _addresses: [String] = []
+
+  for acc in accounts {
+    _addresses.append(walletToPCAIP10(account: acc))
+  }
+
+  return _addresses
 }
 
 public func walletToCAIPEth(account: String, env: ENV) -> String {
