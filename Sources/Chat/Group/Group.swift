@@ -1,6 +1,7 @@
 public enum GroupChatError: Error {
   case ONE_OF_ACCOUNT_OR_SIGNER_REQUIRED
   case INVALID_ETH_ADDRESS
+  case CHAT_ID_NOT_FOUND
   case RUNTIME_ERROR(String)
 }
 
@@ -31,7 +32,7 @@ extension PushChat {
       public let isAdmin: Bool
       public let image: String?
 
-      public init(wallet: String, isAdmin: Bool, image:String, publicKey:String) {
+      public init(wallet: String, isAdmin: Bool, image: String, publicKey: String) {
         self.wallet = wallet
         self.isAdmin = isAdmin
         self.image = image

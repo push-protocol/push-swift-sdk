@@ -233,18 +233,19 @@ public struct Pgp {
   }
 
   public static func pgpEncryptV2(
-    message: String, userPublicPGP: String, anotherUserPublicPGPG: String
+    message: String, pgpPublicKeys: [String]
   ) throws -> String {
+    var publicKeys: [Key] = []
 
-    let pkData1 = try Armor.readArmored(userPublicPGP)
-    let publicKey1 = try ObjectivePGP.readKeys(from: pkData1).first!
-
-    let pkData2 = try Armor.readArmored(anotherUserPublicPGPG)
-    let publicKey2 = try ObjectivePGP.readKeys(from: pkData2).first!
+    for pgpKey in pgpPublicKeys {
+      let pkData = try Armor.readArmored(pgpKey)
+      let publicKey = try ObjectivePGP.readKeys(from: pkData).first!
+      publicKeys.append(publicKey)
+    }
 
     let messsageData = message.data(using: .utf8)!
     let encrypted = try ObjectivePGP.encrypt(
-      messsageData, addSignature: false, using: [publicKey1, publicKey2])
+      messsageData, addSignature: false, using: publicKeys)
     return Armor.armored(encrypted, as: .message)
   }
 }

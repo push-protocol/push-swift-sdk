@@ -12,7 +12,7 @@ class ConversationTests: XCTestCase {
     let converationHashNil = try await PushChat.ConversationHash(
       conversationId: "0xACFe0D180d0118FD4F3027Ab801cc862520570d1", account: userAddress)
 
-    XCTAssertEqual(converationHash.count,59)
+    XCTAssertEqual(converationHash.count, 59)
     XCTAssertEqual(converationHashNil, nil)
 
   }

@@ -2,7 +2,7 @@ import Push
 import XCTest
 
 class CreateGroupTest: XCTestCase {
-
+  // TODO: a user can only create 10 groups. So for the `UserPrivateKey` it fails
   // func testCreateGroupChat() async throws {
   //   let anotherUser = generateRandomEthereumAddress()
 

@@ -38,7 +38,8 @@ class UpdateGroupTest: XCTestCase {
     var group = try await PushChat.getGroup(chatId: chatId, env: .STAGING)!
 
     let newAddress = generateRandomEthereumAddress()
-    let newImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTED8xAAADMElEQVR4nOzVwQnAIBQFQYXff81RUkQCOyDj1YOPnbXWPmeTRef+/3O/OyBjzh3CD95BfqICMK0CMK0CMK0CMK0C\(newAddress)"
+    let newImage =
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTED8xAAADMElEQVR4nOzVwQnAIBQFQYXff81RUkQCOyDj1YOPnbXWPmeTRef+/3O/OyBjzh3CD95BfqICMK0CMK0CMK0CMK0C\(newAddress)"
 
     group.groupImage = newImage
     let updatedGroup = try await PushChat.updateGroup(
@@ -64,7 +65,5 @@ class UpdateGroupTest: XCTestCase {
   //   print(updatedGroup)
   //   // XCTAssertEqual(updatedGroup.groupImage, group.groupImage)
   // }
-
-  
 
 }

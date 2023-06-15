@@ -83,18 +83,8 @@ class GetChatsTests: XCTestCase {
 
     let userReqs = try await PushChat.requests(
       options: PushChat.RequestOptionsType(account: userAddress, pgpPrivateKey: pgpKey))
+    
     XCTAssertEqual(userReqs[0].msg!.messageContent, messageToSen1)
-
-    // accept intent
-    // let res = try await Push.PushChat.approve(
-    //   PushChat.ApproveOptions(
-    //     fromAddress: reqAddress, toAddress: userAddress, privateKey: pgpKey, env: .STAGING))
-
-    // print(res)
-    // assert combined DID
-    // XCTAssert(res.contains(userAddress))
-    // XCTAssert(res.contains(reqAddress))
-    // XCTAssert(res.contains("+"))
-
   }
+
 }

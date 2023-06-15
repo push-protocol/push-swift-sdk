@@ -87,6 +87,9 @@ extension PushChat {
         message.messageContent, encryptedSecret: message.encryptedSecret,
         privateKeyArmored: privateKeyArmored)
     } catch {
+      if isGroupChatId(message.toCAIP10) {
+        return "message encrypted before you join"
+      }
       return "Unable to decrypt message"
     }
   }
