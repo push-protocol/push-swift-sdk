@@ -214,7 +214,7 @@ extension PushChat {
 
   public static func sendIntent(_ sendOptions: SendOptions) async throws -> Message {
     // check if user exists
-    let anotherUser = try await PushUser.get(account: sendOptions.receiverAddress, env: .STAGING)
+    let anotherUser = try await PushUser.get(account: sendOptions.receiverAddress, env: sendOptions.env)
 
     // else create the user frist and send unencrypted intent message
     if anotherUser == nil {

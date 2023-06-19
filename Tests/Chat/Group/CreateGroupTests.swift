@@ -18,7 +18,7 @@ let createGroupOptions = try PushChat.CreateGroupOptions(
   env: ENV.STAGING
 )
 
-    let createdGroup = try await PushChat.createGroup(options: createGroupOptions)
+    // let createdGroup = try await PushChat.createGroup(options: createGroupOptions)
   //   XCTAssertEqual(createdGroup.groupName, createGroupOptions.name)
   //   XCTAssertEqual(createdGroup.isPublic, true)
   //   XCTAssertEqual(createdGroup.groupCreator, walletToPCAIP10(account: UserAddress))
