@@ -47,13 +47,10 @@ without having to write a lot of boilerplate code. All the heavy lifting is done
 
 
 ## 📚 Table of Contents
-- [📚 Table of Contents](#-table-of-contents)
-- [🧩 Modules](#modules)
-- [🚀 Getting Started](#-getting-started)
-- [🗺 Roadmap](#-roadmap)
-- [🤝 Contributing](#-contributing)
-- [📄 License](#-license)
-- [👏 Acknowledgments](#-acknowledgments)
+- [Modules](#-modules)
+- [Getting Started](#-getting-started)
+- [Resources](#resources)
+- [Contributing](#contributing)
 
 ---
 
@@ -305,6 +302,14 @@ swift test
 ```
 
 ---
+
+## Resources
+- **[Website](https://push.org)** To checkout our Product.
+- **[Docs](https://docs.push.org/developers/)** For comprehensive documentation.
+- **[Blog](https://medium.com/push-protocol)** To learn more about our partners, new launches, etc.
+- **[Discord](discord.gg/pushprotocol)** for support and discussions with the community and the team.
+- **[GitHub](https://github.com/ethereum-push-notification-service)** for source code, project board, issues, and pull requests.
+- **[Twitter](https://twitter.com/pushprotocol)** for the latest updates on the product and published blogs.
 
 
 ## Contributing
