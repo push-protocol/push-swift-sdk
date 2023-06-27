@@ -71,14 +71,14 @@ public struct AESGCMHelper {
     )
 
     let res = try AES.GCM.open(box, using: derivedKey)
-    return String(data: res, encoding: .utf8)!
+    return try res.toString()
   }
 
   public static func encrypt(message: String, secret: String, nonceHex: String, saltHex: String)
     throws -> String
   {
     // Chat AES Info
-    let messageData = message.data(using: .utf8)!
+    let messageData = try message.toData()
     let nonce = hexToData(characters: nonceHex)
     let salt = hexToData(characters: saltHex)
 
@@ -112,7 +112,7 @@ public struct AESGCMHelper {
     )
     let sealedBox = try AES.GCM.SealedBox(combined: cipherData)
     let decryptedData = try AES.GCM.open(sealedBox, using: derivedKey)
-    return String(data: decryptedData, encoding: .utf8)!
+    return try decryptedData.toString()
   }
 
   func encryptAES(message: Data, key: SymmetricKey) throws -> Data {

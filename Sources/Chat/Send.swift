@@ -97,7 +97,7 @@ extension PushChat {
   ) throws -> (String, String, String) {
 
     let aesKey = getRandomHexString(length: 15)
-    let cipherText = AESCBCHelper.encrypt(messageText: messageContent, secretKey: aesKey)
+    let cipherText = try AESCBCHelper.encrypt(messageText: messageContent, secretKey: aesKey)
     let encryptedAES = try Pgp.pgpEncryptV2(
       message: aesKey, pgpPublicKeys: publicKeys)
 
@@ -139,8 +139,14 @@ extension PushChat {
   }
 
   static func getP2PChatPublicKeys(_ options: SendOptions) async throws -> [String] {
-    let anotherUser = try await PushUser.get(account: options.receiverAddress, env: options.env)!
-    let senderUser = try await PushUser.get(account: options.account, env: options.env)!
+    guard
+      let anotherUser = try await PushUser.get(account: options.receiverAddress, env: options.env)
+    else {
+      throw PushChat.ChatError.userNotFound
+    }
+    guard let senderUser = try await PushUser.get(account: options.account, env: options.env) else {
+      throw PushChat.ChatError.userNotFound
+    }
     let publicKeys = [senderUser.getPGPPublickey(), anotherUser.getPGPPublickey()]
 
     // validate the public keys else return empty
@@ -214,7 +220,8 @@ extension PushChat {
 
   public static func sendIntent(_ sendOptions: SendOptions) async throws -> Message {
     // check if user exists
-    let anotherUser = try await PushUser.get(account: sendOptions.receiverAddress, env: sendOptions.env)
+    let anotherUser = try await PushUser.get(
+      account: sendOptions.receiverAddress, env: sendOptions.env)
 
     // else create the user frist and send unencrypted intent message
     if anotherUser == nil {
@@ -247,7 +254,7 @@ extension PushChat {
       throw URLError(.badServerResponse)
     }
 
-    return String(data: data, encoding: .utf8)!
+    return try data.toString()
   }
 
   static func getApprovePayload(_ approveOptions: ApproveOptions) async throws
@@ -263,9 +270,9 @@ extension PushChat {
       fromDID: approveOptions.fromDID,
       toDID: approveOptions.toDID, status: "Approved")
 
+    let jsonString = try JSONEncoder().encode(apiData).toString()
     let hash = generateSHA256Hash(
-      msg:
-        String(data: try JSONEncoder().encode(apiData), encoding: .utf8)!
+      msg: jsonString
     )
 
     let sig = try Pgp.sign(message: hash, privateKey: approveOptions.privateKey)

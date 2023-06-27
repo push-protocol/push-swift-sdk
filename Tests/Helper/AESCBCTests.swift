@@ -7,7 +7,7 @@ class AESCBC: XCTestCase {
     let ciphertextOriginal = "U2FsdGVkX18/SWOonW/UfODCpIrRFuOUKITIvRob3iE="
     let key = "XxJNyUTlCFrrbTG"
 
-    let originalMsg = AESCBCHelper.decrypt(cipherText: ciphertextOriginal, secretKey: key)!
+    let originalMsg = try AESCBCHelper.decrypt(cipherText: ciphertextOriginal, secretKey: key)!
     let msg = String(data: originalMsg, encoding: .utf8)
 
     XCTAssertEqual(msg, "pong")
@@ -17,9 +17,9 @@ class AESCBC: XCTestCase {
     let message = "This is good place to find a city"
     let passPhrase = getRandomString(withLength: 15)
 
-    let res = AESCBCHelper.encrypt(messageText: message, secretKey: passPhrase)
+    let res = try AESCBCHelper.encrypt(messageText: message, secretKey: passPhrase)
 
-    let msg = AESCBCHelper.decrypt(cipherText: res, secretKey: passPhrase)!
+    let msg = try AESCBCHelper.decrypt(cipherText: res, secretKey: passPhrase)!
     let msgString = String(data: msg, encoding: .utf8)!
 
     XCTAssertEqual(msgString, message)
@@ -29,7 +29,7 @@ class AESCBC: XCTestCase {
     let ciphertextOriginal = "U2FsdGVkX18/SWOonW/UfODCpIrRFuOUKITIvRob3iE="
     let key = "XxJNyUTlCFrrbTG"
 
-    let (secret, iv, cipher) = AESCBCHelper.getAESParams(
+    let (secret, iv, cipher) = try AESCBCHelper.getAESParams(
       ciphertextCombined: ciphertextOriginal, passPhrase: key)
 
     let (expectedSecret, expectedIv, expectedCipher) = (

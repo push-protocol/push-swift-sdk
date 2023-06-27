@@ -15,7 +15,10 @@ extension PushUser {
 
     let wallet = try await Wallet(signer: signer)
 
-    let jsonData = encryptedPrivateKey.data(using: .utf8)!
+    guard let jsonData = encryptedPrivateKey.data(using: .utf8) else {
+      throw UtilsError.ERROR_CONVERTING_ENCRYPTED_PRIVATEkEY_TO_DATA
+    }
+
     let decoder = JSONDecoder()
     let pp = try decoder.decode(EncryptedPrivateKey.self, from: jsonData)
 

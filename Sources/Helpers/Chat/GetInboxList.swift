@@ -23,18 +23,18 @@ private func decryptAndVerifySignature(
   message: Message
 ) async throws -> String {
   do {
-    print("doing")
     let secretKey: String = try Pgp.pgpDecrypt(
       cipherText: encryptedSecretKey, toPrivateKeyArmored: privateKeyArmored)
 
-    print("doing")
-    let userMsg = AESCBCHelper.decrypt(cipherText: cipherText, secretKey: secretKey)!
-    print("doing")
-    let userMsgStr = String(data: userMsg, encoding: .utf8)!
-    print("User", userMsg)
+    guard let userMsg = try AESCBCHelper.decrypt(cipherText: cipherText, secretKey: secretKey)
+    else {
+      throw PushChat.ChatError.chatError("Failed to decrypt the private key")
+    }
+
+    let userMsgStr = try userMsg.toString()
     return userMsgStr
   } catch {
-    return "Abishek Unable to decrypt message \(error)"
+    return "Unable to decrypt message \(error)"
   }
 }
 
@@ -73,8 +73,7 @@ public func getInboxLists(
   pgpPrivateKey: String?,
   env: ENV
 ) async throws -> [PushChat.Feeds] {
-  let connectedUser = try await PushUser.get(account: user, env: env)
-  if connectedUser == nil {
+  guard let connectedUser = try await PushUser.get(account: user, env: env) else {
     throw PushChat.ChatError.invalidAddress
   }
   var feeds: [PushChat.Feeds] = []
@@ -123,7 +122,7 @@ public func getInboxLists(
   if toDecrypt {
     return try await decryptFeeds(
       feeds: feeds,
-      connectedUser: connectedUser!,
+      connectedUser: connectedUser,
       pgpPrivateKey: pgpPrivateKey,
       env: env
     )

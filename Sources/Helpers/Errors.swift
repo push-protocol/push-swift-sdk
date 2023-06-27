@@ -1,0 +1,5 @@
+public enum UtilsError: Error {
+  case ERROR_CONVERTING_ENCRYPTED_PRIVATEkEY_TO_DATA
+  case ERROR_CONVERTING_MSG_HASH_TO_DATA
+  case RUNTIME_ERROR(String)
+}

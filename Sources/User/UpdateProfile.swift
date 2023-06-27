@@ -14,19 +14,25 @@ extension PushUser {
     }
   }
 
-  public static func blockUsers(addressesToBlock:[String], account: String, pgpPrivateKey: String,env:ENV) async throws->Bool {
+  public static func blockUsers(
+    addressesToBlock: [String], account: String, pgpPrivateKey: String, env: ENV
+  ) async throws -> Bool {
     let updated = PushUser.UpdatedUserProfile(
       blockedUsersList: addressesToBlock)
 
-    return  try await PushUser.updateUserProfile(
-      account: account, pgpPrivateKey: pgpPrivateKey, updatedProfile: updated, env:env
+    return try await PushUser.updateUserProfile(
+      account: account, pgpPrivateKey: pgpPrivateKey, updatedProfile: updated, env: env
     )
   }
 
   public static func updateUserProfile(
     account: String, pgpPrivateKey: String, updatedProfile: PushUser.UpdatedUserProfile, env: ENV
   ) async throws -> Bool {
-    let user = try await Push.PushUser.get(account: account, env: env)!
+
+    guard let user = try await Push.PushUser.get(account: account, env: env) else {
+      throw UserError.USER_NOT_CREATED
+    }
+
     let (newProfile, updateUserHash) = try getUpdateProfileHash(
       user: user, newProfile: updatedProfile)
 
@@ -34,8 +40,6 @@ extension PushUser {
       message: updateUserHash, privateKey: pgpPrivateKey)
     let sigType = "pgpv2"
     let verificationProof = "\(sigType):\(signature)"
-    
-    print(verificationProof)
 
     let payload = UpdateUserPayload(
       name: newProfile.name, desc: newProfile.desc, picture: newProfile.picture,
@@ -60,15 +64,13 @@ extension PushUser {
       throw URLError(.badServerResponse)
     }
 
-        print(String(data:request.httpBody!,encoding: .utf8)!)
     guard (200...299).contains(httpResponse.statusCode) else {
       print(httpResponse.statusCode, String(data: data, encoding: .utf8)!)
       throw URLError(.badServerResponse)
     }
 
-    if httpResponse.statusCode == 201{
-    //   print(httpResponse.statusCode, String(data: data, encoding: .utf8)!)
-        return true
+    if httpResponse.statusCode == 201 {
+      return true
     }
 
     return false
@@ -106,10 +108,9 @@ func getUpdateProfileHash(user: PushUser, newProfile: PushUser.UpdatedUserProfil
     ? newProfile.blockedUsersList!
     : user.blockedUsersList != nil ? user.blockedUsersList! : []
 
+  let blockUserAddresses = flatten_address_list(addresses: newProfile.blockedUsersList!)
   let jsonString =
-    "{\"name\":\(name),\"desc\":\(name),\"picture\":\(picture),\"blockedUsersList\":\(blockedUsersList)}"
-
-    // print("json string was",jsonString)
+    "{\"name\":\(name),\"desc\":\(name),\"picture\":\(picture),\"blockedUsersList\":\(blockUserAddresses)}"
 
   let newUserProfile = UpdateUseProfile(
     name: (name == "null" ? nil : name.replacingOccurrences(of: "\"", with: "")),
@@ -119,4 +120,19 @@ func getUpdateProfileHash(user: PushUser, newProfile: PushUser.UpdatedUserProfil
   let hash = generateSHA256Hash(msg: jsonString)
 
   return (newUserProfile, hash)
+}
+
+func flatten_address_list(addresses: [String]) -> String {
+  var res = "["
+  var counter = 0
+  for el in addresses {
+    res += "\"\(el)\""
+    if counter + 1 != addresses.count {
+      res += ","
+    }
+    counter += 1
+  }
+  res += "]"
+
+  return res
 }
