@@ -129,13 +129,14 @@ public struct Pgp {
 
   public func getSecretKey() -> String {
     let pgpsec = Armor.armored(self.secretKey, as: .secretKey)
-    return filterPgpInfo(pgpsec)
+    return pgpsec
+    // return filterPgpInfo(pgpsec)
   }
 
   public static func GenerateNewPgpPair() throws -> Self {
     let key = KeyGenerator(
-      algorithm: .RSA, keyBitsLength: 2048, cipherAlgorithm: .AES128, hashAlgorithm: .SHA256
-    ).generate(for: "", passphrase: "")
+      algorithm: .RSA, keyBitsLength: 2048, cipherAlgorithm: .plaintext, hashAlgorithm: .SHA256
+    ).generate(for: "", passphrase: nil)
 
     let publicKey = try key.export(keyType: .public)
     let secretKey = try key.export(keyType: .secret)

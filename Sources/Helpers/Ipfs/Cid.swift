@@ -13,6 +13,7 @@ public struct Message: Codable {
   public var encType: String
   public var encryptedSecret: String
   public var link: String?
+  public var cid: String?
 }
 
 public func getCID(env: ENV, cid: String) async throws -> Message {

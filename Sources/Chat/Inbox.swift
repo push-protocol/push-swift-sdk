@@ -49,9 +49,11 @@ public struct PushChat {
     var chats: [Feeds]
   }
 
-  enum ChatError: Error {
+  public enum ChatError: Error {
     case invalidAddress
     case decryptedPrivateKeyNecessary
+    case userNotFound
+    case dectyptionFalied
     case chatError(String)
   }
 

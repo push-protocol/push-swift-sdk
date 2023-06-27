@@ -2,6 +2,7 @@ import Push
 import XCTest
 
 class SendChatsTests: XCTestCase {
+
   func testSendMessage() async throws {
     let recipientAddress = generateRandomEthereumAddress()
     let senderAddress = UserAddress
@@ -189,6 +190,7 @@ class SendChatsTests: XCTestCase {
 
     XCTAssertEqual(res, messageToSen2)
   }
+
 }
 
 let UserAddress = "0xD26A7BF7fa0f8F1f3f73B056c9A67565A6aFE63c"

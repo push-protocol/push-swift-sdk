@@ -1,6 +1,32 @@
 import CryptoKit
 import Foundation
 
+extension String {
+  enum ConversionError: Error {
+    case encodingFailed
+  }
+
+  func toData(using encoding: String.Encoding = .utf8) throws -> Data {
+    guard let data = self.data(using: encoding) else {
+      throw ConversionError.encodingFailed
+    }
+    return data
+  }
+}
+
+extension Data {
+  enum ConversionError: Error {
+    case encodingFailed
+  }
+
+  func toString(using encoding: String.Encoding = .utf8) throws -> String {
+    guard let str = String(data: self, encoding: .utf8) else {
+      throw ConversionError.encodingFailed
+    }
+    return str
+  }
+}
+
 public func generateSHA256Hash(msg: String) -> String {
   let data = msg.data(using: .utf8)!
   let hash = SHA256.hash(data: data)

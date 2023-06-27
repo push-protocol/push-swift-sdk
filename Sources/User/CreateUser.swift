@@ -16,12 +16,6 @@ extension PushUser {
     public var level: ProgressLevel
   }
 
-  public enum UserError: Error {
-    case ONE_OF_ACCOUNT_OR_SIGNER_REQUIRED
-    case INVALID_ETH_ADDRESS
-    case RUNTIME_ERROR(String)
-  }
-
   private struct CreateUserHashData: Encodable {
     var caip10: String
     var did: String
@@ -116,8 +110,11 @@ extension PushUser {
       let encryptedPrivateKey: EncryptedPrivateKeyV2 = try await keyPairs.encryptPGPKey(
         wallet: wallet)
 
-      let encryptedPrivateKeyString = String(
-        data: try JSONEncoder().encode(encryptedPrivateKey), encoding: .utf8)!
+      guard let encryptedPrivateKeyData = try? JSONEncoder().encode(encryptedPrivateKey),
+        let encryptedPrivateKeyString = String(data: encryptedPrivateKeyData, encoding: .utf8)
+      else {
+        throw UtilsError.ERROR_CONVERTING_ENCRYPTED_PRIVATEkEY_TO_DATA
+      }
 
       options.progressHook?(
         ProgressHookType(
@@ -134,10 +131,15 @@ extension PushUser {
         encryptedPrivateKey: encryptedPrivateKeyString
       )
 
+      guard let apiDataString = String(data: try JSONEncoder().encode(apiData), encoding: .utf8)
+      else {
+        throw UtilsError.ERROR_CONVERTING_MSG_HASH_TO_DATA
+      }
       let hash = generateSHA256Hash(
         msg:
-          String(data: try JSONEncoder().encode(apiData), encoding: .utf8)!
+          apiDataString
       )
+
       let _ = try await wallet.getEip191Signature(message: hash, version: "v2")
 
       let updatedData = CreateUserAPIOptions(

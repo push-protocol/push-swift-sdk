@@ -104,16 +104,19 @@ extension PushChat {
       let secretKey = try Pgp.pgpDecrypt(
         cipherText: encryptedSecret, toPrivateKeyArmored: privateKeyArmored)
 
-      let userMsg = AESCBCHelper.decrypt(cipherText: message, secretKey: secretKey)!
+      guard let userMsg = try AESCBCHelper.decrypt(cipherText: message, secretKey: secretKey) else {
+        throw PushChat.ChatError.dectyptionFalied
+      }
+
       let userMsgStr = String(data: userMsg, encoding: .utf8)
 
       if userMsgStr == nil {
-        return "Unable to decrypt message"
+        throw PushChat.ChatError.dectyptionFalied
       }
 
       return userMsgStr!
     } catch {
-      return "Unable to decrypt message"
+      throw PushChat.ChatError.dectyptionFalied
     }
   }
 }

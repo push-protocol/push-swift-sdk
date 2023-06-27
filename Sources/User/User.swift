@@ -1,6 +1,14 @@
 import Foundation
 
 public struct PushUser: Decodable {
+
+  public enum UserError: Error {
+    case ONE_OF_ACCOUNT_OR_SIGNER_REQUIRED
+    case INVALID_ETH_ADDRESS
+    case USER_NOT_CREATED
+    case RUNTIME_ERROR(String)
+  }
+
   public struct PGPPublicKey: Decodable {
     public let key: String
     public let signature: String

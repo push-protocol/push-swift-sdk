@@ -3,33 +3,37 @@ import CryptoKit
 import Foundation
 
 public struct AESCBCHelper {
-  public static func decrypt(cipherText: String, secretKey: String) -> Data? {
-    let (secret, iv, chiper) = AESCBCHelper.getAESParams(
+  public static func decrypt(cipherText: String, secretKey: String) throws -> Data? {
+    let (secret, iv, chiper) = try AESCBCHelper.getAESParams(
       ciphertextCombined: cipherText, passPhrase: secretKey)
 
     let dec = AESCBCHelper._decrypt(data: chiper, key: secret, iv: iv)
     return dec
   }
 
-  public static func encrypt(messageText: String, secretKey: String) -> String {
-    // let _secrectKey = encodeToBase64(secretKey)
-    let passcode = secretKey.data(using: .utf8)!
+  public enum AES_CBC_ERROR: Error {
+    case AES_CBC_DECRYPTION_FAILED
+    case FAILED_TO_DECODE_AES_PARAMS
+  }
 
-    let cipherTextPrefix = "Salted__".data(using: .utf8)!
+  public static func encrypt(messageText: String, secretKey: String) throws -> String {
+    let passcode = try secretKey.toData()
+
+    let cipherTextPrefix = try "Salted__".toData()
     let salt = getRandomBytes(length: 8)
 
-    let messageData = messageText.data(using: .utf8)!
+    let messageData = try messageText.toData()
 
     let (originalkey, iv) = deriveKeyAndIV(passcode: passcode, salt: salt)
 
-    let originalCipher = _encrypt(data: messageData, key: originalkey, iv: iv)!
+    let originalCipher = try _encrypt(data: messageData, key: originalkey, iv: iv)
     let cipherPacked = cipherTextPrefix + salt + originalCipher
     let cipherBase64 = cipherPacked.base64EncodedString()
 
     return cipherBase64
   }
 
-  static func _encrypt(data: Data, key: Data, iv: Data) -> Data? {
+  static func _encrypt(data: Data, key: Data, iv: Data) throws -> Data {
     // Output buffer (with padding)
     let outputLength = data.count + kCCBlockSizeAES128
     var outputBuffer = [UInt8](
@@ -49,7 +53,7 @@ public struct AESCBCHelper {
       outputLength,
       &numBytesEncrypted)
     guard status == kCCSuccess else {
-      return nil
+      throw AESCBCHelper.AES_CBC_ERROR.AES_CBC_DECRYPTION_FAILED
     }
     let outputBytes = outputBuffer.prefix(numBytesEncrypted)
     return Data(outputBytes)
@@ -83,12 +87,16 @@ public struct AESCBCHelper {
     return Data(outputBytes)
   }
 
-  public static func getAESParams(ciphertextCombined: String, passPhrase: String) -> (
+  public static func getAESParams(ciphertextCombined: String, passPhrase: String) throws -> (
     Data, Data, Data
   ) {
+    guard let cipherDataAll = Data(base64Encoded: ciphertextCombined) else {
+      throw UtilsError.RUNTIME_ERROR("String")
+    }
 
-    let cipherDataAll = Data(base64Encoded: ciphertextCombined)!
-    let passcode = passPhrase.data(using: .utf8)!
+    guard let passcode = passPhrase.data(using: .utf8) else {
+      throw UtilsError.RUNTIME_ERROR("String")
+    }
 
     let salt = cipherDataAll[8..<16]
     let ciphertext = cipherDataAll[16...]
@@ -128,7 +136,7 @@ func deriveKeyAndIV(passcode: Data, salt: Data) -> (Data, Data) {
   return (originalkey, iv)
 }
 
-func encodeToBase64(_ string: String) -> String {
-  let data = string.data(using: .utf8)!
+func encodeToBase64(_ string: String) throws -> String {
+  let data = try string.toData()
   return data.base64EncodedString()
 }
