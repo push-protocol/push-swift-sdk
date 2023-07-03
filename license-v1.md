@@ -9,7 +9,7 @@ Parameters
 
 Licensor:             Push Org
 
-Licensed Work:        Push SDK
+Licensed Work:        Push Swift SDK
                       The Licensed Work is (c) 2022 ETHEREUM PUSH NOTIFICATION SERVICE LIMITED
 
 Additional Use Grant: Any uses listed and defined by Push Org
