@@ -10,8 +10,7 @@ src="https://res.cloudinary.com/drdjegqln/image/upload/v1686227558/Push-Logo-Sta
 </h1>
 
 <p align="center">
-  <i align="center">Push Protocol is a web3 communication network, enabling cross-chain notifications and messaging for 
-dapps, wallets, and services.🚀</i>
+  <i align="center">Push Protocol is a web3 communication network, enabling cross-chain notifications, messaging, video, and NFT chat for dapps, wallets, and services.🚀</i>
 </p>
 
 <h4 align="center">
@@ -109,7 +108,7 @@ Read how you can contribute <a href="https://github.com/ethereum-push-notificati
 Not sure where to start? Join our discord and we will help you get started!
 
 
-<a href="discord.gg/pushprotocol" title="Join Our Community"><img src="https://www.freepnglogos.com/uploads/discord-logo-png/playerunknown-battlegrounds-bgparty-15.png" width="200" alt="Discord" /></a>
+<a href="https://discord.gg/pushprotocol" title="Join Our Community"><img src="https://www.freepnglogos.com/uploads/discord-logo-png/playerunknown-battlegrounds-bgparty-15.png" width="200" alt="Discord" /></a>
 
 ## License
-Check out our License <a href='https://github.com/ethereum-push-notification-service/push-sdk/blob/main/license-v1.md'>HERE </a>
+Check out our License <a href='https://github.com/ethereum-push-notification-service/push-swift-sdk/blob/main/license-v1.md'>HERE </a>
