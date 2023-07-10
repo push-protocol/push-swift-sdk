@@ -24,7 +24,7 @@ extension PushChannel {
     }
 
     return
-      "{\"types\":{\"Unsubscribe\":[{\"name\":\"channel\",\"type\":\"address\"},{\"name\":\"unsubscriber\",\"type\":\"address\"},{\"name\":\"action\",\"type\":\"string\"}],\"EIP712Domain\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"chainId\",\"type\":\"uint256\"},{\"name\":\"verifyingContract\",\"type\":\"address\"}]},\"primaryType\":\"Unsubscribe\",\"domain\":{\"name\":\"EPNS COMM V1\",\"chainId\":\(_chainId),\"verifyingContract\":\"0xb3971BCef2D791bc4027BbfedFb47319A4AAaaAa\"},\"message\":{\"channel\":\"\(_channel)\",\"ubsubscriber\":\"\(_subscriber)\",\"action\":\"Unsubscribe\"}}"
+      "{\"types\":{\"Unsubscribe\":[{\"name\":\"channel\",\"type\":\"address\"},{\"name\":\"unsubscriber\",\"type\":\"address\"},{\"name\":\"action\",\"type\":\"string\"}],\"EIP712Domain\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"chainId\",\"type\":\"uint256\"},{\"name\":\"verifyingContract\",\"type\":\"address\"}]},\"primaryType\":\"Unsubscribe\",\"domain\":{\"name\":\"EPNS COMM V1\",\"chainId\":\(_chainId),\"verifyingContract\":\"0xb3971BCef2D791bc4027BbfedFb47319A4AAaaAa\"},\"message\":{\"channel\":\"\(_channel)\",\"unsubscriber\":\"\(_subscriber)\",\"action\":\"Unsubscribe\"}}"
   }
 
   public struct SubscribeOption {
