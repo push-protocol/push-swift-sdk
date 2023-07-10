@@ -17,24 +17,47 @@ extension PushUser {
   public static func blockUsers(
     addressesToBlock: [String], account: String, pgpPrivateKey: String, env: ENV
   ) async throws -> Bool {
-    let updated = PushUser.UpdatedUserProfile(
-      blockedUsersList: addressesToBlock)
+    
+    var currentUserProfile = try await PushUser.get(account: account, env: env)!.profile
+
+    var _addressToBlock:[String] = currentUserProfile.blockedUsersList != nil ? currentUserProfile.blockedUsersList! : []
+    _addressToBlock += walletsToPCAIP10(accounts:addressesToBlock)
+
+    currentUserProfile.blockedUsersList = _addressToBlock
+
 
     return try await PushUser.updateUserProfile(
-      account: account, pgpPrivateKey: pgpPrivateKey, updatedProfile: updated, env: env
+      account: account, pgpPrivateKey: pgpPrivateKey, newProfile: currentUserProfile, env: env
+    )
+  }
+
+  public static func unblockUsers(
+    addressesToUnblock: [String], account: String, pgpPrivateKey: String, env: ENV
+  ) async throws -> Bool {
+    
+    var currentUserProfile = try await PushUser.get(account: account, env: env)!.profile
+    var _addressToBlock:[String] = []
+
+    let addressAlreadyBlock:[String] = currentUserProfile.blockedUsersList != nil ? currentUserProfile.blockedUsersList! : []
+    let _addressesToUnblock = walletsToPCAIP10(accounts: addressesToUnblock)
+    
+    for addrs in addressAlreadyBlock{
+      if !_addressesToUnblock.contains(addrs){
+        _addressToBlock += [addrs]
+      }
+    }
+
+    currentUserProfile.blockedUsersList = _addressToBlock
+    return try await PushUser.updateUserProfile(
+      account: account, pgpPrivateKey: pgpPrivateKey, newProfile: currentUserProfile, env: env
     )
   }
 
   public static func updateUserProfile(
-    account: String, pgpPrivateKey: String, updatedProfile: PushUser.UpdatedUserProfile, env: ENV
+    account: String, pgpPrivateKey: String, newProfile: PushUser.UserProfile, env: ENV
   ) async throws -> Bool {
 
-    guard let user = try await Push.PushUser.get(account: account, env: env) else {
-      throw UserError.USER_NOT_CREATED
-    }
-
-    let (newProfile, updateUserHash) = try getUpdateProfileHash(
-      user: user, newProfile: updatedProfile)
+    let (newProfile, updateUserHash) = try getUpdateProfileHash(newProfile: newProfile)
 
     let signature = try Pgp.sign(
       message: updateUserHash, privateKey: pgpPrivateKey)
@@ -93,28 +116,25 @@ struct UpdateUseProfile: Codable {
   public var blockedUsersList: [String]
 }
 
-func getUpdateProfileHash(user: PushUser, newProfile: PushUser.UpdatedUserProfile) throws -> (
+func getUpdateProfileHash(newProfile: PushUser.UserProfile) throws -> (
   UpdateUseProfile, String
 ) {
 
-  let name =
-    newProfile.name != nil
-    ? "\"\(newProfile.name!)\"" : user.name != nil ? "\"\(user.name!)\"" : "null"
-  let picture =
-    newProfile.picture != nil
-    ? "\"\(newProfile.picture!)\"" : "\"\(user.profilePicture)\""
-  let blockedUsersList =
-    newProfile.blockedUsersList != nil
-    ? newProfile.blockedUsersList!
-    : user.blockedUsersList != nil ? user.blockedUsersList! : []
+  let _name = newProfile.name == nil ? "" : newProfile.name!
+  let _desc = newProfile.desc == nil ? "" : newProfile.desc!
+  
+  let name = "\"\(_name)\"" 
+  let desc = "\"\(_desc)\"" 
+  let picture = "\"\(newProfile.picture)\""
+  let blockedUsersList = newProfile.blockedUsersList!
 
   let blockUserAddresses = flatten_address_list(addresses: newProfile.blockedUsersList!)
   let jsonString =
-    "{\"name\":\(name),\"desc\":\(name),\"picture\":\(picture),\"blockedUsersList\":\(blockUserAddresses)}"
-
+    "{\"name\":\(name),\"desc\":\(desc),\"picture\":\(picture),\"blockedUsersList\":\(blockUserAddresses)}"
+  
   let newUserProfile = UpdateUseProfile(
     name: (name == "null" ? nil : name.replacingOccurrences(of: "\"", with: "")),
-    desc: name.replacingOccurrences(of: "\"", with: ""),
+    desc: desc.replacingOccurrences(of: "\"", with: ""),
     picture: picture.replacingOccurrences(of: "\"", with: ""),
     blockedUsersList: blockedUsersList)
   let hash = generateSHA256Hash(msg: jsonString)
