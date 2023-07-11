@@ -45,7 +45,7 @@ public struct EncryptedPrivateKeyV2: Encodable {
 }
 
 func useEmptyPassPhrase(key: Key?) -> String? {
-  return ""
+  return nil
 }
 
 public struct Pgp {
@@ -134,12 +134,14 @@ public struct Pgp {
   }
 
   public static func GenerateNewPgpPair() throws -> Self {
-    let key = KeyGenerator(
-      algorithm: .RSA, keyBitsLength: 2048, cipherAlgorithm: .plaintext, hashAlgorithm: .SHA256
+    let key: Key = KeyGenerator(
+      algorithm: .RSA, keyBitsLength: 2048, cipherAlgorithm: .AES256, hashAlgorithm: .SHA1
     ).generate(for: "", passphrase: nil)
 
-    let publicKey = try key.export(keyType: .public)
     let secretKey = try key.export(keyType: .secret)
+    let publicKey = try key.export(keyType: .public)
+
+    print("la is", secretKey.count)
     return try Pgp(publicKey: publicKey, secretKey: secretKey)
   }
 

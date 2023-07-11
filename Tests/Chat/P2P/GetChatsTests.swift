@@ -65,7 +65,8 @@ class GetChatsTests: XCTestCase {
       ))
 
     let userReqs = try await PushChat.requests(
-      options: PushChat.RequestOptionsType(account: reqAddress, pgpPrivateKey: "", toDecrypt: false))
+      options: PushChat.RequestOptionsType(account: reqAddress, pgpPrivateKey: "", toDecrypt: false)
+    )
 
     XCTAssertEqual(userReqs[0].msg!.messageContent, messageToSen1)
   }

@@ -14,13 +14,13 @@ public struct PushUser: Decodable {
     public let signature: String
   }
 
-  public struct UserProfile:Decodable{
-    public var verificationProof:String?
-    public var profileVerificationProof:String?
-    public var picture:String
-    public var name:String?
-    public var desc:String?
-    public var blockedUsersList:[String]?
+  public struct UserProfile: Decodable {
+    public var verificationProof: String?
+    public var profileVerificationProof: String?
+    public var picture: String
+    public var name: String?
+    public var desc: String?
+    public var blockedUsersList: [String]?
   }
 
   public let did: String
@@ -30,7 +30,7 @@ public struct PushUser: Decodable {
   public let publicKey: String
   public let wallets: String
   public let nfts: [String]?
-  public let profile:UserProfile
+  public let profile: UserProfile
 
   public func getPGPPublickey() -> String {
     return PushUser.getPGPPublickey(publicKey: self.publicKey)

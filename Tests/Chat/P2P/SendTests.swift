@@ -78,13 +78,12 @@ class SendChatsTests: XCTestCase {
         account: senderAddress,
         pgpPrivateKey: senderPgpPk
       ))
-    
+
     let threadHash = try await PushChat.ConversationHash(
       conversationId: recipientAddress, account: senderAddress)!
     let latestMessage1 = try await PushChat.History(
       threadHash: threadHash, limit: 1, pgpPrivateKey: senderPgpPk, toDecrypt: true, env: .STAGING
     ).first!.messageContent
-
 
     let _ = try await Push.PushChat.send(
       PushChat.SendOptions(
@@ -145,7 +144,7 @@ class SendChatsTests: XCTestCase {
   // }
 
   func testSendMessageEncrypted() async throws {
-    
+
     let userAddress = UserAddress
     let reqAddress = "0x03fAD591aEb926bFD95FE1E38D51811167a5ad5c"
     let messageToSen2 = "Hellow user --- Message \(reqAddress)"

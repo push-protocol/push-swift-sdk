@@ -19,7 +19,7 @@ class UpdateUserTests: XCTestCase {
       generateRandomEthereumAddress(), generateRandomEthereumAddress(),
       generateRandomEthereumAddress()
     )
-    
+
     let usersToBlock = [a1, a2, a3]
 
     let res = try await PushUser.blockUsers(
@@ -33,7 +33,7 @@ class UpdateUserTests: XCTestCase {
       generateRandomEthereumAddress(), generateRandomEthereumAddress(),
       generateRandomEthereumAddress()
     )
-    
+
     let usersToBlock = [a1, a2, a3]
     let usersToUnBlock = [a1, a3]
 
@@ -42,7 +42,9 @@ class UpdateUserTests: XCTestCase {
       env: .STAGING)
     XCTAssert(res1)
 
-    let res2 = try await PushUser.unblockUsers(addressesToUnblock: usersToUnBlock, account: UserAddress, pgpPrivateKey: UserPrivateKey, env: .STAGING);
+    let res2 = try await PushUser.unblockUsers(
+      addressesToUnblock: usersToUnBlock, account: UserAddress, pgpPrivateKey: UserPrivateKey,
+      env: .STAGING)
     XCTAssert(res2)
   }
 

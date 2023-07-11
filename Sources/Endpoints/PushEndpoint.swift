@@ -4,7 +4,7 @@ public struct PushEndpoint {
   var env: ENV
   var path: String
   var queryItems: [URLQueryItem] = []
-  var apiVersion:String="v1"
+  var apiVersion: String = "v1"
 }
 
 extension PushEndpoint {

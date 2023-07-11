@@ -17,14 +17,14 @@ extension PushUser {
   public static func blockUsers(
     addressesToBlock: [String], account: String, pgpPrivateKey: String, env: ENV
   ) async throws -> Bool {
-    
+
     var currentUserProfile = try await PushUser.get(account: account, env: env)!.profile
 
-    var _addressToBlock:[String] = currentUserProfile.blockedUsersList != nil ? currentUserProfile.blockedUsersList! : []
-    _addressToBlock += walletsToPCAIP10(accounts:addressesToBlock)
+    var _addressToBlock: [String] =
+      currentUserProfile.blockedUsersList != nil ? currentUserProfile.blockedUsersList! : []
+    _addressToBlock += walletsToPCAIP10(accounts: addressesToBlock)
 
     currentUserProfile.blockedUsersList = _addressToBlock
-
 
     return try await PushUser.updateUserProfile(
       account: account, pgpPrivateKey: pgpPrivateKey, newProfile: currentUserProfile, env: env
@@ -34,15 +34,16 @@ extension PushUser {
   public static func unblockUsers(
     addressesToUnblock: [String], account: String, pgpPrivateKey: String, env: ENV
   ) async throws -> Bool {
-    
-    var currentUserProfile = try await PushUser.get(account: account, env: env)!.profile
-    var _addressToBlock:[String] = []
 
-    let addressAlreadyBlock:[String] = currentUserProfile.blockedUsersList != nil ? currentUserProfile.blockedUsersList! : []
+    var currentUserProfile = try await PushUser.get(account: account, env: env)!.profile
+    var _addressToBlock: [String] = []
+
+    let addressAlreadyBlock: [String] =
+      currentUserProfile.blockedUsersList != nil ? currentUserProfile.blockedUsersList! : []
     let _addressesToUnblock = walletsToPCAIP10(accounts: addressesToUnblock)
-    
-    for addrs in addressAlreadyBlock{
-      if !_addressesToUnblock.contains(addrs){
+
+    for addrs in addressAlreadyBlock {
+      if !_addressesToUnblock.contains(addrs) {
         _addressToBlock += [addrs]
       }
     }
@@ -122,16 +123,16 @@ func getUpdateProfileHash(newProfile: PushUser.UserProfile) throws -> (
 
   let _name = newProfile.name == nil ? "" : newProfile.name!
   let _desc = newProfile.desc == nil ? "" : newProfile.desc!
-  
-  let name = "\"\(_name)\"" 
-  let desc = "\"\(_desc)\"" 
+
+  let name = "\"\(_name)\""
+  let desc = "\"\(_desc)\""
   let picture = "\"\(newProfile.picture)\""
   let blockedUsersList = newProfile.blockedUsersList!
 
   let blockUserAddresses = flatten_address_list(addresses: newProfile.blockedUsersList!)
   let jsonString =
     "{\"name\":\(name),\"desc\":\(desc),\"picture\":\(picture),\"blockedUsersList\":\(blockUserAddresses)}"
-  
+
   let newUserProfile = UpdateUseProfile(
     name: (name == "null" ? nil : name.replacingOccurrences(of: "\"", with: "")),
     desc: desc.replacingOccurrences(of: "\"", with: ""),
@@ -142,7 +143,7 @@ func getUpdateProfileHash(newProfile: PushUser.UserProfile) throws -> (
   return (newUserProfile, hash)
 }
 
-func flatten_address_list(addresses: [String]) -> String {
+public func flatten_address_list(addresses: [String]) -> String {
   var res = "["
   var counter = 0
   for el in addresses {

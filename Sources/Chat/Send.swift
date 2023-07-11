@@ -111,8 +111,8 @@ extension PushChat {
   }
 
   static func signMessage(
-    messageContent: String, senderPgpPrivateKey: String 
-  ) throws -> String{
+    messageContent: String, senderPgpPrivateKey: String
+  ) throws -> String {
 
     return try Pgp.sign(message: messageContent, privateKey: senderPgpPrivateKey)
   }
@@ -136,10 +136,10 @@ extension PushChat {
         publicKeys: publicKeys
       )
 
-    }else{
-      signature = try signMessage(messageContent: messageConent, senderPgpPrivateKey: options.pgpPrivateKey)
+    } else {
+      signature = try signMessage(
+        messageContent: messageConent, senderPgpPrivateKey: options.pgpPrivateKey)
     }
-
 
     return SendMessagePayload(
       fromDID: options.account, toDID: options.receiverAddress,
