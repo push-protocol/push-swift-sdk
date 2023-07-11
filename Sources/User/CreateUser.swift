@@ -36,18 +36,6 @@ extension PushUser {
     var sigType: String?
   }
 
-  public struct CreateUserResponse: Decodable {
-    public var publicKey: String
-    public var encryptionType: ENCRYPTION_TYPE
-    public var did: String
-    public var wallets: String
-    public var name: String
-    public var signature: String
-    public var profilePicture: String
-    public var numMsg: Int
-    public var allowedNumMsg: Int
-  }
-
   public struct CreateUserOptions {
     var env: ENV = ENV.STAGING
     var signer: Signer

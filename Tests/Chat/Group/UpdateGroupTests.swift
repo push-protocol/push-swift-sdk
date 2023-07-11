@@ -11,6 +11,8 @@ class UpdateGroupTest: XCTestCase {
     let newGroupDesc = "Update with \(newAddress)"
 
     group.groupDescription = newGroupDesc
+    group.members += group.pendingMembers
+
     let updatedGroup = try await PushChat.updateGroup(
       updatedGroup: group, adminAddress: UserAddress, adminPgpPrivateKey: UserPrivateKey,
       env: .STAGING)
@@ -49,21 +51,10 @@ class UpdateGroupTest: XCTestCase {
     XCTAssertEqual(updatedGroup.groupImage, group.groupImage)
   }
 
-  // func testUpdateGroupChatAddingNewMember() async throws {
-  //   let chatId = "064ae7a086bc1d25cf45231a9725fec6789e1013b99bb482f41136268ffa73c6"
-  //   var group = try await PushChat.getGroup(chatId: chatId, env: .STAGING)!
-
-  //   let newAddress = generateRandomEthereumAddress()
-  //   let member = PushChat.PushGroup.Member(wallet: newAddress, isAdmin: false)
-
-  //   group.members.append(member)
-
-  //   let updatedGroup = try await PushChat.updateGroup(
-  //     updatedGroup: group, adminAddress: UserAddress, adminPgpPrivateKey: UserPrivateKey,
-  //     env: .STAGING)
-
-  //   print(updatedGroup)
-  //   // XCTAssertEqual(updatedGroup.groupImage, group.groupImage)
+  // func testLeaveGroupChat() async throws {
+  //   let chatId = "1ee2f0a0e6d9da6c1c6db460c1117013bbaa491c909ef3270e89dde2305a52a0"
+  //   try await PushChat.leaveGroup(
+  //     chatId: chatId, userAddress: UserAddress, userPgpPrivateKey: UserPrivateKey, env: .STAGING)
   // }
 
 }

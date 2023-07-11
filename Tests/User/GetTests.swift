@@ -25,7 +25,7 @@ class GetUserTests: XCTestCase {
     XCTAssertTrue(
       user.getPGPPublickey().contains("-----BEGIN PGP PUBLIC KEY BLOCK-----"),
       "Expected user to have valid public key")
-    XCTAssertTrue(user.profilePicture.contains("data:image/png;base64,"))
+    XCTAssertTrue(user.profile.picture.contains("data:image/png;base64,"))
   }
 
   func testUserGetReturnsUserWithEthAddress() async throws {
@@ -37,7 +37,7 @@ class GetUserTests: XCTestCase {
     XCTAssertTrue(
       user.getPGPPublickey().contains("-----BEGIN PGP PUBLIC KEY BLOCK-----"),
       "Expected user to have valid public key")
-    XCTAssertTrue(user.profilePicture.contains("data:image/png;base64,"))
+    XCTAssertTrue(user.profile.picture.contains("data:image/png;base64,"))
   }
 
   func testUserProfileCreated() async throws {

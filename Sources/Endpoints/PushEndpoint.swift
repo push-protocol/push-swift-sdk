@@ -4,6 +4,7 @@ public struct PushEndpoint {
   var env: ENV
   var path: String
   var queryItems: [URLQueryItem] = []
+  var apiVersion: String = "v1"
 }
 
 extension PushEndpoint {
@@ -11,7 +12,7 @@ extension PushEndpoint {
     var components = URLComponents()
     components.scheme = "https"
     components.host = ENV.getHost(withEnv: env)
-    components.path = "/apis/v1/" + path
+    components.path = "/apis/\(apiVersion)/" + path
     components.queryItems = queryItems
 
     guard let url = components.url else {
@@ -38,7 +39,8 @@ extension PushEndpoint {
           name: "caip10",
           value: userAddress
         )
-      ]
+      ],
+      apiVersion: "v2"
     )
   }
 
@@ -79,7 +81,9 @@ extension PushEndpoint {
   static func createUser(env: ENV) -> Self {
     PushEndpoint(
       env: env,
-      path: "users"
+      path: "users",
+      queryItems: [],
+      apiVersion: "v2"
     )
   }
 
