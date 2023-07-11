@@ -11,6 +11,8 @@ class UpdateGroupTest: XCTestCase {
     let newGroupDesc = "Update with \(newAddress)"
 
     group.groupDescription = newGroupDesc
+    group.members += group.pendingMembers
+
     let updatedGroup = try await PushChat.updateGroup(
       updatedGroup: group, adminAddress: UserAddress, adminPgpPrivateKey: UserPrivateKey,
       env: .STAGING)

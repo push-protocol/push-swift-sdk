@@ -8,7 +8,7 @@ extension PushChat {
 
       let updatedGroupOptions = try UpdateGroupOptions(
         group: updatedGroup, creatorPgpPrivateKey: adminPgpPrivateKey,
-        requesterAddress: adminAddress, env: env)
+        requesterAddress: walletToPCAIP10(account: adminAddress), env: env)
 
       let createGroupInfoHash = try getUpdateGroupHash(options: updatedGroupOptions)
       let signature = try Pgp.sign(
@@ -36,7 +36,7 @@ extension PushChat {
       throw PushChat.ChatError.chatError("Group with \(chatId) not found")
     }
 
-    group.members += group.pendingMembers 
+    group.members += group.pendingMembers
     group.members = group.members.filter { $0.wallet != walletToPCAIP10(account: userAddress) }
 
     _ = try await PushChat.updateGroup(
@@ -70,7 +70,7 @@ extension PushChat {
     -> PushChat.PushGroup
   {
     let url = try PushEndpoint.updatedChatGroup(chatId: chatId, env: env).url
-    
+
     var request = URLRequest(url: url)
     request.httpMethod = "PUT"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -83,6 +83,7 @@ extension PushChat {
     }
 
     guard (200...299).contains(httpResponse.statusCode) else {
+      print(try data.toString())
       throw URLError(.badServerResponse)
     }
 
@@ -162,6 +163,6 @@ func getUpdateGroupHash(options: UpdateGroupOptions) throws -> String {
   ).toJSONString()
 
   let hash = generateSHA256Hash(msg: createGroupStruct)
-  
+
   return hash
 }

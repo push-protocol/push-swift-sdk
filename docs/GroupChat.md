@@ -233,3 +233,17 @@ let response:String = try await PushChat.approve(
     ))
 ```
 
+
+### Leave Group
+```swift
+
+let chatId = "1ee2f0a0e6d9da6c1c6db460c1117013bbaa491c909ef3270e89dde2305a52a0"
+
+try await PushChat.leaveGroup(
+  chatId: chatId,
+  userAddress: UserEthAddress, 
+  userPgpPrivateKey: UserPgpPrivateKey, 
+  env: .STAGING
+)
+```
+---

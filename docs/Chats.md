@@ -832,3 +832,39 @@ Allowed Options (params with _ are mandatory)
 </details>
 
 ---
+
+### Block Users
+```swift
+let usersToBlock = [
+  "0x8268Ea85E7546d49B1aA11952Cbd0D04691b4a21",
+  "0x61e927810d073B47CC96f86Ce727444c99a0D4E4",
+  "0x1D192143B92C7c03C3a2B8379Fd87CfE63Cb49E2"
+]
+
+try await PushUser.blockUsers(
+  addressesToBlock: usersToBlock, 
+  account: UserEthAddress, 
+  pgpPrivateKey: UserPgpPrivateKey,
+  env: .STAGING
+)
+```
+
+---
+
+### UnBlock Users
+```swift
+let usersToBlock = [
+  "0x8268Ea85E7546d49B1aA11952Cbd0D04691b4a21",
+  "0x61e927810d073B47CC96f86Ce727444c99a0D4E4",
+  "0x1D192143B92C7c03C3a2B8379Fd87CfE63Cb49E2"
+]
+
+try await PushUser.unblockUsers(
+  addressesToUnblock: usersToBlock, 
+  account: UserEthAddress, 
+  pgpPrivateKey: UserPgpPrivateKey,
+  env: .STAGING
+)
+```
+
+---

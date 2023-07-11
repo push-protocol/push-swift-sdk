@@ -16,7 +16,7 @@ extension PushUser {
 
   public static func blockUsers(
     addressesToBlock: [String], account: String, pgpPrivateKey: String, env: ENV
-  ) async throws -> Bool {
+  ) async throws {
 
     var currentUserProfile = try await PushUser.get(account: account, env: env)!.profile
 
@@ -26,14 +26,14 @@ extension PushUser {
 
     currentUserProfile.blockedUsersList = _addressToBlock
 
-    return try await PushUser.updateUserProfile(
+    try await PushUser.updateUserProfile(
       account: account, pgpPrivateKey: pgpPrivateKey, newProfile: currentUserProfile, env: env
     )
   }
 
   public static func unblockUsers(
     addressesToUnblock: [String], account: String, pgpPrivateKey: String, env: ENV
-  ) async throws -> Bool {
+  ) async throws {
 
     var currentUserProfile = try await PushUser.get(account: account, env: env)!.profile
     var _addressToBlock: [String] = []
@@ -56,7 +56,7 @@ extension PushUser {
 
   public static func updateUserProfile(
     account: String, pgpPrivateKey: String, newProfile: PushUser.UserProfile, env: ENV
-  ) async throws -> Bool {
+  ) async throws {
 
     let (newProfile, updateUserHash) = try getUpdateProfileHash(newProfile: newProfile)
 
@@ -69,12 +69,12 @@ extension PushUser {
       name: newProfile.name, desc: newProfile.desc, picture: newProfile.picture,
       blockedUsersList: newProfile.blockedUsersList,
       verificationProof: verificationProof)
-    return try await updateUserService(payload: payload, account: account, env: env)
+
+    try await updateUserService(payload: payload, account: account, env: env)
   }
 
   static func updateUserService(payload: UpdateUserPayload, account: String, env: ENV)
     async throws
-    -> Bool
   {
     let url = PushEndpoint.updateUser(account: walletToPCAIP10(account: account), env: env)
     var request = URLRequest(url: url)
@@ -92,13 +92,6 @@ extension PushUser {
       print(httpResponse.statusCode, String(data: data, encoding: .utf8)!)
       throw URLError(.badServerResponse)
     }
-
-    if httpResponse.statusCode == 201 {
-      return true
-    }
-
-    return false
-
   }
 }
 

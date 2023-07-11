@@ -22,10 +22,9 @@ class UpdateUserTests: XCTestCase {
 
     let usersToBlock = [a1, a2, a3]
 
-    let res = try await PushUser.blockUsers(
+    try await PushUser.blockUsers(
       addressesToBlock: usersToBlock, account: UserAddress, pgpPrivateKey: UserPrivateKey,
       env: .STAGING)
-    XCTAssert(res)
   }
 
   func testUserUnBlock() async throws {
@@ -37,15 +36,13 @@ class UpdateUserTests: XCTestCase {
     let usersToBlock = [a1, a2, a3]
     let usersToUnBlock = [a1, a3]
 
-    let res1 = try await PushUser.blockUsers(
+    try await PushUser.blockUsers(
       addressesToBlock: usersToBlock, account: UserAddress, pgpPrivateKey: UserPrivateKey,
       env: .STAGING)
-    XCTAssert(res1)
 
-    let res2 = try await PushUser.unblockUsers(
+    try await PushUser.unblockUsers(
       addressesToUnblock: usersToUnBlock, account: UserAddress, pgpPrivateKey: UserPrivateKey,
       env: .STAGING)
-    XCTAssert(res2)
   }
 
 }
