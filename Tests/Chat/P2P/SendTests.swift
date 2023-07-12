@@ -143,6 +143,18 @@ class SendChatsTests: XCTestCase {
   //   XCTAssert(res.contains("+"))
   // }
 
+  // func testAcceptIntent() async throws{
+  //   let res = try await Push.PushChat.approve(
+  //     PushChat.ApproveOptions(
+  //       fromAddress: "0x1D192143B92C7c03C3a2B8379Fd87CfE63Cb49E2", 
+  //       toAddress: UserAddress, 
+  //       privateKey: UserPrivateKey, 
+  //       env: .STAGING)
+  //     )
+
+  //   print(res) 
+  // }
+
   func testSendMessageEncrypted() async throws {
 
     let userAddress = UserAddress
