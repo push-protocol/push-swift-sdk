@@ -810,15 +810,15 @@ Allowed Options (params with _ are mandatory)
 
 ```swift
 let response:String = try await PushChat.approve(PushChat.ApproveOptions(
-  fromAddress: String, toAddress: String, privateKey: String, env: ENV
+  requesterAddress: String, approverAddress: String privateKey: String, env: ENV
 ));
 ```
 
 Allowed Options (params with _ are mandatory)
 | Param | Type | Default | Remarks |
 |----------|---------|---------|--------------------------------------------|
-| fromAddress | string | - | chat request sender's address or chatId of a group |
-| toAddress | string | - | chat request sender's address or chatId of a group |
+| requesterAddress | string | - | chat request sender's address or chatId of a group |
+| approverAddress | string | - | approver address |
 | privateKey | string | - | users encrtyped pgp private key|
 | env | string | staging | API env - 'prod', 'staging', 'dev'|
 

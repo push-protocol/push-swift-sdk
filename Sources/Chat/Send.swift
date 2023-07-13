@@ -298,11 +298,16 @@ extension PushChat {
     var privateKey: String
     var env: ENV
 
-    public init(fromAddress: String, toAddress: String, privateKey: String, env: ENV) {
-      self.fromDID = walletToPCAIP10(account: fromAddress)
-      self.toDID = walletToPCAIP10(account: toAddress)
+    public init(requesterAddress: String, approverAddress: String, privateKey: String, env: ENV) {
+      self.fromDID = walletToPCAIP10(account: requesterAddress)
+      self.toDID = walletToPCAIP10(account: approverAddress)
       self.privateKey = privateKey
       self.env = env
+
+      if(isGroupChatId(requesterAddress)){
+        self.toDID = walletToPCAIP10(account: requesterAddress)
+        self.fromDID = walletToPCAIP10(account: approverAddress)  
+      }
     }
   }
 
