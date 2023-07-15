@@ -56,6 +56,7 @@ extension PushChat {
     }
 
     guard (200...299).contains(httpResponse.statusCode) else {
+      print(try data.toString())
       throw URLError(.badServerResponse)
     }
 
@@ -304,9 +305,9 @@ extension PushChat {
       self.privateKey = privateKey
       self.env = env
 
-      if(isGroupChatId(requesterAddress)){
+      if isGroupChatId(requesterAddress) {
         self.toDID = walletToPCAIP10(account: requesterAddress)
-        self.fromDID = walletToPCAIP10(account: approverAddress)  
+        self.fromDID = walletToPCAIP10(account: approverAddress)
       }
     }
   }

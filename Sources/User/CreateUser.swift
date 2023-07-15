@@ -156,6 +156,7 @@ extension PushUser {
       }
 
       guard (200...299).contains(httpResponse.statusCode) else {
+        print(try data.toString())
         throw URLError(.badServerResponse)
       }
 

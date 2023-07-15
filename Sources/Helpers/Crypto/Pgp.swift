@@ -124,7 +124,7 @@ public struct Pgp {
 
   public func getPublicKey() -> String {
     return
-      Armor.armored(self.publicKey, as: .publicKey)
+      filterPgpInfo(Armor.armored(self.publicKey, as: .publicKey))
   }
 
   public func getSecretKey() -> String {
@@ -136,12 +136,11 @@ public struct Pgp {
   public static func GenerateNewPgpPair() throws -> Self {
     let key: Key = KeyGenerator(
       algorithm: .RSA, keyBitsLength: 2048, cipherAlgorithm: .AES256, hashAlgorithm: .SHA1
-    ).generate(for: "", passphrase: nil)
+    ).generate(for: "\"\"", passphrase: nil)
 
     let secretKey = try key.export(keyType: .secret)
     let publicKey = try key.export(keyType: .public)
 
-    print("la is", secretKey.count)
     return try Pgp(publicKey: publicKey, secretKey: secretKey)
   }
 
@@ -214,9 +213,15 @@ public struct Pgp {
 
   func filterPgpInfo(_ inputString: String) -> String {
     var lines: [String] = inputString.components(separatedBy: .newlines)
-    lines.remove(at: 1)
-    lines.remove(at: 1)
-    lines.remove(at: 1)
+    if inputString.contains("Version: ObjectivePGP") {
+      lines.remove(at: 1)
+    }
+    if inputString.contains("Comment: https://objectivepgp.com") {
+      lines.remove(at: 1)
+    }
+    if inputString.contains("Charset: UTF-8") {
+      lines.remove(at: 1)
+    }
     return lines.joined(separator: "\n")
   }
 

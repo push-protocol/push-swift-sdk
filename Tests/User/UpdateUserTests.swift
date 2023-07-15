@@ -2,17 +2,31 @@ import Push
 import XCTest
 
 class UpdateUserTests: XCTestCase {
+  func testNameUpdateTest() async throws {
+    var userProfile = try await Push.PushUser.get(account: UserAddress, env: .STAGING)!.profile
+    userProfile.name = "name" + generateRandomEthereumAddress()
 
-  // func testUserProfileNameTest() async throws {
-  //   let newProfile = PushUser.UpdatedUserProfile(
-  //     blockedUsersList: [generateRandomEthereumAddress()])
+    try await PushUser.updateUserProfile(
+      account: UserAddress, pgpPrivateKey: UserPrivateKey, newProfile: userProfile, env: .STAGING)
+    let userProfileUpdated = try await Push.PushUser.get(account: UserAddress, env: .STAGING)!
+      .profile
 
-  //   let success = try await PushUser.updateUserProfile(
-  //     account: UserAddress, pgpPrivateKey: UserPrivateKey, updatedProfile: newProfile, env: .STAGING
-  //   )
+    XCTAssertEqual(userProfileUpdated.name, userProfile.name)
 
-  //   XCTAssert(success)
-  // }
+  }
+
+  func testDescUpdateTest() async throws {
+    var userProfile = try await Push.PushUser.get(account: UserAddress, env: .STAGING)!.profile
+    userProfile.desc = "desc" + generateRandomEthereumAddress()
+
+    try await PushUser.updateUserProfile(
+      account: UserAddress, pgpPrivateKey: UserPrivateKey, newProfile: userProfile, env: .STAGING)
+    let userProfileUpdated = try await Push.PushUser.get(account: UserAddress, env: .STAGING)!
+      .profile
+
+    XCTAssertEqual(userProfileUpdated.desc, userProfile.desc)
+
+  }
 
   func testUserBlock() async throws {
     let (a1, a2, a3) = (

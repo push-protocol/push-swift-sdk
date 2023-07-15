@@ -8,6 +8,7 @@ extension PushChat {
       let createGroupInfoHash = try getCreateGroupHash(options: options)
       let signature = try Pgp.sign(
         message: createGroupInfoHash, privateKey: options.creatorPgpPrivateKey)
+
       let sigType = "pgp"
       let verificationProof = "\(sigType):\(signature)"
 
@@ -96,6 +97,7 @@ struct CreateGroupPlayload: Encodable {
   var members: [String]
   var groupImage: String
   var isPublic: Bool
+  var admins: [String] = []
   var contractAddressNFT: String?
   var numberOfNFTs: Int?
   var contractAddressERC20: String?

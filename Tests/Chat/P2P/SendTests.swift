@@ -105,55 +105,47 @@ class SendChatsTests: XCTestCase {
 
   }
 
-  // func testApproveIntent() async throws {
-  //   let userPk = getRandomAccount()
-  //   let signer = try SignerPrivateKey(
-  //     privateKey: userPk
-  //   )
-  //   let reqAddress = try await signer.getAddress()
+  func testApproveIntent() async throws {
+    let userPk = getRandomAccount()
+    let signer = try SignerPrivateKey(
+      privateKey: userPk
+    )
+    let addrs = try await signer.getAddress()
 
-  //   let _ = try await PushUser.create(
-  //     options: PushUser.CreateUserOptions(
-  //       env: ENV.STAGING,
-  //       signer: SignerPrivateKey(
-  //         privateKey: userPk
-  //       ),
-  //       progressHook: nil
-  //     ))
-  //   let userAddress = UserAddress
-  //   let messageToSen1 = "Hello user --- Intent \(reqAddress)"
+    let user = try await PushUser.create(
+      options: PushUser.CreateUserOptions(
+        env: ENV.STAGING,
+        signer: SignerPrivateKey(
+          privateKey: userPk
+        ),
+        progressHook: nil
+      ))
+    let userAddress = UserAddress
+    let messageToSen1 = "Hello user --- Intent \(addrs)"
 
-  //   let _ = try await Push.PushChat.send(
-  //     PushChat.SendOptions(
-  //       messageContent: messageToSen1,
-  //       messageType: "Text",
-  //       receiverAddress: userAddress,
-  //       account: reqAddress,
-  //       pgpPrivateKey: ""
-  //     ))
+    let pgpPK = try await Push.PushUser.DecryptPGPKey(
+      encryptedPrivateKey: user.encryptedPrivateKey, signer: signer)
 
-  //   // accept intent
-  //   let res = try await Push.PushChat.approve(
-  //     PushChat.ApproveOptions(
-  //       fromAddress: reqAddress, toAddress: userAddress, privateKey: UserPrivateKey, env: .STAGING))
+    let _ = try await Push.PushChat.send(
+      PushChat.SendOptions(
+        messageContent: messageToSen1,
+        messageType: "Text",
+        receiverAddress: userAddress,
+        account: addrs,
+        pgpPrivateKey: pgpPK
+      ))
 
-  //   // assert combined DID
-  //   XCTAssert(res.contains(userAddress))
-  //   XCTAssert(res.contains(reqAddress))
-  //   XCTAssert(res.contains("+"))
-  // }
+    // accept intent
+    let res = try await Push.PushChat.approve(
+      PushChat.ApproveOptions(
+        requesterAddress: addrs, approverAddress: userAddress, privateKey: UserPrivateKey,
+        env: .STAGING))
 
-  // func testAcceptIntent() async throws{
-  //   let res = try await Push.PushChat.approve(
-  //     PushChat.ApproveOptions(
-  //       requesterAddress: "6637eb962ed4139a97dac440f46d5f4f6098e77b81e14d8214f8d945ab108f22", 
-  //       approverAddress: UserAddress, 
-  //       privateKey: UserPrivateKey, 
-  //       env: .STAGING)
-  //     )
-
-    
-  // }
+    // assert combined DID
+    XCTAssert(res.contains(userAddress))
+    XCTAssert(res.contains(addrs))
+    XCTAssert(res.contains("+"))
+  }
 
   func testSendMessageEncrypted() async throws {
 

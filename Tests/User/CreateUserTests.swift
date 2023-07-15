@@ -29,7 +29,6 @@ class CreateUserTests: XCTestCase {
       privateKey: userPk
     )
     let addrs = try await signer.getAddress()
-    print("addres", addrs, "user pk", userPk)
     let userCAIPAddress = walletToPCAIP10(account: addrs)
 
     let user = try await PushUser.create(
