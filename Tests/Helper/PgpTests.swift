@@ -15,10 +15,9 @@ class PgpTests: XCTestCase {
     let pair2 = try Pgp.GenerateNewPgpPair()
 
     let originalMessage = "This is a good place to find a city"
-    let message = originalMessage.data(using: .utf8)!
 
-    let encMsg = try pair1.encryptWithPGPKey(
-      message: message, anotherUserPublicKey: pair2.publicKey)
+    let encMsg = try Pgp.pgpEncryptV2(
+      message: originalMessage, pgpPublicKeys: [pair1.getPublicKey(), pair2.getPublicKey()])
 
     XCTAssertTrue(
       encMsg.hasPrefix("-----BEGIN PGP MESSAGE-----"),
@@ -27,11 +26,11 @@ class PgpTests: XCTestCase {
       encMsg.hasSuffix("-----END PGP MESSAGE-----\n"),
       "encryptedSecret should end with appropriate suffix")
 
-    let decMsg1 = try pair1.decryptWithPGPKey(message: encMsg)
-    // let decMsg2 = try pair2.decryptWithPGPKey(message: encMsg)
+    let decMsg1 = try Pgp.pgpDecrypt(cipherText: encMsg, toPrivateKeyArmored: pair1.getSecretKey())
+    let decMsg2 = try Pgp.pgpDecrypt(cipherText: encMsg, toPrivateKeyArmored: pair2.getSecretKey())
 
-    // XCTAssertEqual(originalMessage, decMsg1)
-    // XCTAssertEqual(originalMessage, decMsg2)
+    XCTAssertEqual(originalMessage, decMsg1)
+    XCTAssertEqual(originalMessage, decMsg2)
   }
 
   func testPgpSignatureVerification() async throws {
@@ -80,11 +79,9 @@ class PgpTests: XCTestCase {
         String(data: try JSONEncoder().encode(apiData), encoding: .utf8)!
     )
 
-    let signature = try Pgp.sign(message: hash, privateKey: secKey)
+    let _ = try Pgp.sign(message: hash, privateKey: secKey)
 
     XCTAssertEqual(message, hash)
-
-    print(signature)
 
   }
 }

@@ -34,9 +34,7 @@ class CreateUserTests: XCTestCase {
     let user = try await PushUser.create(
       options: PushUser.CreateUserOptions(
         env: ENV.STAGING,
-        signer: SignerPrivateKey(
-          privateKey: userPk
-        ),
+        signer: signer,
         progressHook: nil
       ))
 

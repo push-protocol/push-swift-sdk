@@ -37,8 +37,47 @@ class SendChatsTests: XCTestCase {
     XCTAssertEqual(latestMessage, messageToSen)
   }
 
-  func testSendIntent() async throws {
+  func testSendIntentUnEncrypted() async throws {
     let recipientAddress = generateRandomEthereumAddress()
+    let senderAddress = UserAddress
+    let senderPgpPk = UserPrivateKey
+
+    let messageToSen = "Hello user \(recipientAddress)"
+
+    let _ = try await Push.PushChat.sendIntent(
+      PushChat.SendOptions(
+        messageContent: messageToSen,
+        messageType: "Text",
+        receiverAddress: recipientAddress,
+        account: senderAddress,
+        pgpPrivateKey: senderPgpPk
+      ))
+
+    let threadHash = try await PushChat.ConversationHash(
+      conversationId: recipientAddress, account: senderAddress)!
+    let latestMessage = try await PushChat.History(
+      threadHash: threadHash, limit: 1, pgpPrivateKey: senderPgpPk, toDecrypt: true, env: .STAGING
+    ).first!.messageContent
+
+    XCTAssertEqual(latestMessage, messageToSen)
+  }
+
+  func testSendIntentEncrypted() async throws {
+    let userPk = getRandomAccount()
+    let signer = try SignerPrivateKey(
+      privateKey: userPk
+    )
+    let recipientAddress = try await signer.getAddress()
+
+    let _ = try await PushUser.create(
+      options: PushUser.CreateUserOptions(
+        env: ENV.STAGING,
+        signer: SignerPrivateKey(
+          privateKey: userPk
+        ),
+        progressHook: nil
+      ))
+
     let senderAddress = UserAddress
     let senderPgpPk = UserPrivateKey
 
@@ -166,7 +205,6 @@ class SendChatsTests: XCTestCase {
 
     XCTAssertEqual(res, messageToSen2)
   }
-
 }
 
 let UserAddress = "0xD26A7BF7fa0f8F1f3f73B056c9A67565A6aFE63c"
@@ -261,5 +299,5 @@ let UserPublicKey = """
   8+HQfOVr7NE7e20Vtat7P51yzZTBCPfOsPdHPRdJeWrIS76DmfKF0ATKOw0PNfWB
   EIXKzpU+pdxSjyFbgg9NGOczMtYUTkheIQeBerPjFWsoCEtHMcE=
   =5cZE
-  -----END PGP PUBLIC KEY BLOCK-----"
+  -----END PGP PUBLIC KEY BLOCK-----
   """
