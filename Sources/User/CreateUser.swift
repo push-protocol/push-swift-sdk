@@ -21,6 +21,15 @@ extension PushUser {
     var did: String
     var publicKey: String
     var encryptedPrivateKey: String
+
+    public func getJSONString() throws -> String {
+      return try getJsonStringFromKV([
+        ("caip10", self.caip10),
+        ("did", self.did),
+        ("publicKey", self.publicKey),
+        ("encryptedPrivateKey", self.encryptedPrivateKey),
+      ])
+    }
   }
 
   private struct CreateUserAPIOptions: Encodable {
@@ -28,7 +37,7 @@ extension PushUser {
     var did: String
     var publicKey: String
     var encryptedPrivateKey: String
-    var encryptionType: String
+    var encryptionType: String?
     var name: String?
     var encryptedPassword: String?
     var verificationProof: String?
@@ -98,11 +107,7 @@ extension PushUser {
       let encryptedPrivateKey: EncryptedPrivateKeyV2 = try await keyPairs.encryptPGPKey(
         wallet: wallet)
 
-      guard let encryptedPrivateKeyData = try? JSONEncoder().encode(encryptedPrivateKey),
-        let encryptedPrivateKeyString = String(data: encryptedPrivateKeyData, encoding: .utf8)
-      else {
-        throw UtilsError.ERROR_CONVERTING_ENCRYPTED_PRIVATEkEY_TO_DATA
-      }
+      let encryptedPrivateKeyString = try encryptedPrivateKey.getJSONString()
 
       options.progressHook?(
         ProgressHookType(
@@ -112,23 +117,19 @@ extension PushUser {
           level: ProgressLevel.INFO
         ))
 
-      let apiData = CreateUserHashData(
+      let apiDataString = try CreateUserHashData(
         caip10: walletToPCAIP10(account: caip10),
         did: walletToPCAIP10(account: caip10),
         publicKey: publicKey,
         encryptedPrivateKey: encryptedPrivateKeyString
-      )
+      ).getJSONString()
 
-      guard let apiDataString = String(data: try JSONEncoder().encode(apiData), encoding: .utf8)
-      else {
-        throw UtilsError.ERROR_CONVERTING_MSG_HASH_TO_DATA
-      }
       let hash = generateSHA256Hash(
         msg:
           apiDataString
       )
 
-      let _ = try await wallet.getEip191Signature(message: hash, version: "v2")
+      let verificationProof = try await wallet.getEip191Signature(message: hash, version: "v2")
 
       let updatedData = CreateUserAPIOptions(
         caip10: walletToPCAIP10(account: caip10),
@@ -137,9 +138,7 @@ extension PushUser {
         encryptedPrivateKey: encryptedPrivateKeyString,
         encryptionType: ENCRYPTION_TYPE.PGP_V3.stringValue,
         name: "",
-        // Replace with verification proof
-        // verificationProof: signatureObject
-        signature: "xyz",
+        signature: verificationProof,
         sigType: "a"
       )
 
@@ -156,6 +155,7 @@ extension PushUser {
       }
 
       guard (200...299).contains(httpResponse.statusCode) else {
+        print(try data.toString())
         throw URLError(.badServerResponse)
       }
 

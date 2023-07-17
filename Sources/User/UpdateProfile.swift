@@ -1,19 +1,6 @@
 import Foundation
 
 extension PushUser {
-  public struct UpdatedUserProfile: Codable {
-    let name: String?
-    let picture: String?
-    let blockedUsersList: [String]?
-
-    public init(name: String? = nil, picture: String? = nil, blockedUsersList: [String]? = nil) {
-      self.name = name
-      self.picture = picture
-      self.blockedUsersList =
-        blockedUsersList != nil ? walletsToPCAIP10(accounts: blockedUsersList!) : nil
-    }
-  }
-
   public static func blockUsers(
     addressesToBlock: [String], account: String, pgpPrivateKey: String, env: ENV
   ) async throws {
@@ -117,8 +104,8 @@ func getUpdateProfileHash(newProfile: PushUser.UserProfile) throws -> (
   let _name = newProfile.name == nil ? "" : newProfile.name!
   let _desc = newProfile.desc == nil ? "" : newProfile.desc!
 
-  let name = "\"\(_name)\""
-  let desc = "\"\(_desc)\""
+  let name = newProfile.name == nil ? "null" : "\"\(_name)\""
+  let desc = newProfile.desc == nil ? "null" : "\"\(_desc)\""
   let picture = "\"\(newProfile.picture)\""
   let blockedUsersList = newProfile.blockedUsersList!
 
@@ -127,7 +114,7 @@ func getUpdateProfileHash(newProfile: PushUser.UserProfile) throws -> (
     "{\"name\":\(name),\"desc\":\(desc),\"picture\":\(picture),\"blockedUsersList\":\(blockUserAddresses)}"
 
   let newUserProfile = UpdateUseProfile(
-    name: (name == "null" ? nil : name.replacingOccurrences(of: "\"", with: "")),
+    name: name.replacingOccurrences(of: "\"", with: ""),
     desc: desc.replacingOccurrences(of: "\"", with: ""),
     picture: picture.replacingOccurrences(of: "\"", with: ""),
     blockedUsersList: blockedUsersList)

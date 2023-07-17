@@ -56,6 +56,7 @@ extension PushChat {
     }
 
     guard (200...299).contains(httpResponse.statusCode) else {
+      print(try data.toString())
       throw URLError(.badServerResponse)
     }
 
@@ -233,14 +234,19 @@ extension PushChat {
     let anotherUser = try await PushUser.get(
       account: sendOptions.receiverAddress, env: sendOptions.env)
 
+    var shouldEncrypt = true
+
     // else create the user frist and send unencrypted intent message
-    if anotherUser == nil {
+    if anotherUser == nil || anotherUser?.publicKey == nil {
       let _ = try await PushUser.createUserEmpty(
         userAddress: sendOptions.receiverAddress, env: sendOptions.env)
+
+      shouldEncrypt = false
     }
 
+    let publicKeys = shouldEncrypt ? try await getP2PChatPublicKeys(sendOptions) : []
     let sendMessagePayload = try await getSendMessagePayload(
-      sendOptions, publicKeys: [], shouldEncrypt: false)
+      sendOptions, publicKeys: publicKeys, shouldEncrypt: shouldEncrypt)
 
     return try await sendIntentService(payload: sendMessagePayload, env: sendOptions.env)
   }
@@ -298,11 +304,16 @@ extension PushChat {
     var privateKey: String
     var env: ENV
 
-    public init(fromAddress: String, toAddress: String, privateKey: String, env: ENV) {
-      self.fromDID = walletToPCAIP10(account: fromAddress)
-      self.toDID = walletToPCAIP10(account: toAddress)
+    public init(requesterAddress: String, approverAddress: String, privateKey: String, env: ENV) {
+      self.fromDID = walletToPCAIP10(account: requesterAddress)
+      self.toDID = walletToPCAIP10(account: approverAddress)
       self.privateKey = privateKey
       self.env = env
+
+      if isGroupChatId(requesterAddress) {
+        self.toDID = walletToPCAIP10(account: requesterAddress)
+        self.fromDID = walletToPCAIP10(account: approverAddress)
+      }
     }
   }
 

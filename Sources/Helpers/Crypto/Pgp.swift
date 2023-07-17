@@ -12,22 +12,6 @@ func bytesToHex(bytes: [UInt8]) -> String {
   return bytes.map { String(format: "%02hhx", $0) }.joined()
 }
 
-func recoverAddressFromSignature(signature: String, signedData: String) throws -> String {
-  // TODO: Implement
-  return ""
-}
-
-func verifyProfileSignature(verificationProof: String, signedData: String, wallet: String) throws
-  -> Bool
-{
-  let length = verificationProof.split(separator: ":").count
-  let signature = verificationProof.split(separator: ":")[length - 1]
-  let _ = try recoverAddressFromSignature(
-    signature: String(signature), signedData: signedData)
-  // TODO: return recoveredAddress.lowercased() == wallet.lowercased();
-  return true
-}
-
 enum PgpError: Error {
   case INVALID_PUBLIC_KEY
   case INVALID_PRIVATE_KEY
@@ -38,10 +22,20 @@ enum PgpError: Error {
 
 public struct EncryptedPrivateKeyV2: Encodable {
   var ciphertext: String
-  var salt: String?
+  var salt: String
   var nonce: String
-  var version: ENCRYPTION_TYPE?
-  var preKey: String?
+  var version: ENCRYPTION_TYPE
+  var preKey: String
+
+  public func getJSONString() throws -> String {
+    return try getJsonStringFromKV([
+      ("ciphertext", self.ciphertext),
+      ("salt", self.salt),
+      ("nonce", self.nonce),
+      ("version", self.version.stringValue),
+      ("preKey", self.preKey),
+    ])
+  }
 }
 
 func useEmptyPassPhrase(key: Key?) -> String? {
@@ -59,18 +53,16 @@ public struct Pgp {
   }
 
   public func preparePGPPublicKey(signer: Push.Signer) async throws -> String {
+    let publicKey = self.getPublicKey().trimmingCharacters(in: .newlines)
+
     let createProfileMessage =
-      "Create Push Profile \n" + generateSHA256Hash(msg: self.getPublicKey())
+      "Create Push Profile \n" + generateSHA256Hash(msg: publicKey)
     let verificationProof = try await signer.getEip191Signature(message: createProfileMessage)
 
-    let chatPublicKey = [
-      "key": self.getPublicKey(),
-      "signature": verificationProof,
-    ]
-
-    let chatPKJsonData = try JSONSerialization.data(withJSONObject: chatPublicKey, options: [])
-    let chatPKeyJsonString = String(data: chatPKJsonData, encoding: .utf8)!
-
+    let chatPKeyJsonString = try getJsonStringFromKV([
+      ("key", publicKey),
+      ("signature", "eip191" + ":" + verificationProof),
+    ])
     return chatPKeyJsonString
 
   }
@@ -124,7 +116,7 @@ public struct Pgp {
 
   public func getPublicKey() -> String {
     return
-      Armor.armored(self.publicKey, as: .publicKey)
+      filterPgpInfo(Armor.armored(self.publicKey, as: .publicKey))
   }
 
   public func getSecretKey() -> String {
@@ -136,12 +128,11 @@ public struct Pgp {
   public static func GenerateNewPgpPair() throws -> Self {
     let key: Key = KeyGenerator(
       algorithm: .RSA, keyBitsLength: 2048, cipherAlgorithm: .AES256, hashAlgorithm: .SHA1
-    ).generate(for: "", passphrase: nil)
+    ).generate(for: "\"\"", passphrase: nil)
 
     let secretKey = try key.export(keyType: .secret)
     let publicKey = try key.export(keyType: .public)
 
-    print("la is", secretKey.count)
     return try Pgp(publicKey: publicKey, secretKey: secretKey)
   }
 
@@ -150,30 +141,6 @@ public struct Pgp {
     let sk = try Armor.readArmored(secretKey)
 
     return try Pgp(publicKey: pk, secretKey: sk)
-  }
-
-  public static func verifyPGPPublicKey(encryptionType: String, publicKey: String, did: String)
-    throws -> String
-  {
-    guard
-      let parsedPublicKey = try? JSONSerialization.jsonObject(with: publicKey.data(using: .utf8)!)
-        as? [String: String],
-      let key = parsedPublicKey["key"],
-      let verificationProof = parsedPublicKey["signature"]
-    else {
-      throw PgpError.INVALID_PUBLIC_KEY
-    }
-
-    let pCAIP10Wallet = pCAIP10ToWallet(address: did)
-    let signedData = "Create Push Profile \n" + generateSHA256Hash(msg: key)
-
-    if try verifyProfileSignature(
-      verificationProof: verificationProof, signedData: signedData, wallet: pCAIP10Wallet)
-    {
-      return key
-    } else {
-      throw PgpError.INVALID_SIGNATURE
-    }
   }
 
   public func encryptPGPKey(wallet: Push.Wallet) async throws -> EncryptedPrivateKeyV2 {
@@ -214,9 +181,15 @@ public struct Pgp {
 
   func filterPgpInfo(_ inputString: String) -> String {
     var lines: [String] = inputString.components(separatedBy: .newlines)
-    lines.remove(at: 1)
-    lines.remove(at: 1)
-    lines.remove(at: 1)
+    if inputString.contains("Version: ObjectivePGP") {
+      lines.remove(at: 1)
+    }
+    if inputString.contains("Comment: https://objectivepgp.com") {
+      lines.remove(at: 1)
+    }
+    if inputString.contains("Charset: UTF-8") {
+      lines.remove(at: 1)
+    }
     return lines.joined(separator: "\n")
   }
 

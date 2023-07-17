@@ -78,12 +78,12 @@ extension PushEndpoint {
     )
   }
 
-  static func createUser(env: ENV) -> Self {
+  static func createUser(env: ENV, version: String = "v2") -> Self {
     PushEndpoint(
       env: env,
       path: "users",
       queryItems: [],
-      apiVersion: "v2"
+      apiVersion: version
     )
   }
 

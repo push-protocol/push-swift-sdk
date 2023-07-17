@@ -37,8 +37,47 @@ class SendChatsTests: XCTestCase {
     XCTAssertEqual(latestMessage, messageToSen)
   }
 
-  func testSendIntent() async throws {
+  func testSendIntentUnEncrypted() async throws {
     let recipientAddress = generateRandomEthereumAddress()
+    let senderAddress = UserAddress
+    let senderPgpPk = UserPrivateKey
+
+    let messageToSen = "Hello user \(recipientAddress)"
+
+    let _ = try await Push.PushChat.sendIntent(
+      PushChat.SendOptions(
+        messageContent: messageToSen,
+        messageType: "Text",
+        receiverAddress: recipientAddress,
+        account: senderAddress,
+        pgpPrivateKey: senderPgpPk
+      ))
+
+    let threadHash = try await PushChat.ConversationHash(
+      conversationId: recipientAddress, account: senderAddress)!
+    let latestMessage = try await PushChat.History(
+      threadHash: threadHash, limit: 1, pgpPrivateKey: senderPgpPk, toDecrypt: true, env: .STAGING
+    ).first!.messageContent
+
+    XCTAssertEqual(latestMessage, messageToSen)
+  }
+
+  func testSendIntentEncrypted() async throws {
+    let userPk = getRandomAccount()
+    let signer = try SignerPrivateKey(
+      privateKey: userPk
+    )
+    let recipientAddress = try await signer.getAddress()
+
+    let _ = try await PushUser.create(
+      options: PushUser.CreateUserOptions(
+        env: ENV.STAGING,
+        signer: SignerPrivateKey(
+          privateKey: userPk
+        ),
+        progressHook: nil
+      ))
+
     let senderAddress = UserAddress
     let senderPgpPk = UserPrivateKey
 
@@ -105,43 +144,47 @@ class SendChatsTests: XCTestCase {
 
   }
 
-  // func testApproveIntent() async throws {
-  //   let userPk = getRandomAccount()
-  //   let signer = try SignerPrivateKey(
-  //     privateKey: userPk
-  //   )
-  //   let reqAddress = try await signer.getAddress()
+  func testApproveIntent() async throws {
+    let userPk = getRandomAccount()
+    let signer = try SignerPrivateKey(
+      privateKey: userPk
+    )
+    let addrs = try await signer.getAddress()
 
-  //   let _ = try await PushUser.create(
-  //     options: PushUser.CreateUserOptions(
-  //       env: ENV.STAGING,
-  //       signer: SignerPrivateKey(
-  //         privateKey: userPk
-  //       ),
-  //       progressHook: nil
-  //     ))
-  //   let userAddress = UserAddress
-  //   let messageToSen1 = "Hello user --- Intent \(reqAddress)"
+    let user = try await PushUser.create(
+      options: PushUser.CreateUserOptions(
+        env: ENV.STAGING,
+        signer: SignerPrivateKey(
+          privateKey: userPk
+        ),
+        progressHook: nil
+      ))
+    let userAddress = UserAddress
+    let messageToSen1 = "Hello user --- Intent \(addrs)"
 
-  //   let _ = try await Push.PushChat.send(
-  //     PushChat.SendOptions(
-  //       messageContent: messageToSen1,
-  //       messageType: "Text",
-  //       receiverAddress: userAddress,
-  //       account: reqAddress,
-  //       pgpPrivateKey: ""
-  //     ))
+    let pgpPK = try await Push.PushUser.DecryptPGPKey(
+      encryptedPrivateKey: user.encryptedPrivateKey, signer: signer)
 
-  //   // accept intent
-  //   let res = try await Push.PushChat.approve(
-  //     PushChat.ApproveOptions(
-  //       fromAddress: reqAddress, toAddress: userAddress, privateKey: UserPrivateKey, env: .STAGING))
+    let _ = try await Push.PushChat.send(
+      PushChat.SendOptions(
+        messageContent: messageToSen1,
+        messageType: "Text",
+        receiverAddress: userAddress,
+        account: addrs,
+        pgpPrivateKey: pgpPK
+      ))
 
-  //   // assert combined DID
-  //   XCTAssert(res.contains(userAddress))
-  //   XCTAssert(res.contains(reqAddress))
-  //   XCTAssert(res.contains("+"))
-  // }
+    // accept intent
+    let res = try await Push.PushChat.approve(
+      PushChat.ApproveOptions(
+        requesterAddress: addrs, approverAddress: userAddress, privateKey: UserPrivateKey,
+        env: .STAGING))
+
+    // assert combined DID
+    XCTAssert(res.contains(userAddress))
+    XCTAssert(res.contains(addrs))
+    XCTAssert(res.contains("+"))
+  }
 
   func testSendMessageEncrypted() async throws {
 
@@ -162,7 +205,6 @@ class SendChatsTests: XCTestCase {
 
     XCTAssertEqual(res, messageToSen2)
   }
-
 }
 
 let UserAddress = "0xD26A7BF7fa0f8F1f3f73B056c9A67565A6aFE63c"
@@ -257,5 +299,5 @@ let UserPublicKey = """
   8+HQfOVr7NE7e20Vtat7P51yzZTBCPfOsPdHPRdJeWrIS76DmfKF0ATKOw0PNfWB
   EIXKzpU+pdxSjyFbgg9NGOczMtYUTkheIQeBerPjFWsoCEtHMcE=
   =5cZE
-  -----END PGP PUBLIC KEY BLOCK-----"
+  -----END PGP PUBLIC KEY BLOCK-----
   """
