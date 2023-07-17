@@ -48,7 +48,7 @@ class GetChatsTests: XCTestCase {
     }
   }
 
-  func testGetChatRequests() async throws {
+  func testGetChatRequestsForEmptyUser() async throws {
 
     // send intent
     let reqAddress = generateRandomEthereumAddress()
@@ -66,6 +66,60 @@ class GetChatsTests: XCTestCase {
 
     let userReqs = try await PushChat.requests(
       options: PushChat.RequestOptionsType(account: reqAddress, pgpPrivateKey: "", toDecrypt: false)
+    )
+
+    XCTAssertEqual(userReqs[0].msg!.messageContent, messageToSen1)
+  }
+
+  func testGetChatRequestsForNonExistingUser() async throws {
+
+    // send intent
+    let reqAddress = generateRandomEthereumAddress()
+    let messageToSen1 = "Hello user --- Intent \(reqAddress)"
+
+    let _ = try await Push.PushChat.send(
+      PushChat.SendOptions(
+        messageContent: messageToSen1,
+        messageType: "Text",
+        receiverAddress: reqAddress,
+        account: UserAddress,
+        pgpPrivateKey: UserPrivateKey
+      ))
+
+    let userReqs = try await PushChat.requests(
+      options: PushChat.RequestOptionsType(account: reqAddress, pgpPrivateKey: "", toDecrypt: false)
+    )
+
+    XCTAssertEqual(userReqs[0].msg!.messageContent, messageToSen1)
+  }
+
+  func testGetChatRequestsForExistingUser() async throws {
+
+    let userPk1 = getRandomAccount()
+    let _ = try await PushUser.create(
+      options: PushUser.CreateUserOptions(
+        env: ENV.STAGING,
+        signer: SignerPrivateKey(
+          privateKey: userPk1
+        ),
+        progressHook: nil
+      ))
+
+    // send intent
+    let reqAddress = generateRandomEthereumAddress()
+    let messageToSen1 = "Hello user --- Intent \(reqAddress)"
+
+    let _ = try await Push.PushChat.send(
+      PushChat.SendOptions(
+        messageContent: messageToSen1,
+        messageType: "Text",
+        receiverAddress: reqAddress,
+        account: UserAddress,
+        pgpPrivateKey: UserPrivateKey
+      ))
+
+    let userReqs = try await PushChat.requests(
+      options: PushChat.RequestOptionsType(account: reqAddress, pgpPrivateKey: UserPrivateKey, toDecrypt: true)
     )
 
     XCTAssertEqual(userReqs[0].msg!.messageContent, messageToSen1)

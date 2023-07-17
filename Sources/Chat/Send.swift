@@ -199,6 +199,7 @@ extension PushChat {
       try await ConversationHash(conversationId: receiverAddress, account: senderAddress) == nil
 
     if isConversationFirst {
+      print("sending intenting")
       return try await PushChat.sendIntent(chatOptions)
     } else {
       // send regular message
@@ -237,9 +238,11 @@ extension PushChat {
     var shouldEncrypt = true
 
     // else create the user frist and send unencrypted intent message
-    if anotherUser == nil || anotherUser?.publicKey == nil {
-      let _ = try await PushUser.createUserEmpty(
-        userAddress: sendOptions.receiverAddress, env: sendOptions.env)
+    if anotherUser?.publicKey == nil || anotherUser?.publicKey == "" {
+      if anotherUser == nil {
+        let _ = try await PushUser.createUserEmpty(
+          userAddress: sendOptions.receiverAddress, env: sendOptions.env)
+      }
 
       shouldEncrypt = false
     }
