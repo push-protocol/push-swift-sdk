@@ -63,7 +63,7 @@ extension PushUser {
   static func updateUserService(payload: UpdateUserPayload, account: String, env: ENV)
     async throws
   {
-    let url = PushEndpoint.updateUser(account: walletToPCAIP10(account: account), env: env)
+    let url = PushEndpoint.updateUser(account: walletToPCAIP10(account: account), env: env).url
     var request = URLRequest(url: url)
     request.httpMethod = "PUT"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -83,7 +83,7 @@ extension PushUser {
 }
 
 struct UpdateUserPayload: Codable {
-  var name: String?
+  var name: String
   var desc: String
   var picture: String
   var blockedUsersList: [String]
@@ -91,7 +91,7 @@ struct UpdateUserPayload: Codable {
 }
 
 struct UpdateUseProfile: Codable {
-  public var name: String?
+  public var name: String
   public var desc: String
   public var picture: String
   public var blockedUsersList: [String]
@@ -101,22 +101,22 @@ func getUpdateProfileHash(newProfile: PushUser.UserProfile) throws -> (
   UpdateUseProfile, String
 ) {
 
-  let _name = newProfile.name == nil ? "" : newProfile.name!
-  let _desc = newProfile.desc == nil ? "" : newProfile.desc!
+  let _name = newProfile.name == nil ? " " : newProfile.name!
+  let _desc = newProfile.desc == nil ? " " : newProfile.desc!
 
-  let name = newProfile.name == nil ? "null" : "\"\(_name)\""
-  let desc = newProfile.desc == nil ? "null" : "\"\(_desc)\""
+  let name =  "\"\(_name)\""
+  let desc = "\"\(_desc)\""
   let picture = "\"\(newProfile.picture)\""
-  let blockedUsersList = newProfile.blockedUsersList!
+  let blockedUsersList = newProfile.blockedUsersList != nil ? newProfile.blockedUsersList! : []
 
   let blockUserAddresses = flatten_address_list(addresses: newProfile.blockedUsersList!)
   let jsonString =
     "{\"name\":\(name),\"desc\":\(desc),\"picture\":\(picture),\"blockedUsersList\":\(blockUserAddresses)}"
 
   let newUserProfile = UpdateUseProfile(
-    name: name.replacingOccurrences(of: "\"", with: ""),
-    desc: desc.replacingOccurrences(of: "\"", with: ""),
-    picture: picture.replacingOccurrences(of: "\"", with: ""),
+    name: _name,
+    desc: _desc,
+    picture: newProfile.picture,
     blockedUsersList: blockedUsersList)
   let hash = generateSHA256Hash(msg: jsonString)
 

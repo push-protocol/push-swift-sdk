@@ -28,7 +28,7 @@ class UpdateUserTests: XCTestCase {
 
   }
 
-  func testUserBlock() async throws {
+  func testUserBlockExistingUser() async throws {
     let (a1, a2, a3) = (
       generateRandomEthereumAddress(), generateRandomEthereumAddress(),
       generateRandomEthereumAddress()
@@ -41,7 +41,37 @@ class UpdateUserTests: XCTestCase {
       env: .STAGING)
   }
 
-  func testUserUnBlock() async throws {
+  func testUserBlockCreatedUser() async throws {
+    let userPk = getRandomAccount()
+    let signer = try SignerPrivateKey(
+      privateKey: userPk
+    )
+    let addrs = try await signer.getAddress()
+
+    let user = try await PushUser.create(
+      options: PushUser.CreateUserOptions(
+        env: ENV.STAGING,
+        signer: signer,
+        progressHook: nil
+      ))
+
+     let userPpgpPk = try await PushUser.DecryptPGPKey(
+      encryptedPrivateKey: user.encryptedPrivateKey, signer: signer)
+
+
+    let (a1, a2, a3) = (
+      generateRandomEthereumAddress(), generateRandomEthereumAddress(),
+      generateRandomEthereumAddress()
+    )
+
+    let usersToBlock = [a1, a2, a3]
+
+    try await PushUser.blockUsers(
+      addressesToBlock: usersToBlock, account: addrs, pgpPrivateKey: userPpgpPk,
+      env: .STAGING)
+  }
+
+  func testUserUnBlockExistingUser() async throws {
     let (a1, a2, a3) = (
       generateRandomEthereumAddress(), generateRandomEthereumAddress(),
       generateRandomEthereumAddress()
@@ -54,6 +84,41 @@ class UpdateUserTests: XCTestCase {
       addressesToBlock: usersToBlock, account: UserAddress, pgpPrivateKey: UserPrivateKey,
       env: .STAGING)
 
+    try await PushUser.unblockUsers(
+      addressesToUnblock: usersToUnBlock, account: UserAddress, pgpPrivateKey: UserPrivateKey,
+      env: .STAGING)
+  }
+
+  func testUserUnBlockCreatedUser() async throws {
+    let userPk = getRandomAccount()
+    let signer = try SignerPrivateKey(
+      privateKey: userPk
+    )
+    let addrs = try await signer.getAddress()
+
+    let user = try await PushUser.create(
+      options: PushUser.CreateUserOptions(
+        env: ENV.STAGING,
+        signer: signer,
+        progressHook: nil
+      ))
+
+     let userPpgpPk = try await PushUser.DecryptPGPKey(
+      encryptedPrivateKey: user.encryptedPrivateKey, signer: signer)
+
+
+    let (a1, a2, a3) = (
+      generateRandomEthereumAddress(), generateRandomEthereumAddress(),
+      generateRandomEthereumAddress()
+    )
+
+    let usersToBlock = [a1, a2, a3]
+    let usersToUnBlock = [a1,a3]
+
+    try await PushUser.blockUsers(
+      addressesToBlock: usersToBlock, account: addrs, pgpPrivateKey: userPpgpPk,
+      env: .STAGING)
+    
     try await PushUser.unblockUsers(
       addressesToUnblock: usersToUnBlock, account: UserAddress, pgpPrivateKey: UserPrivateKey,
       env: .STAGING)
