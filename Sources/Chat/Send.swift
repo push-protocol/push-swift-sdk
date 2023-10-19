@@ -285,8 +285,8 @@ extension PushChat {
     let apiData = AcceptHashData(
       fromDID: approveOptions.fromDID,
       toDID: approveOptions.toDID, status: "Approved")
-
-    let jsonString = try JSONEncoder().encode(apiData).toString()
+  
+    let jsonString = "{\"fromDID\":\"\(apiData.fromDID)\",\"toDID\":\"\(apiData.toDID)\",\"status\":\"\(apiData.status)\"}"
     let hash = generateSHA256Hash(
       msg: jsonString
     )
