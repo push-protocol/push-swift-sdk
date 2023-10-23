@@ -24,7 +24,6 @@ let package = Package(
       dependencies: [
         .product(name: "ObjectivePGP", package: "ObjectivePGP"),
         "CryptoSwift",
-        .product(name: "web3swift", package: "web3swift")
       ],
       path: "Sources"
     ),
