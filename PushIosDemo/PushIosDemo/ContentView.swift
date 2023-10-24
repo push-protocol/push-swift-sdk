@@ -37,7 +37,7 @@ struct ContentView: View {
 
 func connect() async {
   do {
-    let user = try await Push.User.get(
+    let user = try await PushUser.get(
       account: "0xD26A7BF7fa0f8F1f3f73B056c9A67565A6aFE63c", env: .STAGING)!
     print(user)
   } catch {

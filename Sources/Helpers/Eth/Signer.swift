@@ -6,7 +6,7 @@ public protocol Signer {
   func getAddress() async throws -> String
 }
 
-public protocol TypedSinger {
+public protocol TypedSigner {
   func getEip712Signature(message: String)
     async throws -> String
   func getAddress() async throws -> String

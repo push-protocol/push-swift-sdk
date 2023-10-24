@@ -95,9 +95,9 @@ let result:Bool = try await PushChannel.subscribe(
 <details>
   <summary><b>Signer defination</b></summary>
 
-Here `Signer` implements to the protocol `TypedSinger`
+Here `Signer` implements to the protocol `TypedSigner`
 ```swift
-public protocol TypedSinger {
+public protocol TypedSigner {
   func getEip712Signature(message: String)
     async throws -> String
   func getAddress() async throws -> String
@@ -170,9 +170,9 @@ let result:Bool = try await PushChannel.unsubscribe(
 
 <details>
 <summary><b>Signer defination</b></summary>
-Here `Signer` implements to the protocol `TypedSinger`
+Here `Signer` implements to the protocol `TypedSigner`
 ```swift
-public protocol TypedSinger {
+public protocol TypedSigner {
   func getEip712Signature(message: String)
     async throws -> String
   func getAddress() async throws -> String

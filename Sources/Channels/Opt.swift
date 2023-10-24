@@ -28,12 +28,12 @@ extension PushChannel {
   }
 
   public struct SubscribeOption {
-    let signer: TypedSinger
+    let signer: TypedSigner
     let channelAddress: String
     let env: ENV
 
     public init(
-      signer: TypedSinger,
+      signer: TypedSigner,
       channelAddress: String,
       env: ENV
     ) {

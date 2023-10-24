@@ -26,7 +26,7 @@ public struct SignerPrivateKey: Push.Signer {
   }
 }
 
-public struct MockEIP712OptinSigner: TypedSinger {
+public struct MockEIP712OptinSigner: TypedSigner {
   public func getEip712Signature(message: String)
     async throws -> String
   {
@@ -42,7 +42,7 @@ public struct MockEIP712OptinSigner: TypedSinger {
   }
 }
 
-public struct MockEIP712OptoutSigner: TypedSinger {
+public struct MockEIP712OptoutSigner: TypedSigner {
   public func getEip712Signature(message: String)
     async throws -> String
   {
