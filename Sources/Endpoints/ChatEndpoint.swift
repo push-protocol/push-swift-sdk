@@ -83,7 +83,8 @@ extension PushEndpoint {
   ) throws -> Self {
     return PushEndpoint(
       env: env,
-      path: "chat/groups"
+      path: "chat/groups",
+      apiVersion: "v2"
     )
   }
 
@@ -99,11 +100,13 @@ extension PushEndpoint {
 
   static func getGroup(
     chatId: String,
+    apiVersion: String = "v1",
     env: ENV
   ) throws -> Self {
     return PushEndpoint(
       env: env,
-      path: "chat/groups/\(chatId)"
+      path: "chat/groups/\(chatId)",
+      apiVersion: apiVersion
     )
   }
 

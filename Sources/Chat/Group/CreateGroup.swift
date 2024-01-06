@@ -2,17 +2,9 @@ import Foundation
 
 extension PushChat {
 
-  public static func createGroup(options: CreateGroupOptions) async throws -> PushGroup {
+  public static func createGroup(options: CreateGroupOptions) async throws -> PushGroupInfoDTO {
     do {
-
-      let createGroupInfoHash = try getCreateGroupHash(options: options)
-      let signature = try Pgp.sign(
-        message: createGroupInfoHash, privateKey: options.creatorPgpPrivateKey)
-
-      let sigType = "pgp"
-      let verificationProof = "\(sigType):\(signature)"
-
-      let payload = CreateGroupPlayload(options: options, verificationProof: verificationProof)
+      let payload = try CreateGroupPlayload(options: options)
       return try await createGroupService(payload: payload, env: options.env)
     } catch {
       throw GroupChatError.RUNTIME_ERROR(
@@ -66,7 +58,7 @@ extension PushChat {
   }
 
   static func createGroupService(payload: CreateGroupPlayload, env: ENV) async throws
-    -> PushChat.PushGroup
+    -> PushChat.PushGroupInfoDTO
   {
     let url = try PushEndpoint.createChatGroup(env: env).url
     var request = URLRequest(url: url)
@@ -81,11 +73,10 @@ extension PushChat {
     }
 
     guard (200...299).contains(httpResponse.statusCode) else {
-      print(String(data: data, encoding: .utf8)!)
       throw URLError(.badServerResponse)
     }
 
-    let groupData = try JSONDecoder().decode(PushGroup.self, from: data)
+    let groupData = try JSONDecoder().decode(PushGroupInfoDTO.self, from: data)
     return groupData
 
   }
@@ -94,27 +85,120 @@ extension PushChat {
 struct CreateGroupPlayload: Encodable {
   var groupName: String
   var groupDescription: String
-  var members: [String]
   var groupImage: String
-  var isPublic: Bool
-  var admins: [String] = []
-  var contractAddressNFT: String?
-  var numberOfNFTs: Int?
-  var contractAddressERC20: String?
-  var numberOfERC20: Int?
-  var groupCreator: String
-  var verificationProof: String
-  var meta: String?
 
-  public init(options: PushChat.CreateGroupOptions, verificationProof: String) {
+  var rules: [String: String]
+  var isPublic: Bool
+  var groupType: String = "default"
+  var profileVerificationProof: String
+
+  var config: Config
+
+  var members: [String]
+  var admins: [String] = []
+  var idempotentVerificationProof: String
+
+  struct Config: Encodable {
+    var meta: String?
+    var scheduleAt: String?
+    var scheduleEnd: String?
+    var status: String?
+    var configVerificationProof: String
+
+    private enum CodingKeys: String, CodingKey {
+      case meta, scheduleAt, scheduleEnd, status, configVerificationProof
+    }
+
+    func encode(to encoder: Encoder) throws {
+      var container = encoder.container(keyedBy: CodingKeys.self)
+
+      try container.encode(meta, forKey: .meta)
+      try container.encode(scheduleAt, forKey: .scheduleAt)
+      try container.encode(scheduleEnd, forKey: .scheduleEnd)
+      try container.encode(status, forKey: .status)
+      try container.encode(configVerificationProof, forKey: .configVerificationProof)
+    }
+  }
+
+  public init(options: PushChat.CreateGroupOptions) throws {
     groupName = options.name
     groupDescription = options.description
-    members = options.members
     groupImage = options.image
+
+    rules = [String: String]()
     isPublic = options.isPublic
-    groupCreator = options.creatorAddress
-    self.verificationProof = verificationProof
+
+    members = options.members
+
+    idempotentVerificationProof = try getIdempotentVerificationProof(options: options)
+    profileVerificationProof = try getProfileVerificationProof(options: options)
+
+    config = Config(configVerificationProof: try getConfigVerificationProof(options: options))
+
   }
+}
+
+func getProfileVerificationProof(options: PushChat.CreateGroupOptions) throws -> String {
+  let profileHash = try getCreateGroupProfileVerificationHash(options: options)
+  let signature = try Pgp.sign(
+    message: profileHash, privateKey: options.creatorPgpPrivateKey)
+
+  let connectedUserDID = walletToPCAIP10(account: options.creatorAddress)
+  let sigType = "pgpv2"
+  let verificationProof =
+    "\(sigType):\(signature):\(connectedUserDID)"
+  return verificationProof
+}
+
+func getCreateGroupProfileVerificationHash(options: PushChat.CreateGroupOptions) throws -> String {
+  let jsonString =
+    "{\"groupName\":\"\(options.name)\",\"groupDescription\":\"\(options.description)\",\"groupImage\":\"\(options.image)\",\"rules\":{},\"isPublic\":\(options.isPublic),\"groupType\":\"default\"}"
+
+  let hash = generateSHA256Hash(msg: jsonString)
+
+  return hash
+}
+
+func getConfigVerificationProof(options: PushChat.CreateGroupOptions) throws -> String {
+  let profileHash = try getCreateGroupConfigVerificationHash(options: options)
+  let signature = try Pgp.sign(
+    message: profileHash, privateKey: options.creatorPgpPrivateKey)
+
+  let connectedUserDID = walletToPCAIP10(account: options.creatorAddress)
+  let sigType = "pgpv2"
+  let verificationProof =
+    "\(sigType):\(signature):\(connectedUserDID)"
+  return verificationProof
+}
+
+func getCreateGroupConfigVerificationHash(options: PushChat.CreateGroupOptions) throws -> String {
+  let jsonString =
+    "{\"meta\":null,\"scheduleAt\":null,\"scheduleEnd\":null,\"status\":null}"
+
+  let hash = generateSHA256Hash(msg: jsonString)
+
+  return hash
+}
+
+func getIdempotentVerificationProof(options: PushChat.CreateGroupOptions) throws -> String {
+  let profileHash = try getCreateGroupIdempotentHash(options: options)
+  let signature = try Pgp.sign(
+    message: profileHash, privateKey: options.creatorPgpPrivateKey)
+
+  let connectedUserDID = walletToPCAIP10(account: options.creatorAddress)
+  let sigType = "pgpv2"
+  let verificationProof =
+    "\(sigType):\(signature):\(connectedUserDID)"
+  return verificationProof
+}
+
+func getCreateGroupIdempotentHash(options: PushChat.CreateGroupOptions) throws -> String {
+  let jsonString =
+    "{\"members\":\(options.members),\"admins\":[]}"
+
+  let hash = generateSHA256Hash(msg: jsonString)
+
+  return hash
 }
 
 func getCreateGroupHash(options: PushChat.CreateGroupOptions) throws -> String {

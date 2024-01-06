@@ -229,6 +229,20 @@ extension PushChat {
     return try await sendMessageService(payload: sendMessagePayload, env: sendOptions.env)
   }
 
+  public static func sendGroupMessage(_ sendOptions: SendOptions) async throws {
+    let groupInfo = try await PushChat.getGroupInfoDTO(
+      chatId: sendOptions.receiverAddress, env: sendOptions.env)!
+
+    var secretKey: String
+    if let encryptedSecret = groupInfo.encryptedSecret, let _ = groupInfo.sessionKey {
+      secretKey = try Pgp.pgpDecrypt(
+        cipherText: encryptedSecret, toPrivateKeyArmored: sendOptions.pgpPrivateKey)
+    } else {
+      secretKey = getRandomHexString(length: 15)
+    }
+
+  }
+
   public static func sendIntent(_ sendOptions: SendOptions) async throws -> Message {
     // check if user exists
     let anotherUser = try await PushUser.get(
@@ -285,8 +299,9 @@ extension PushChat {
     let apiData = AcceptHashData(
       fromDID: approveOptions.fromDID,
       toDID: approveOptions.toDID, status: "Approved")
-  
-    let jsonString = "{\"fromDID\":\"\(apiData.fromDID)\",\"toDID\":\"\(apiData.toDID)\",\"status\":\"\(apiData.status)\"}"
+
+    let jsonString =
+      "{\"fromDID\":\"\(apiData.fromDID)\",\"toDID\":\"\(apiData.toDID)\",\"status\":\"\(apiData.status)\"}"
     let hash = generateSHA256Hash(
       msg: jsonString
     )
