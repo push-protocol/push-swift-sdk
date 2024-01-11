@@ -183,7 +183,16 @@ extension PushChat {
     } else {
       return []
     }
+  }
 
+  static func getAllGroupMembersPublicKeys(_ groupId: String, _ env: ENV) async throws -> [String] {
+    if let group = try await PushChat.getGroup(chatId: groupId, env: env) {
+      let _publicKeys = group.members.compactMap { $0.publicKey }
+
+      return _publicKeys
+    } else {
+      return []
+    }
   }
 
   public static func send(_ chatOptions: SendOptions) async throws -> Message {
@@ -265,14 +274,34 @@ extension PushChat {
     return try await sendIntentService(payload: sendMessagePayload, env: sendOptions.env)
   }
 
-  public static func approve(_ approveOptions: ApproveOptions) async throws -> String {
-    let acceptIntentPayload = try await getApprovePayload(approveOptions)
+  static func getApprovePayloadCore(_ approveOptions: ApproveOptions) async throws
+    -> ApproveRequestPayload
+  {
+    if approveOptions.isGroupChat {
+      // TODO: remove unwrap
+      let groupInfo = try await PushChat.getGroupInfoDTO(
+        chatId: approveOptions.toDID, env: approveOptions.env)!
+      if !groupInfo.isPublic {
+        return try await getApprovePayloadPrivateGroup(approveOptions, groupInfo)
+      }
+    }
 
+    let acceptIntentPayload = try await getApprovePayload(approveOptions)
+    return acceptIntentPayload
+  }
+
+  public static func approve(_ approveOptions: ApproveOptions) async throws -> String {
+
+    let acceptIntentPayload = try await getApprovePayloadCore(approveOptions)
     let url = try PushEndpoint.acceptChatRequest(env: approveOptions.env).url
+
     var request = URLRequest(url: url)
     request.httpMethod = "PUT"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.httpBody = try JSONEncoder().encode(acceptIntentPayload)
+
+    print(String(data: request.httpBody!, encoding: .utf8)!)
+    print(url)
 
     let (data, res) = try await URLSession.shared.data(for: request)
 
@@ -313,17 +342,69 @@ extension PushChat {
       status: "Approved", sigType: "pgp", verificationProof: "pgp:\(sig)")
   }
 
+  static func getApprovePayloadPrivateGroup(
+    _ approveOptions: ApproveOptions, _ groupInfo: PushChat.PushGroupInfoDTO
+  ) async throws -> ApproveRequestPayload {
+    let secretKey = getRandomHexString(length: 15)
+    let senderPublicKey = try await PushUser.get(
+      account: approveOptions.fromDID, env: approveOptions.env)!.getPGPPublickey()
+
+    var groupMembersPublicKeys = try await getAllGroupMembersPublicKeys(
+      groupInfo.chatId, approveOptions.env)
+    groupMembersPublicKeys.append(senderPublicKey)
+
+    let encryptedSecret = try Pgp.pgpEncryptV2(
+      message: secretKey, pgpPublicKeys: groupMembersPublicKeys)
+
+    // let publicKeys = grou
+    let sigType = "pgpv2"
+
+    let bodyToBeHashed = try getJsonStringFromKV([
+      ("fromDID", approveOptions.fromDID),
+      ("toDID", approveOptions.toDID),
+      ("status", "Approved"),
+      ("encryptedSecret", encryptedSecret),
+    ])
+
+    // let bodyToBeHashed =
+    //   "{\"fromDID\":\"\(approveOptions.fromDID)\",\"toDID\":\"\(approveOptions.toDID)\",\"status\":\"Approved\",\"encryptedSecret\":\"\(encryptedSecret)\"}"
+
+    print("body to be hashed \(bodyToBeHashed)")
+    print("\n---\n")
+
+    let hash = generateSHA256Hash(msg: bodyToBeHashed)
+    print("hash was \(hash)")
+
+    let signature = try Pgp.sign(message: hash, privateKey: approveOptions.privateKey)
+    let verificationProof = "\(sigType):\(signature)"
+
+    let approvePayload = ApproveRequestPayload(
+      fromDID: approveOptions.fromDID,
+      toDID: approveOptions.toDID,
+      signature: signature,
+      // status: "Approved",
+      status: "Approved",
+      sigType: sigType,
+      verificationProof: verificationProof, encryptedSecret: encryptedSecret
+    )
+
+    return approvePayload
+  }
+
   public struct ApproveOptions {
     var fromDID: String
     var toDID: String
     var privateKey: String
     var env: ENV
+    var isGroupChat: Bool
 
     public init(requesterAddress: String, approverAddress: String, privateKey: String, env: ENV) {
       self.fromDID = walletToPCAIP10(account: requesterAddress)
       self.toDID = walletToPCAIP10(account: approverAddress)
       self.privateKey = privateKey
       self.env = env
+
+      self.isGroupChat = isGroupChatId(requesterAddress)
 
       if isGroupChatId(requesterAddress) {
         self.toDID = walletToPCAIP10(account: requesterAddress)
@@ -339,6 +420,7 @@ extension PushChat {
     var status: String = "Approved"
     var sigType: String
     var verificationProof: String
+    var encryptedSecret: String?
   }
 
 }

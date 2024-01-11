@@ -49,4 +49,22 @@ extension PushChat {
     return groupData
   }
 
+  public static func getGroupSessionKey(chatId: String, env: ENV) async throws -> String {
+    let url = try PushEndpoint.getGroupSession(chatId: chatId, apiVersion: "v1", env: env).url
+    var request = URLRequest(url: url)
+    request.httpMethod = "GET"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+    let (data, res) = try await URLSession.shared.data(for: request)
+    guard let httpResponse = res as? HTTPURLResponse else {
+      throw URLError(.badServerResponse)
+    }
+
+    guard (200...299).contains(httpResponse.statusCode) else {
+      throw URLError(.badServerResponse)
+    }
+
+    return String(data: data, encoding: .utf8)!
+  }
+
 }

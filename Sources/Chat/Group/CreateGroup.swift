@@ -5,6 +5,7 @@ extension PushChat {
   public static func createGroup(options: CreateGroupOptions) async throws -> PushGroupInfoDTO {
     do {
       let payload = try CreateGroupPlayload(options: options)
+      print("got payload")
       return try await createGroupService(payload: payload, env: options.env)
     } catch {
       throw GroupChatError.RUNTIME_ERROR(
@@ -60,7 +61,10 @@ extension PushChat {
   static func createGroupService(payload: CreateGroupPlayload, env: ENV) async throws
     -> PushChat.PushGroupInfoDTO
   {
+
+    print("....")
     let url = try PushEndpoint.createChatGroup(env: env).url
+    print("creating group at \(url)")
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")

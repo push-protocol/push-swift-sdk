@@ -18,5 +18,6 @@ func getJsonStringFromKV(_ tuples: [(String, String)]) throws -> String {
   jsonString = removeOccurrences(substring: "},{", text: jsonString, with: ",")
   jsonString = removeOccurrences(substring: "}]", text: jsonString, with: "}")
   jsonString = removeOccurrences(substring: "[{", text: jsonString, with: "{")
+  // jsonString = removeOccurrences(substring: "/", text: jsonString, with: "\\n")
   return jsonString
 }
