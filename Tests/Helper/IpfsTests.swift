@@ -23,10 +23,10 @@ class IpfsTests: XCTestCase {
       message.signature.hasSuffix("-----END PGP SIGNATURE-----\n"),
       "signature should end with appropriate suffix")
     XCTAssertTrue(
-      message.encryptedSecret.hasPrefix("-----BEGIN PGP MESSAGE-----"),
+      message.encryptedSecret!.hasPrefix("-----BEGIN PGP MESSAGE-----"),
       "encryptedSecret should begin with appropriate prefix")
     XCTAssertTrue(
-      message.encryptedSecret.hasSuffix("-----END PGP MESSAGE-----\n"),
+      message.encryptedSecret!.hasSuffix("-----END PGP MESSAGE-----\n"),
       "encryptedSecret should end with appropriate suffix")
   }
 

@@ -49,8 +49,8 @@ extension PushChat {
     return groupData
   }
 
-  public static func getGroupSessionKey(chatId: String, env: ENV) async throws -> String {
-    let url = try PushEndpoint.getGroupSession(chatId: chatId, apiVersion: "v1", env: env).url
+  public static func getGroupSessionKey(sessionKey: String, env: ENV) async throws -> String {
+    let url = try PushEndpoint.getGroupSession(chatId: sessionKey, apiVersion: "v1", env: env).url
     var request = URLRequest(url: url)
     request.httpMethod = "GET"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -64,7 +64,13 @@ extension PushChat {
       throw URLError(.badServerResponse)
     }
 
-    return String(data: data, encoding: .utf8)!
+    struct SecretSessionRes: Codable {
+      var encryptedSecret: String
+    }
+
+    let groupData = try JSONDecoder().decode(SecretSessionRes.self, from: data)
+
+    return groupData.encryptedSecret
   }
 
 }

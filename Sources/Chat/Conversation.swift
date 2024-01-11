@@ -29,6 +29,7 @@ extension PushChat {
     async throws
     -> Message
   {
+
     return try await History(
       threadHash: threadHash, limit: 1, pgpPrivateKey: pgpPrivateKey, toDecrypt: toDecrypt, env: env
     ).first!
@@ -44,8 +45,8 @@ extension PushChat {
 
       if toDecrypt {
         for i in 0..<messages.count {
-          let decryptedMsg = try decryptMessage(
-            message: messages[i], privateKeyArmored: pgpPrivateKey)
+          let decryptedMsg = try await decryptMessage(
+            message: messages[i], privateKeyArmored: pgpPrivateKey, env: env)
           messages[i].messageContent = decryptedMsg
         }
       }
@@ -77,20 +78,48 @@ extension PushChat {
 
   public static func decryptMessage(
     message: Message,
-    privateKeyArmored: String
-  ) throws -> String {
+    privateKeyArmored: String,
+    env: ENV = ENV.STAGING
+  ) async throws -> String {
     do {
+
+      if message.encType == "pgpv1:group" {
+        return try await decryptPrivateGroupMessage(
+          message, privateKeyArmored: privateKeyArmored, env: env)
+      }
       if message.encType != "pgp" {
         return message.messageContent
       }
       return try decryptMessage(
-        message.messageContent, encryptedSecret: message.encryptedSecret,
+        message.messageContent, encryptedSecret: message.encryptedSecret!,
         privateKeyArmored: privateKeyArmored)
     } catch {
       if isGroupChatId(message.toCAIP10) {
         return "message encrypted before you join"
       }
       return "Unable to decrypt message"
+    }
+  }
+
+  public static func decryptPrivateGroupMessage(
+    _ message: Message,
+    privateKeyArmored: String,
+    env: ENV
+  ) async throws -> String {
+    do {
+
+      let encryptedSecret = try await PushChat.getGroupSessionKey(
+        sessionKey: message.sessionKey!, env: env)
+
+      print("got enc sec \(encryptedSecret)")
+
+      return try decryptMessage(
+        message.messageContent,
+        encryptedSecret: encryptedSecret,
+        privateKeyArmored: privateKeyArmored
+      )
+    } catch {
+      throw PushChat.ChatError.dectyptionFalied
     }
   }
 

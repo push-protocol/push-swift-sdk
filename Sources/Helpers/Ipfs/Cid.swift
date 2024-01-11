@@ -11,9 +11,10 @@ public struct Message: Codable {
   public var sigType: String
   public var timestamp: Int?
   public var encType: String
-  public var encryptedSecret: String
+  public var encryptedSecret: String?
   public var link: String?
   public var cid: String?
+  public var sessionKey: String?
 }
 
 public func getCID(env: ENV, cid: String) async throws -> Message {
