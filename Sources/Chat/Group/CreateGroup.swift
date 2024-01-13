@@ -62,9 +62,7 @@ extension PushChat {
     -> PushChat.PushGroupInfoDTO
   {
 
-    print("....")
     let url = try PushEndpoint.createChatGroup(env: env).url
-    print("creating group at \(url)")
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")

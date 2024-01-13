@@ -1,10 +1,10 @@
 import Push
 import XCTest
 
-class PrivateGroupDerypt: XCTestCase {
+class PrivateGroupSendRead: XCTestCase {
+  let env = ENV.STAGING
 
   func testPrivateGroupFetchConvesation() async throws {
-    let env = ENV.STAGING
 
     // conversation hash are also called link inside chat messages
     let converationHash = try await PushChat.ConversationHash(
@@ -22,6 +22,21 @@ class PrivateGroupDerypt: XCTestCase {
 
     print("got message \(message.messageContent)")
     print(message)
+
+  }
+
+  func testPrivateGroupSendAAA() async throws {
+
+    let res = try await PushChat.send(
+      PushChat.SendOptions(
+        messageContent: "This is the test message",
+        messageType: "Text",
+        receiverAddress: PG_GROUP_ID,
+        account: PG_USER,
+        pgpPrivateKey: PG_PGP_KEY
+      ))
+
+    print("got msg", res)
 
   }
 }

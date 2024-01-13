@@ -14,9 +14,34 @@ extension PushChat {
     var messageType: String
     var signature: String
     var encType: String
-    var encryptedSecret: String
+    var encryptedSecret: String?
     var sigType: String
     var verificationProof: String?
+    var sessionKey: String?
+
+    private enum CodingKeys: String, CodingKey {
+      case fromDID, toDID, fromCAIP10, toCAIP10, messageContent, messageType, signature, encType,
+        encryptedSecret, sigType, verificationProof, sessionKey
+    }
+
+    func encode(to encoder: Encoder) throws {
+      var container = encoder.container(keyedBy: CodingKeys.self)
+
+      try container.encode(fromDID, forKey: .fromDID)
+      try container.encode(toDID, forKey: .toDID)
+      try container.encode(fromCAIP10, forKey: .fromCAIP10)
+      try container.encode(toCAIP10, forKey: .toCAIP10)
+      try container.encode(messageContent, forKey: .messageContent)
+
+      try container.encode(messageType, forKey: .messageType)
+      try container.encode(signature, forKey: .signature)
+      try container.encode(encType, forKey: .encType)
+      try container.encode(encryptedSecret, forKey: .encryptedSecret)
+
+      try container.encode(sigType, forKey: .sigType)
+      try container.encode(verificationProof, forKey: .verificationProof)
+      try container.encode(sessionKey, forKey: .sessionKey)
+    }
   }
 
   public struct SendOptions {
@@ -76,12 +101,14 @@ extension PushChat {
     request.httpBody = try JSONEncoder().encode(payload)
 
     let (data, res) = try await URLSession.shared.data(for: request)
+    print("go the data \n \(String(data:request.httpBody!, encoding: .utf8)!) \n")
 
     guard let httpResponse = res as? HTTPURLResponse else {
       throw URLError(.badServerResponse)
     }
 
     guard (200...299).contains(httpResponse.statusCode) else {
+      print(String(data: data, encoding: .utf8)!)
       throw URLError(.badServerResponse)
     }
 
@@ -116,6 +143,62 @@ extension PushChat {
   ) throws -> String {
 
     return try Pgp.sign(message: messageContent, privateKey: senderPgpPrivateKey)
+  }
+
+  static func getPrivateGroupSendMessagePayload(
+    _ options: SendOptions,
+    groupInfo: PushChat
+      .PushGroupInfoDTO
+  ) async throws
+    -> SendMessagePayload
+  {
+
+    var encType = "PlainText"
+    var (signature, messageConent) = ("", options.messageContent)
+
+    let sessionKey: String?
+
+    let secretKey = try Pgp.pgpDecrypt(
+      cipherText: groupInfo.encryptedSecret!, toPrivateKeyArmored: options.pgpPrivateKey)
+    if groupInfo.encryptedSecret != nil {
+      encType = "pgpv1:group"
+
+      print("trying to encrypt: \(messageConent)")
+      messageConent = try AESCBCHelper.encrypt(messageText: messageConent, secretKey: secretKey)
+      print("got the enc message content \(messageConent)")
+      signature = try Pgp.sign(message: messageConent, privateKey: options.pgpPrivateKey)
+
+    } else {
+      signature = try signMessage(
+        messageContent: messageConent, senderPgpPrivateKey: options.pgpPrivateKey)
+    }
+
+    let dataToHash = try getJsonStringFromKV([
+      ("fromDID", options.account),
+      ("toDID", options.receiverAddress),
+      ("fromCAIP10", options.account),
+      ("toCAIP10", options.receiverAddress),
+      ("messageType", "Text"),
+      ("messageObj", messageConent),
+      ("encType", encType),
+      ("sessionKey", secretKey),
+      ("encryptedSecret", "null"),
+      ("messageContent", messageConent),
+      ("signature", signature),
+      ("sigType", "pgpv3"),
+    ])
+
+    print("got the dataTOHahs \(dataToHash)")
+    let hash = generateSHA256Hash(msg: dataToHash)
+    let verificationProof = try Pgp.sign(message: hash, privateKey: options.pgpPrivateKey)
+
+    return SendMessagePayload(
+      fromDID: options.account, toDID: options.receiverAddress,
+      fromCAIP10: options.account, toCAIP10: options.receiverAddress,
+      messageContent: messageConent, messageType: options.messageType,
+      signature: signature, encType: encType, encryptedSecret: nil, sigType: "pgpv3",
+      verificationProof: "pgpv3:\(verificationProof)",
+      sessionKey: groupInfo.sessionKey)
   }
 
   static func getSendMessagePayload(
@@ -225,7 +308,15 @@ extension PushChat {
 
     if shouldEncrypt {
       if isGroupChatId(receiverAddress) {
-        publicKeys = try await getGroupChatPublicKeys(sendOptions)
+        let groupInfo = try await PushChat.getGroupInfoDTO(
+          chatId: receiverAddress, env: sendOptions.env)!
+        if groupInfo.isPublic {
+          publicKeys = try await getGroupChatPublicKeys(sendOptions)
+        } else {
+          let payload = try await getPrivateGroupSendMessagePayload(
+            sendOptions, groupInfo: groupInfo)
+          return try await sendMessageService(payload: payload, env: sendOptions.env)
+        }
       } else {
         publicKeys = try await getP2PChatPublicKeys(sendOptions)
       }
@@ -236,20 +327,6 @@ extension PushChat {
     let sendMessagePayload = try await getSendMessagePayload(
       sendOptions, publicKeys: publicKeys, shouldEncrypt: shouldEncrypt)
     return try await sendMessageService(payload: sendMessagePayload, env: sendOptions.env)
-  }
-
-  public static func sendGroupMessage(_ sendOptions: SendOptions) async throws {
-    let groupInfo = try await PushChat.getGroupInfoDTO(
-      chatId: sendOptions.receiverAddress, env: sendOptions.env)!
-
-    var secretKey: String
-    if let encryptedSecret = groupInfo.encryptedSecret, let _ = groupInfo.sessionKey {
-      secretKey = try Pgp.pgpDecrypt(
-        cipherText: encryptedSecret, toPrivateKeyArmored: sendOptions.pgpPrivateKey)
-    } else {
-      secretKey = getRandomHexString(length: 15)
-    }
-
   }
 
   public static func sendIntent(_ sendOptions: SendOptions) async throws -> Message {
