@@ -13,21 +13,21 @@ class PrivateGroupSendRead: XCTestCase {
       env: env
     )!
 
-    let message = try await PushChat.Latest(
+    let _ = try await PushChat.Latest(
       threadHash: converationHash,
       pgpPrivateKey: PG_PGP_KEY,
       toDecrypt: true,
       env: env
     )
 
-    print("got message \(message.messageContent)")
-    print(message)
+    // print("got message \(message.messageContent)")
+    // print(message)
 
   }
 
-  func testPrivateGroupSendAAA() async throws {
+  func testPrivateGroupSendPrivateMessage() async throws {
 
-    let res = try await PushChat.send(
+    let _ = try await PushChat.send(
       PushChat.SendOptions(
         messageContent: "This is the test message",
         messageType: "Text",
@@ -36,9 +36,8 @@ class PrivateGroupSendRead: XCTestCase {
         pgpPrivateKey: PG_PGP_KEY
       ))
 
-    print("got msg", res)
-
   }
+
 }
 
 let PG_USER = "0xc95fE6BC0eC97aFA7adF2e98628caC6ec28Bb04c"

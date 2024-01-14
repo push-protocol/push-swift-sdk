@@ -11,6 +11,7 @@ extension PushChat {
     var fromCAIP10: String
     var toCAIP10: String
     var messageContent: String
+    var messageObj: String?
     var messageType: String
     var signature: String
     var encType: String
@@ -20,7 +21,8 @@ extension PushChat {
     var sessionKey: String?
 
     private enum CodingKeys: String, CodingKey {
-      case fromDID, toDID, fromCAIP10, toCAIP10, messageContent, messageType, signature, encType,
+      case fromDID, toDID, fromCAIP10, toCAIP10, messageContent, messageObj, messageType, signature,
+        encType,
         encryptedSecret, sigType, verificationProof, sessionKey
     }
 
@@ -32,6 +34,7 @@ extension PushChat {
       try container.encode(fromCAIP10, forKey: .fromCAIP10)
       try container.encode(toCAIP10, forKey: .toCAIP10)
       try container.encode(messageContent, forKey: .messageContent)
+      try container.encode(messageObj, forKey: .messageObj)
 
       try container.encode(messageType, forKey: .messageType)
       try container.encode(signature, forKey: .signature)
@@ -81,7 +84,6 @@ extension PushChat {
     }
 
     guard (200...299).contains(httpResponse.statusCode) else {
-      print(try data.toString())
       throw URLError(.badServerResponse)
     }
 
@@ -101,14 +103,12 @@ extension PushChat {
     request.httpBody = try JSONEncoder().encode(payload)
 
     let (data, res) = try await URLSession.shared.data(for: request)
-    print("go the data \n \(String(data:request.httpBody!, encoding: .utf8)!) \n")
 
     guard let httpResponse = res as? HTTPURLResponse else {
       throw URLError(.badServerResponse)
     }
 
     guard (200...299).contains(httpResponse.statusCode) else {
-      print(String(data: data, encoding: .utf8)!)
       throw URLError(.badServerResponse)
     }
 
@@ -156,16 +156,13 @@ extension PushChat {
     var encType = "PlainText"
     var (signature, messageConent) = ("", options.messageContent)
 
-    let sessionKey: String?
-
     let secretKey = try Pgp.pgpDecrypt(
       cipherText: groupInfo.encryptedSecret!, toPrivateKeyArmored: options.pgpPrivateKey)
+
     if groupInfo.encryptedSecret != nil {
       encType = "pgpv1:group"
 
-      print("trying to encrypt: \(messageConent)")
       messageConent = try AESCBCHelper.encrypt(messageText: messageConent, secretKey: secretKey)
-      print("got the enc message content \(messageConent)")
       signature = try Pgp.sign(message: messageConent, privateKey: options.pgpPrivateKey)
 
     } else {
@@ -175,30 +172,29 @@ extension PushChat {
 
     let dataToHash = try getJsonStringFromKV([
       ("fromDID", options.account),
-      ("toDID", options.receiverAddress),
+      ("toDID", options.account),
       ("fromCAIP10", options.account),
       ("toCAIP10", options.receiverAddress),
-      ("messageType", "Text"),
       ("messageObj", messageConent),
+      ("messageType", "Text"),
       ("encType", encType),
-      ("sessionKey", secretKey),
+      ("sessionKey", groupInfo.sessionKey!),
       ("encryptedSecret", "null"),
-      ("messageContent", messageConent),
-      ("signature", signature),
-      ("sigType", "pgpv3"),
     ])
 
-    print("got the dataTOHahs \(dataToHash)")
     let hash = generateSHA256Hash(msg: dataToHash)
     let verificationProof = try Pgp.sign(message: hash, privateKey: options.pgpPrivateKey)
 
     return SendMessagePayload(
       fromDID: options.account, toDID: options.receiverAddress,
       fromCAIP10: options.account, toCAIP10: options.receiverAddress,
-      messageContent: messageConent, messageType: options.messageType,
+      messageContent: messageConent,
+      messageObj: messageConent,
+      messageType: options.messageType,
       signature: signature, encType: encType, encryptedSecret: nil, sigType: "pgpv3",
       verificationProof: "pgpv3:\(verificationProof)",
       sessionKey: groupInfo.sessionKey)
+
   }
 
   static func getSendMessagePayload(
@@ -377,9 +373,6 @@ extension PushChat {
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.httpBody = try JSONEncoder().encode(acceptIntentPayload)
 
-    print(String(data: request.httpBody!, encoding: .utf8)!)
-    print(url)
-
     let (data, res) = try await URLSession.shared.data(for: request)
 
     guard let httpResponse = res as? HTTPURLResponse else {
@@ -443,14 +436,7 @@ extension PushChat {
       ("encryptedSecret", encryptedSecret),
     ])
 
-    // let bodyToBeHashed =
-    //   "{\"fromDID\":\"\(approveOptions.fromDID)\",\"toDID\":\"\(approveOptions.toDID)\",\"status\":\"Approved\",\"encryptedSecret\":\"\(encryptedSecret)\"}"
-
-    print("body to be hashed \(bodyToBeHashed)")
-    print("\n---\n")
-
     let hash = generateSHA256Hash(msg: bodyToBeHashed)
-    print("hash was \(hash)")
 
     let signature = try Pgp.sign(message: hash, privateKey: approveOptions.privateKey)
     let verificationProof = "\(sigType):\(signature)"
