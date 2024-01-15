@@ -222,6 +222,6 @@ public struct Pgp {
     let messsageData = message.data(using: .utf8)!
     let encrypted = try ObjectivePGP.encrypt(
       messsageData, addSignature: false, using: publicKeys)
-    return Armor.armored(encrypted, as: .message)
+    return filterPgpInfo(Armor.armored(encrypted, as: .message))
   }
 }

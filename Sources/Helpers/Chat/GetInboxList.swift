@@ -57,8 +57,8 @@ private func decryptFeeds(
         throw PushChat.ChatError.decryptedPrivateKeyNecessary
       }
 
-      let decryptedMsg = try PushChat.decryptMessage(
-        message: currentFeed.msg!, privateKeyArmored: pgpPrivateKey!)
+      let decryptedMsg = try await PushChat.decryptMessage(
+        message: currentFeed.msg!, privateKeyArmored: pgpPrivateKey!, env: env)
       currentFeed.msg?.messageContent = decryptedMsg
     }
     updatedFeeds.append(currentFeed)

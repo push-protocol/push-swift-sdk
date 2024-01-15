@@ -40,4 +40,19 @@ extension PushChat {
       }
     }
   }
+
+  public struct PushGroupInfoDTO: Codable {
+    public var groupName: String
+    public var groupDescription: String
+    public var groupImage: String?
+    public var isPublic: Bool
+    public var groupCreator: String
+    public var chatId: String
+    public var groupType: String?
+    public var meta: String?
+    public var sessionKey: String?
+    public var encryptedSecret: String?
+
+  }
+
 }

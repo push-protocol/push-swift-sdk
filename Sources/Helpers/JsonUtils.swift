@@ -1,6 +1,6 @@
 import Foundation
 
-func getJsonStringFromKV(_ tuples: [(String, String)]) throws -> String {
+public func getJsonStringFromKV(_ tuples: [(String, String)]) throws -> String {
   func removeOccurrences(substring: String, text: String, with: String) -> String {
     return text.replacingOccurrences(of: substring, with: with)
   }
@@ -18,5 +18,8 @@ func getJsonStringFromKV(_ tuples: [(String, String)]) throws -> String {
   jsonString = removeOccurrences(substring: "},{", text: jsonString, with: ",")
   jsonString = removeOccurrences(substring: "}]", text: jsonString, with: "}")
   jsonString = removeOccurrences(substring: "[{", text: jsonString, with: "{")
+  jsonString = removeOccurrences(substring: "\"null\"", text: jsonString, with: "null")
+  jsonString = removeOccurrences(substring: "\\/", text: jsonString, with: "/")
+  // jsonString = removeOccurrences(substring: "/", text: jsonString, with: "\\n")
   return jsonString
 }
