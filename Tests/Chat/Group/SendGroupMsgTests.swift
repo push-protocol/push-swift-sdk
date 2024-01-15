@@ -34,7 +34,7 @@ class GroupChatSendMsgTests: XCTestCase {
         pgpPrivateKey: UserPrivateKey
       ))
 
-    let decrytedMessage = try PushChat.decryptMessage(
+    let decrytedMessage = try await PushChat.decryptMessage(
       message: msgRes, privateKeyArmored: UserPrivateKey)
 
     XCTAssertEqual(msgRes.encType, "pgp")
