@@ -201,7 +201,7 @@ class SendChatsTests: XCTestCase {
         pgpPrivateKey: UserPrivateKey
       ))
 
-    let res = try PushChat.decryptMessage(message: msg, privateKeyArmored: UserPrivateKey)
+    let res = try await PushChat.decryptMessage(message: msg, privateKeyArmored: UserPrivateKey)
 
     XCTAssertEqual(res, messageToSen2)
   }
