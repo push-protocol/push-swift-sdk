@@ -176,7 +176,7 @@ extension PushChat {
       ("fromCAIP10", options.account),
       ("toCAIP10", options.receiverAddress),
       ("messageObj", messageConent),
-      ("messageType", "Text"),
+      ("messageType", options.messageType),
       ("encType", encType),
       ("sessionKey", groupInfo.sessionKey!),
       ("encryptedSecret", "null"),

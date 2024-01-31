@@ -45,8 +45,12 @@ extension PushChat {
 
       if toDecrypt {
         for i in 0..<messages.count {
-          let decryptedMsg = try await decryptMessage(
+          let (decryptedMsg, decryptedObj) = try await decryptMessage(
             message: messages[i], privateKeyArmored: pgpPrivateKey, env: env)
+
+          if decryptedObj != nil {
+            messages[i].messageObj = decryptedObj
+          }
           messages[i].messageContent = decryptedMsg
         }
       }
@@ -80,7 +84,7 @@ extension PushChat {
     message: Message,
     privateKeyArmored: String,
     env: ENV = ENV.STAGING
-  ) async throws -> String {
+  ) async throws -> (String, String?) {
     do {
 
       if message.encType == "pgpv1:group" {
@@ -88,16 +92,18 @@ extension PushChat {
           message, privateKeyArmored: privateKeyArmored, env: env)
       }
       if message.encType != "pgp" {
-        return message.messageContent
+        return (message.messageContent, nil)
       }
-      return try decryptMessage(
+      let decrypytedMessage = try decryptMessage(
         message.messageContent, encryptedSecret: message.encryptedSecret!,
         privateKeyArmored: privateKeyArmored)
+
+      return (decrypytedMessage, nil)
     } catch {
       if isGroupChatId(message.toCAIP10) {
-        return "message encrypted before you join"
+        return ("message encrypted before you join", nil)
       }
-      return "Unable to decrypt message"
+      return ("Unable to decrypt message", nil)
     }
   }
 
@@ -105,19 +111,28 @@ extension PushChat {
     _ message: Message,
     privateKeyArmored: String,
     env: ENV
-  ) async throws -> String {
+  ) async throws -> (String, String?) {
     do {
+      var messageObj: String? = nil
 
       let encryptedSecret = try await PushChat.getGroupSessionKey(
         sessionKey: message.sessionKey!, env: env)
 
-      print("got enc sec \(encryptedSecret)")
+      if message.messageObj != nil {
+        let msgObj = message.messageObj!
 
-      return try decryptMessage(
+        messageObj = try decryptMessage(
+          msgObj, encryptedSecret: encryptedSecret,
+          privateKeyArmored: privateKeyArmored)
+      }
+
+      let decMsg = try decryptMessage(
         message.messageContent,
         encryptedSecret: encryptedSecret,
         privateKeyArmored: privateKeyArmored
       )
+
+      return (decMsg, messageObj)
     } catch {
       throw PushChat.ChatError.dectyptionFalied
     }
