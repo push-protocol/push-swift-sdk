@@ -20,31 +20,87 @@ class PrivateGroupSendRead: XCTestCase {
       env: env
     )
 
-    print("got message \(message.messageContent)")
-    print(message)
+    assert(message.messageContent != "")
+
+    // print("got message \(message.messageContent)")
+    // print(message)
 
   }
 
-  func testPrivateGroupSendPrivateMessage() async throws {
+  func testPrivateGroupSendPrivateMessageText() async throws {
+    let res = try await PushChat.send(
+      PushChat.SendOptions(
+        messageContent: "This is the test message",
+        messageType: PushChat.MessageType.Text.rawValue,
+        receiverAddress: PG_GROUP_ID,
+        account: PG_USER,
+        pgpPrivateKey: PG_PGP_KEY
+      ))
 
-    // let res = try await PushChat.send(
-    //   PushChat.SendOptions(
-    //     messageContent: "This is the test message",
-    //     messageType: "Text",
-    //     receiverAddress: PG_GROUP_ID,
-    //     account: PG_USER,
-    //     pgpPrivateKey: PG_PGP_KEY
-    //   ))
+    assert(res.cid != nil)
+  }
 
+  func testPrivateGroupSendPrivateMessageImage() async throws {
     let res = try await PushChat.send(
       PushChat.SendOptions(
         messageContent:
           "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAEa0lEQVR4nLzW+1OUVRwG8F1Ylk0YxSQuAxjIRRhDyiQJKHZlAkSlHQdwEkSTywgKCiKIqFsbYEFIGWhgCBKjJBexkSUFVAZowLxEEDeH5DJyWTccySsS9Dz9D7788DnM8L7Med5zzvd7JIPNVSKRKGf3Kqi3whTuezgMK+ySYOO2XhhVVAJjCwegW2otPHegCEpzCuCU4gWclWyEohEb4J2wFOYd4n/WE73iH3GB83EMVRF1MLjrJAwKMYJPVWvgyrsv4cWQbjgg2wQNI39kYvUDWONxE941/APWBsYxfXAxfHfOD8pS+oVIIMkpmsTwbDoAeo58CMfnzkJzBdfD3SKFcyn/G2Zd4hevdOMK7Y1xhGU9Q7DYfA/MtqqHC8Z00PTELFxrdV2IBGLT3EgMccqr8NjUQhgz4gp1hXegmToQOumpYHfrcpjyiwf8yCEG2id1wYXy23CDNh/+W38JOv7MNVNV7xIigaTVbQZDc1oFLLTjfNWKMOiXHgW981vgqMwcWml4DqQJLtA2k7tLmecDd56/BsvrTOCVDj7pnMi3IsOshEggznQ4jeGRXRZnF/8pPDPEE6CxWAy/lG6B+zRMNrF2Cta587ULdtWwN+UCrMzk6Zme3Q1VPf5wo88OeHNvhBAJJPHB3EUeS8theCRX36Wdq/JX91H4+XkvmHuQCWKmPoNJTs+howPz3dd+AjfZP2TWEp4hm7S3OOtrm+F4dpkgCRLl3AMHbpvBzmEZfOFVA5+FhkDftkdwsyd3yPrvNnDu9X/CXbZ8fnRsO8xuiIeVsXKY2voPLDTiSvQvmRQigXiy7wMM82ruopduofCLNms40MNd/PUM5/h8aBEsq2DFf3OSe8ml5XV4aM8YVH61Ghq6jEBXS24yLyXrkv/leUESnCwwwBAQzS8+Ge4Lw5s08NeJIbhM+huVsTdlRl+HUYd3wv1FXAPFOv7uWsuKm9U2Dqud0qHJa+/AG9+0CJFAIvbkTje16INjaq573Ag7VI+O31GryoDpIn1o4aOE377NZ94/fA/eql0HfQdOwMfbz8A+B55h/Sz+9UjnD4IkSJ65zPlaci5JInYxa18LOOHGKh/XxC5WOMiTuSYglZkW83lrB/asiw03YG40d1FxfzOU65pg4yr2tR0GWkESnNJwxXOcW+Hy+CVQv/cJ9KnkiZX/znuOmY0atqflwuDvuTY1Vy3hYCDzjSrkUBfUBtu2sB+UefJe5PnEUYgE4mmDKxiStzZCg845OFx6BCZ4bINdZzuhXx5rVOlj9on5kvdgRwZvc/kPeAJiU1h3w46zCjRXMU24P/vz0QYnIRJI7oc+xVCWztqtkS6D0nOsRUaLjsEIk63QfQXvHGErWXl+OsWdXvExu3HAAmN4K5nfOt57P6zTSvklug/CRON8IRKIlaGs+KtlrKah/3fgNzSlsNKEs6sb5c0n2YP91smSM1VlBEH7fFanMQXvpq7r2cXaT3OF7tzrgM5G7NiBxrZCJPgvAAD//zl2dP4g/Ks+AAAAAElFTkSuQmCC",
         messageType: "Image",
+
         receiverAddress: PG_GROUP_ID,
         account: PG_USER,
         pgpPrivateKey: PG_PGP_KEY
       ))
+
+    assert(res.cid != nil)
+  }
+
+  func testPrivateGroupSendPrivateMessageReaction() async throws {
+
+    let res_0 = try await PushChat.send(
+      PushChat.SendOptions(
+        messageContent: "This is the test message",
+        messageType: PushChat.MessageType.Text.rawValue,
+        receiverAddress: PG_GROUP_ID,
+        account: PG_USER,
+        pgpPrivateKey: PG_PGP_KEY
+      ))
+
+    let res = try await PushChat.send(
+      PushChat.SendOptions(
+        messageContent: PushChat.SendOptions.Reactions.THUMBSUP.rawValue,
+        messageType: PushChat.MessageType.Reaction.rawValue,
+        receiverAddress: PG_GROUP_ID,
+        account: PG_USER,
+        pgpPrivateKey: PG_PGP_KEY,
+        refrence: res_0.cid!
+      ))
+
+    assert(res.cid != nil)
+
+  }
+
+  func testPrivateGroupSendPrivateMessageReply() async throws {
+    let res_0 = try await PushChat.send(
+      PushChat.SendOptions(
+        messageContent: "This is the test message",
+        messageType: PushChat.MessageType.Text.rawValue,
+        receiverAddress: PG_GROUP_ID,
+        account: PG_USER,
+        pgpPrivateKey: PG_PGP_KEY
+      ))
+
+    let res = try await PushChat.send(
+      PushChat.SendOptions(
+        messageContent: "This is the reply message",
+        messageType: PushChat.MessageType.Reply.rawValue,
+        receiverAddress: PG_GROUP_ID,
+        account: PG_USER,
+        pgpPrivateKey: PG_PGP_KEY,
+        refrence: res_0.cid!
+      ))
+
+    assert(res.cid != nil)
 
   }
 

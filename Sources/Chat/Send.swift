@@ -47,26 +47,69 @@ extension PushChat {
     }
   }
 
+  public enum MessageType: String {
+    case Text = "Text"
+    case Image = "Image"
+    case Reaction = "Reaction"
+    case Reply = "Reply"
+  }
+
   public struct SendOptions {
     public var messageContent = ""
-    public var messageType = "Text"
+    public var messageType: MessageType
     public var receiverAddress: String
     public var account: String
     public var pgpPrivateKey: String
     public var senderPgpPubicKey: String?
     public var receiverPgpPubicKey: String?
+    public var processMessage: String?
+    public var reference: String?
     public var env: ENV = .STAGING
+
+    public enum Reactions: String {
+      case THUMBSUP = "\u{1F44D}"
+      case THUMBSDOWN = "\u{1F44E}"
+      case HEART = "\u{2764}\u{FE0F}"
+      case CLAP = "\u{1F44F}"
+      case LAUGH = "\u{1F602}"
+      case SAD = "\u{1F622}"
+      case ANGRY = "\u{1F621}"
+      case SURPRISE = "\u{1F632}"
+      case FIRE = "\u{1F525}"
+    }
 
     public init(
       messageContent: String, messageType: String, receiverAddress: String, account: String,
-      pgpPrivateKey: String, env: ENV = .STAGING
+      pgpPrivateKey: String, refrence: String? = nil, env: ENV = .STAGING
     ) {
       self.messageContent = messageContent
-      self.messageType = messageType
+      self.messageType = MessageType(rawValue: messageType)!
       self.receiverAddress = walletToPCAIP10(account: receiverAddress)
       self.account = walletToPCAIP10(account: account)
       self.pgpPrivateKey = pgpPrivateKey
+      self.reference = refrence
       self.env = env
+    }
+
+    public func getMessageObjJSON() throws -> String {
+      var res = ""
+
+      if self.messageType == MessageType.Text || self.messageType == MessageType.Image {
+        res = try getJsonStringFromKV([
+          ("content", self.messageContent)
+        ])
+      } else if self.messageType == MessageType.Reaction {
+        res = try getJsonStringFromKV([
+          ("content", self.messageContent),
+          ("refrence", self.reference!),
+        ])
+      } else if self.messageType == MessageType.Reply {
+        return """
+            {"content":{"messageType":"Text","messageObj":{"content":"\(self.messageContent)"}},"reference":"\(self.reference!)"}
+          """.trimmingCharacters(in: .whitespaces)
+      }
+
+      return res
     }
   }
 
@@ -154,19 +197,20 @@ extension PushChat {
   {
 
     var encType = "PlainText"
-    var (signature, messageConent) = ("", options.messageContent)
+    var (dep_signature, messageConent) = ("", options.messageContent)
+    let messageObj = try options.getMessageObjJSON()
 
     let secretKey = try Pgp.pgpDecrypt(
       cipherText: groupInfo.encryptedSecret!, toPrivateKeyArmored: options.pgpPrivateKey)
 
     if groupInfo.encryptedSecret != nil {
+      // Enc message
       encType = "pgpv1:group"
-
       messageConent = try AESCBCHelper.encrypt(messageText: messageConent, secretKey: secretKey)
-      signature = try Pgp.sign(message: messageConent, privateKey: options.pgpPrivateKey)
+      dep_signature = try Pgp.sign(message: messageConent, privateKey: options.pgpPrivateKey)
 
     } else {
-      signature = try signMessage(
+      dep_signature = try signMessage(
         messageContent: messageConent, senderPgpPrivateKey: options.pgpPrivateKey)
     }
 
@@ -175,8 +219,8 @@ extension PushChat {
       ("toDID", options.account),
       ("fromCAIP10", options.account),
       ("toCAIP10", options.receiverAddress),
-      ("messageObj", messageConent),
-      ("messageType", options.messageType),
+      ("messageObj", messageObj),
+      ("messageType", options.messageType.rawValue),
       ("encType", encType),
       ("sessionKey", groupInfo.sessionKey!),
       ("encryptedSecret", "null"),
@@ -189,9 +233,9 @@ extension PushChat {
       fromDID: options.account, toDID: options.receiverAddress,
       fromCAIP10: options.account, toCAIP10: options.receiverAddress,
       messageContent: messageConent,
-      messageObj: messageConent,
-      messageType: options.messageType,
-      signature: signature, encType: encType, encryptedSecret: nil, sigType: "pgpv3",
+      messageObj: messageObj,
+      messageType: options.messageType.rawValue,
+      signature: dep_signature, encType: encType, encryptedSecret: nil, sigType: "pgpv3",
       verificationProof: "pgpv3:\(verificationProof)",
       sessionKey: groupInfo.sessionKey)
 
@@ -224,7 +268,7 @@ extension PushChat {
     return SendMessagePayload(
       fromDID: options.account, toDID: options.receiverAddress,
       fromCAIP10: options.account, toCAIP10: options.receiverAddress,
-      messageContent: messageConent, messageType: options.messageType,
+      messageContent: messageConent, messageType: options.messageType.rawValue,
       signature: signature, encType: encType, encryptedSecret: encryptedSecret, sigType: "pgp")
   }
 

@@ -247,3 +247,53 @@ try await PushChat.leaveGroup(
 )
 ```
 ---
+
+
+### Chat Reply
+```swift
+
+// Send normal chat
+let m1 = PushChat.SendOptions(
+  messageContent: "This is the test message",
+  messageType: PushChat.MessageType.Text.rawValue,
+  receiverAddress: PG_GROUP_ID,
+  account: PG_USER,
+  pgpPrivateKey: PG_PGP_KEY
+))
+
+// Send reply
+try await PushChat.send(
+  PushChat.SendOptions(
+    messageContent: "This is the reply message",
+    messageType: PushChat.MessageType.Reply.rawValue,
+    receiverAddress: PG_GROUP_ID,
+    account: PG_USER,
+    pgpPrivateKey: PG_PGP_KEY,
+    refrence: m1.cid!
+  ))
+```
+---
+
+### Chat Reaction
+```swift
+// Send normal chat
+let m1 = PushChat.SendOptions(
+  messageContent: "This is the test message",
+  messageType: PushChat.MessageType.Text.rawValue,
+  receiverAddress: PG_GROUP_ID,
+  account: PG_USER,
+  pgpPrivateKey: PG_PGP_KEY
+))
+
+// Send reaction
+try await PushChat.send(
+  PushChat.SendOptions(
+    messageContent:PushChat.SendOptions.Reactions.THUMBSUP.rawValue,
+    messageType: PushChat.MessageType.Reply.rawValue,
+    receiverAddress: PG_GROUP_ID,
+    account: PG_USER,
+    pgpPrivateKey: PG_PGP_KEY,
+    refrence: m1.cid!
+  ))
+```
+---
