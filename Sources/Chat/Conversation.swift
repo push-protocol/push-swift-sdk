@@ -118,10 +118,8 @@ extension PushChat {
       let encryptedSecret = try await PushChat.getGroupSessionKey(
         sessionKey: message.sessionKey!, env: env)
 
-      if message.messageObj != nil {
-        let msgObj = message.messageObj!
-
-        messageObj = try decryptMessage(
+      if let msgObj = message.messageObj {
+        messageObj = try? decryptMessage(
           msgObj, encryptedSecret: encryptedSecret,
           privateKeyArmored: privateKeyArmored)
       }
