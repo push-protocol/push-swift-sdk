@@ -349,7 +349,7 @@ extension PushChat {
     if shouldEncrypt {
       if isGroupChatId(receiverAddress) {
         let groupInfo = try await PushChat.getGroupInfoDTO(
-          chatId: receiverAddress, env: sendOptions.env)!
+          chatId: receiverAddress, env: sendOptions.env)
         if groupInfo.isPublic {
           publicKeys = try await getGroupChatPublicKeys(sendOptions)
         } else {
@@ -397,7 +397,7 @@ extension PushChat {
     if approveOptions.isGroupChat {
       // TODO: remove unwrap
       let groupInfo = try await PushChat.getGroupInfoDTO(
-        chatId: approveOptions.toDID, env: approveOptions.env)!
+        chatId: approveOptions.toDID, env: approveOptions.env)
       if !groupInfo.isPublic {
         return try await getApprovePayloadPrivateGroup(approveOptions, groupInfo)
       }
