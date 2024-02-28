@@ -198,7 +198,7 @@ extension PushChat {
 
     var encType = "PlainText"
     var (dep_signature, messageConent) = ("", options.messageContent)
-    let messageObj = try options.getMessageObjJSON()
+    var messageObj = try options.getMessageObjJSON()
 
     let secretKey = try Pgp.pgpDecrypt(
       cipherText: groupInfo.encryptedSecret!, toPrivateKeyArmored: options.pgpPrivateKey)
@@ -208,6 +208,7 @@ extension PushChat {
       encType = "pgpv1:group"
       messageConent = try AESCBCHelper.encrypt(messageText: messageConent, secretKey: secretKey)
       dep_signature = try Pgp.sign(message: messageConent, privateKey: options.pgpPrivateKey)
+      messageObj = try AESCBCHelper.encrypt(messageText: messageObj, secretKey: secretKey)
 
     } else {
       dep_signature = try signMessage(
