@@ -25,7 +25,7 @@ extension PushChat {
   }
 
   public static func getGroupInfoDTO(chatId: String, env: ENV) async throws -> PushChat
-    .PushGroupInfoDTO?
+    .PushGroupInfoDTO
   {
     let url = try PushEndpoint.getGroup(chatId: chatId, apiVersion: "v2", env: env).url
     var request = URLRequest(url: url)
@@ -38,7 +38,7 @@ extension PushChat {
     }
 
     if httpResponse.statusCode == 400 {
-      return nil
+      throw URLError(.badServerResponse)
     }
 
     guard (200...299).contains(httpResponse.statusCode) else {

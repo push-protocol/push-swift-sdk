@@ -198,7 +198,7 @@ extension PushChat {
 
     var encType = "PlainText"
     var (dep_signature, messageConent) = ("", options.messageContent)
-    let messageObj = try options.getMessageObjJSON()
+    var messageObj = try options.getMessageObjJSON()
 
     let secretKey = try Pgp.pgpDecrypt(
       cipherText: groupInfo.encryptedSecret!, toPrivateKeyArmored: options.pgpPrivateKey)
@@ -208,6 +208,7 @@ extension PushChat {
       encType = "pgpv1:group"
       messageConent = try AESCBCHelper.encrypt(messageText: messageConent, secretKey: secretKey)
       dep_signature = try Pgp.sign(message: messageConent, privateKey: options.pgpPrivateKey)
+      messageObj = try AESCBCHelper.encrypt(messageText: messageObj, secretKey: secretKey)
 
     } else {
       dep_signature = try signMessage(
@@ -349,7 +350,7 @@ extension PushChat {
     if shouldEncrypt {
       if isGroupChatId(receiverAddress) {
         let groupInfo = try await PushChat.getGroupInfoDTO(
-          chatId: receiverAddress, env: sendOptions.env)!
+          chatId: receiverAddress, env: sendOptions.env)
         if groupInfo.isPublic {
           publicKeys = try await getGroupChatPublicKeys(sendOptions)
         } else {
@@ -397,7 +398,7 @@ extension PushChat {
     if approveOptions.isGroupChat {
       // TODO: remove unwrap
       let groupInfo = try await PushChat.getGroupInfoDTO(
-        chatId: approveOptions.toDID, env: approveOptions.env)!
+        chatId: approveOptions.toDID, env: approveOptions.env)
       if !groupInfo.isPublic {
         return try await getApprovePayloadPrivateGroup(approveOptions, groupInfo)
       }
