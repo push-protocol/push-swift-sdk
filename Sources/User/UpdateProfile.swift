@@ -53,7 +53,9 @@ extension PushUser {
     let verificationProof = "\(sigType):\(signature)"
 
     let payload = UpdateUserPayload(
-      name: newProfile.name, desc: newProfile.desc, picture: newProfile.picture,
+      name: newProfile.name, 
+      desc: newProfile.desc, 
+      picture: newProfile.picture,
       blockedUsersList: newProfile.blockedUsersList,
       verificationProof: verificationProof)
 
@@ -84,41 +86,52 @@ extension PushUser {
 
 struct UpdateUserPayload: Codable {
   var name: String?
-  var desc: String
-  var picture: String
+  var desc: String?
+  var picture: String?
   var blockedUsersList: [String]
   var verificationProof: String
+
+  private enum CodingKeys: String, CodingKey {
+        case name, desc, picture, blockedUsersList, verificationProof
+  }
+
+
+  func encode(to encoder: Encoder) throws{
+          var container = encoder.container(keyedBy: CodingKeys.self)
+
+        try container.encode(name, forKey: .name)
+        try container.encode(desc, forKey: .desc)
+        try container.encode(picture, forKey: .picture)
+        try container.encode(blockedUsersList, forKey: .blockedUsersList)
+        try container.encode(verificationProof, forKey: .verificationProof)
+  }
 }
 
 struct UpdateUseProfile: Codable {
   public var name: String?
-  public var desc: String
-  public var picture: String
+  public var desc: String?
+  public var picture: String?
   public var blockedUsersList: [String]
 }
 
 func getUpdateProfileHash(newProfile: PushUser.UserProfile) throws -> (
   UpdateUseProfile, String
 ) {
+  let newUserProfile = UpdateUseProfile(
+    name: newProfile.name,
+    desc: newProfile.desc,
+    picture: newProfile.picture,
+    blockedUsersList: newProfile.blockedUsersList!)
 
-  let _name = newProfile.name == nil ? "" : newProfile.name!
-  let _desc = newProfile.desc == nil ? "" : newProfile.desc!
-
-  let name = newProfile.name == nil ? "null" : "\"\(_name)\""
-  let desc = newProfile.desc == nil ? "null" : "\"\(_desc)\""
+  let name = newProfile.name == nil ? "null" : "\"\(newProfile.name!)\""
+  let desc = newProfile.desc == nil ? "null" : "\"\(newProfile.desc!)\""
   let picture = "\"\(newProfile.picture)\""
-  let blockedUsersList = newProfile.blockedUsersList!
+
 
   let blockUserAddresses = flatten_address_list(addresses: newProfile.blockedUsersList!)
   let jsonString =
     "{\"name\":\(name),\"desc\":\(desc),\"picture\":\(picture),\"blockedUsersList\":\(blockUserAddresses)}"
-
-  let newUserProfile = UpdateUseProfile(
-    name: name.replacingOccurrences(of: "\"", with: ""),
-    desc: desc.replacingOccurrences(of: "\"", with: ""),
-    picture: picture.replacingOccurrences(of: "\"", with: ""),
-    blockedUsersList: blockedUsersList)
-  let hash = generateSHA256Hash(msg: jsonString)
+ let hash =  generateSHA256Hash(msg: jsonString)
 
   return (newUserProfile, hash)
 }
