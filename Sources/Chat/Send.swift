@@ -52,6 +52,7 @@ extension PushChat {
     case Image = "Image"
     case Reaction = "Reaction"
     case Reply = "Reply"
+    case MediaEmbed = "MediaEmbed"
   }
 
   public struct SendOptions {
@@ -91,26 +92,23 @@ extension PushChat {
       self.env = env
     }
 
-    public func getMessageObjJSON() throws -> String {
-      var res = ""
-
-      if self.messageType == MessageType.Text || self.messageType == MessageType.Image {
-        res = try getJsonStringFromKV([
-          ("content", self.messageContent)
-        ])
-      } else if self.messageType == MessageType.Reaction {
-        res = try getJsonStringFromKV([
-          ("content", self.messageContent),
-          ("refrence", self.reference!),
-        ])
-      } else if self.messageType == MessageType.Reply {
-        return """
+      public func getMessageObjJSON() throws -> String {
+          switch messageType {
+          case .Text, .Image, .MediaEmbed:
+              return try getJsonStringFromKV([
+                ("content", self.messageContent)
+              ])
+          case .Reaction:
+              return try getJsonStringFromKV([
+                ("content", self.messageContent),
+                ("refrence", self.reference!),
+              ])
+          case .Reply:
+              return """
             {"content":{"messageType":"Text","messageObj":{"content":"\(self.messageContent)"}},"reference":"\(self.reference!)"}
           """.trimmingCharacters(in: .whitespaces)
+          }
       }
-
-      return res
-    }
   }
 
   static func sendIntentService(payload: SendMessagePayload, env: ENV) async throws -> Message {
