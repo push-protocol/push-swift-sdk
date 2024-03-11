@@ -7,6 +7,7 @@ public struct Message: Codable {
   public var toDID: String
   public var messageType: String
   public var messageContent: String
+  public var messageObj: String?
   public var signature: String
   public var sigType: String
   public var timestamp: Int?
@@ -19,6 +20,7 @@ public struct Message: Codable {
 
 public func getCID(env: ENV, cid: String) async throws -> Message {
   let url: URL = PushEndpoint.getCID(env: env, cid: cid).url
+
   let (data, res) = try await URLSession.shared.data(from: url)
 
   guard let httpResponse = res as? HTTPURLResponse else {

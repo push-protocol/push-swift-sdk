@@ -45,8 +45,12 @@ extension PushChat {
 
       if toDecrypt {
         for i in 0..<messages.count {
-          let decryptedMsg = try await decryptMessage(
+          let (decryptedMsg, decryptedObj) = try await decryptMessage(
             message: messages[i], privateKeyArmored: pgpPrivateKey, env: env)
+
+          if decryptedObj != nil {
+            messages[i].messageObj = decryptedObj
+          }
           messages[i].messageContent = decryptedMsg
         }
       }
@@ -80,7 +84,7 @@ extension PushChat {
     message: Message,
     privateKeyArmored: String,
     env: ENV = ENV.STAGING
-  ) async throws -> String {
+  ) async throws -> (String, String?) {
     do {
 
       if message.encType == "pgpv1:group" {
@@ -88,64 +92,118 @@ extension PushChat {
           message, privateKeyArmored: privateKeyArmored, env: env)
       }
       if message.encType != "pgp" {
-        return message.messageContent
+        return (message.messageContent, nil)
       }
-      return try decryptMessage(
+      let decrypytedMessage = try decryptMessage(
         message.messageContent, encryptedSecret: message.encryptedSecret!,
         privateKeyArmored: privateKeyArmored)
+
+      return (decrypytedMessage, nil)
     } catch {
       if isGroupChatId(message.toCAIP10) {
-        return "message encrypted before you join"
+        return ("message encrypted before you join", nil)
       }
-      return "Unable to decrypt message"
+      return ("Unable to decrypt message", nil)
     }
   }
 
   public static func decryptPrivateGroupMessage(
     _ message: Message,
     privateKeyArmored: String,
+    groupSecretKey: String? = nil,
     env: ENV
-  ) async throws -> String {
+  ) async throws -> (String, String?) {
     do {
-
-      let encryptedSecret = try await PushChat.getGroupSessionKey(
-        sessionKey: message.sessionKey!, env: env)
-
-      print("got enc sec \(encryptedSecret)")
-
-      return try decryptMessage(
-        message.messageContent,
-        encryptedSecret: encryptedSecret,
-        privateKeyArmored: privateKeyArmored
-      )
+        let secretKey: String
+        if let groupSecretKey {
+            secretKey = groupSecretKey
+        } else {
+            secretKey = try await getPrivateGroupPGPSecretKey(
+                sessionKey: message.sessionKey!,
+                privateKeyArmored: privateKeyArmored,
+                env: env)
+        }
+        
+        return try decryptPrivateGroupMessage(message, using: secretKey, privateKeyArmored: privateKeyArmored, env: env)
     } catch {
       throw PushChat.ChatError.dectyptionFalied
     }
   }
 
-  public static func decryptMessage(
-    _ message: String,
-    encryptedSecret: String,
-    privateKeyArmored: String
-  ) throws -> String {
-    do {
-
-      let secretKey = try Pgp.pgpDecrypt(
-        cipherText: encryptedSecret, toPrivateKeyArmored: privateKeyArmored)
-
-      guard let userMsg = try AESCBCHelper.decrypt(cipherText: message, secretKey: secretKey) else {
-        throw PushChat.ChatError.dectyptionFalied
-      }
-
-      let userMsgStr = String(data: userMsg, encoding: .utf8)
-
-      if userMsgStr == nil {
-        throw PushChat.ChatError.dectyptionFalied
-      }
-
-      return userMsgStr!
-    } catch {
-      throw PushChat.ChatError.dectyptionFalied
+    public static func getPrivateGroupPGPSecretKey(
+        sessionKey: String,
+        privateKeyArmored: String,
+        env: ENV
+    ) async throws -> String {
+        let encryptedSecret = try await PushChat.getGroupSessionKey(
+            sessionKey: sessionKey, env: env)
+        return try decryptPGPSecretKey(
+            encryptedSecret: encryptedSecret, toPrivateKeyArmored: privateKeyArmored)
     }
-  }
+    
+    public static func decryptPrivateGroupMessage(
+        _ message: Message,
+        using secretKey: String,
+        privateKeyArmored: String,
+        env: ENV
+    ) throws -> (String, String?) {
+        do {
+            var messageObj: String? = nil
+            if let msgObj = message.messageObj {
+                messageObj = try? decryptMessage(
+                    msgObj, secretKey: secretKey)
+            }
+            
+            let decMsg = try decryptMessage(
+                message.messageContent,
+                secretKey: secretKey)
+            
+            return (decMsg, messageObj)
+        } catch {
+            throw PushChat.ChatError.dectyptionFalied
+        }
+    }
+    
+    public static func decryptMessage(
+        _ message: String,
+        encryptedSecret: String,
+        privateKeyArmored: String
+    ) throws -> String {
+        do {
+            
+            let secretKey = try decryptPGPSecretKey(
+                encryptedSecret: encryptedSecret, toPrivateKeyArmored: privateKeyArmored)
+            
+            return try decryptMessage(message, secretKey: secretKey)
+        } catch {
+            throw PushChat.ChatError.dectyptionFalied
+        }
+    }
+    
+    public static func decryptPGPSecretKey(
+        encryptedSecret: String,
+        toPrivateKeyArmored privateKeyArmored: String
+    ) throws -> String {
+        try Pgp.pgpDecrypt(
+            cipherText: encryptedSecret, toPrivateKeyArmored: privateKeyArmored)
+    }
+    
+    public static func decryptMessage(
+        _ message: String,
+        secretKey: String
+    ) throws -> String {
+        do {
+            guard let userMsg = try AESCBCHelper.decrypt(cipherText: message, secretKey: secretKey) else {
+                throw PushChat.ChatError.dectyptionFalied
+            }
+            
+            if let userMsgStr = String(data: userMsg, encoding: .utf8) {
+                return userMsgStr
+            }
+            throw PushChat.ChatError.dectyptionFalied
+        } catch {
+            throw PushChat.ChatError.dectyptionFalied
+        }
+    }
+    
 }

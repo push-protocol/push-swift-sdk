@@ -58,7 +58,7 @@ class GroupFullConversation: XCTestCase {
         env: .STAGING))
 
     let newGroup = try await PushChat.getGroupInfoDTO(
-      chatId: createdGroup.chatId, env: ENV.STAGING)!
+      chatId: createdGroup.chatId, env: ENV.STAGING)
 
     XCTAssert(newGroup.sessionKey!.count > 0)
     XCTAssert(res.contains(address1))
