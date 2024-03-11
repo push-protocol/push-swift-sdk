@@ -20,7 +20,6 @@ public struct Message: Codable {
 
 public func getCID(env: ENV, cid: String) async throws -> Message {
   let url: URL = PushEndpoint.getCID(env: env, cid: cid).url
-  print("this url is \(url)")
 
   let (data, res) = try await URLSession.shared.data(from: url)
 
@@ -29,7 +28,6 @@ public func getCID(env: ENV, cid: String) async throws -> Message {
   }
 
   guard (200...299).contains(httpResponse.statusCode) else {
-    print(res)
     throw URLError(.badServerResponse)
   }
 
