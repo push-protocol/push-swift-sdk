@@ -117,7 +117,7 @@ extension PushEndpoint {
     ) throws -> Self {
         return PushEndpoint(
             env: env,
-            path: "/chat/groups/\(chatId)/members/count",
+            path: "chat/groups/\(chatId)/members/count",
             apiVersion: apiVersion
         )
     }
@@ -130,7 +130,7 @@ extension PushEndpoint {
     ) throws -> Self {
         return PushEndpoint(
             env: env,
-            path: "/chat/groups/\(chatId)/members/\(did)/status",
+            path: "chat/groups/\(chatId)/members/\(did)/status",
             apiVersion: apiVersion
         )
     }
@@ -143,7 +143,7 @@ extension PushEndpoint {
     ) throws -> Self {
         return PushEndpoint(
             env: env,
-            path: "/chat/groups/\(chatId)/access/\(did)",
+            path: "chat/groups/\(chatId)/access/\(did)",
             apiVersion: apiVersion
         )
     }
@@ -160,12 +160,26 @@ extension PushEndpoint {
         )
     }
     
+    
+    static func updateGroupMembers(
+        chatId: String,
+        apiVersion: String = "v1",
+        env: ENV
+    ) throws -> Self {
+        return PushEndpoint(
+            env: env,
+            path: "chat/groups/\(chatId)/members",
+            apiVersion: apiVersion
+        )
+    }
+    
+    
     static func getGroupMembers(
         options: PushChat.FetchChatGroupInfo,
         apiVersion: String = "v1",
         env: ENV
     ) throws -> Self {
-        var path = "/chat/groups/\(options.chatId)/members?pageNumber=\(options.page)&pageSize=\(options.limit)"
+        var path = "chat/groups/\(options.chatId)/members?pageNumber=\(options.page)&pageSize=\(options.limit)"
         
         if options.pending != nil {
             path = "\(path)&pending=\(options.pending ?? false)"
@@ -190,7 +204,7 @@ extension PushEndpoint {
     ) throws -> Self {
         return PushEndpoint(
             env: env,
-            path: "/chat/groups/\(chatId)/members/publicKeys?pageNumber=\(page)&pageSize=\(limit)",
+            path: "chat/groups/\(chatId)/members/publicKeys?pageNumber=\(page)&pageSize=\(limit)",
             apiVersion: apiVersion
         )
     }
