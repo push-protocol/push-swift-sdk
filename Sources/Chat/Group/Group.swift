@@ -82,6 +82,11 @@ extension PushChat {
     public struct MemberRoles: Codable {
         let admin: RoleCounts
         let member: RoleCounts
+        
+        enum CodingKeys: String, CodingKey {
+               case admin = "ADMIN"
+               case member = "MEMBER"
+           }
     }
 
     public struct RoleCounts: Codable {

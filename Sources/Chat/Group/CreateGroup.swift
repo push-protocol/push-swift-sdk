@@ -5,7 +5,6 @@ extension PushChat {
   public static func createGroup(options: CreateGroupOptions) async throws -> PushGroupInfoDTO {
     do {
       let payload = try CreateGroupPlayload(options: options)
-      print("got payload")
       return try await createGroupService(payload: payload, env: options.env)
     } catch {
       throw GroupChatError.RUNTIME_ERROR(

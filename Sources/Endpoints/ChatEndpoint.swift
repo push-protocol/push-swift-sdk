@@ -159,8 +159,7 @@ extension PushEndpoint {
             apiVersion: apiVersion
         )
     }
-    
-    
+
     static func updateGroupMembers(
         chatId: String,
         apiVersion: String = "v1",
@@ -172,29 +171,33 @@ extension PushEndpoint {
             apiVersion: apiVersion
         )
     }
-    
-    
+
     static func getGroupMembers(
         options: PushChat.FetchChatGroupInfo,
         apiVersion: String = "v1",
         env: ENV
     ) throws -> Self {
-        var path = "chat/groups/\(options.chatId)/members?pageNumber=\(options.page)&pageSize=\(options.limit)"
+        let path = "chat/groups/\(options.chatId)/members"
+
+        var query = [URLQueryItem]()
+        query.append(URLQueryItem(name: "pageNumber", value: "\(options.page)"))
+        query.append(URLQueryItem(name: "pageSize", value: "\(options.limit)"))
         
         if options.pending != nil {
-            path = "\(path)&pending=\(options.pending ?? false)"
+            query.append(URLQueryItem(name: "pending", value: "\(options.pending ?? false)"))
         }
-        
+
         if options.role != nil {
-            path = "\(path)&role=\(options.role ?? "")"
+            query.append(URLQueryItem(name: "role", value: "\(options.role ?? "")"))
         }
         return PushEndpoint(
             env: env,
             path: path,
+            queryItems: query,
             apiVersion: apiVersion
         )
     }
-    
+
     static func getGroupMembersPublicKeys(
         chatId: String,
         page: Int,

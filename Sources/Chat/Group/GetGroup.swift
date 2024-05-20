@@ -118,7 +118,7 @@ extension PushChat {
     }
 
     public static func getGroupMemberStatus(chatId: String, did: String, env: ENV) async throws -> GroupMemberStatus? {
-        let url = try PushEndpoint.getGroupMemberStatus(chatId: chatId, did: did, env: env).url
+        let url = try PushEndpoint.getGroupMemberStatus(chatId: chatId, did: walletToPCAIP10(account: did), env: env).url
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -158,7 +158,7 @@ extension PushChat {
 
     public static func getGroupMembers(options: FetchChatGroupInfo, env: ENV) async throws -> [ChatMemberProfile]? {
         let url = try PushEndpoint.getGroupMembers(options: options, env: env).url
-        var request = URLRequest(url: url)
+        var request = URLRequest(url: url)        
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
