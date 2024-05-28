@@ -119,15 +119,33 @@ public struct Chat {
         try await PushUser.updateUserProfile(account: account, pgpPrivateKey: decryptedPgpPvtKey, newProfile: profile!, env: env)
     }
 
-    public func send(target: String, messageContent: String, messageType: String = "Text") async throws -> Message {
-        return try await Push.PushChat.send(
-            PushChat.SendOptions(
-                messageContent: messageContent,
-                messageType: messageType,
-                receiverAddress: target,
-                account: account,
-                pgpPrivateKey: decryptedPgpPvtKey
-            ))
+//    public func send(target: String, messageContent: String, messageType: String = "Text") async throws -> Message {
+//        return try await Push.PushChat.sendV2(
+//            chatOptions: PushChat.SendOptions(
+//                
+//                messageContent: messageContent,
+//                messageType: messageType,
+//                receiverAddress: target,
+//                account: account,
+//                pgpPrivateKey: decryptedPgpPvtKey
+//            ))
+//    }
+    
+    public func send(target: String, message: PushChat.SendMessage) async throws -> MessageV2 {
+        
+        let sendOption = PushChat.SendOptions(
+            message: message,
+            messageContent: target,
+            messageType: message.type.rawValue,
+            receiverAddress: target,
+            account: account,
+            pgpPrivateKey: decryptedPgpPvtKey,
+            env: env,
+            to: target
+        )
+        
+        return try await Push.PushChat.sendV2(
+            chatOptions: sendOption)
     }
 
     public func info(chatId: String) async throws -> PushChat

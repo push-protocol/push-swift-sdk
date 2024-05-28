@@ -47,17 +47,83 @@ extension PushChat {
     }
 
     public enum MessageType: String {
-        case Text
-        case Image
-        case Reaction
-        case Reply
-        case MediaEmbed
+        case Text = "Text"
+           case Video = "Video"
+           case Audio = "Audio"
+           case Image = "Image"
+           case File = "File"
+           case MediaEmbed = "MediaEmbed"
+           case Meta = "Meta"
+           case Reaction = "Reaction"
+           case Composite = "Composite"
+           case Reply = "Reply"
+           case Receipt = "Receipt"
+           case UserActivity = "UserActivity"
+           case Intent = "Intent"
+           case Payment = "Payment"
+    }
+
+    public class SendMessage : Encodable {
+        
+        public var content: String
+        public var type: MessageType
+        public var replyContent: String? // Assuming this property exists in the SendMessage struct
+        public var compositeContent: [String]?
+        public var reference: String?
+
+        public init(content: String, type: MessageType, replyContent: String? = nil, compositeContent: [String]? = nil) {
+            self.content = content
+            self.type = type
+            self.replyContent = replyContent
+            self.compositeContent = compositeContent
+        }
+
+        public func toJson() throws -> String {
+            switch type {
+            case .Text, .Image, .MediaEmbed:
+                return try getJsonStringFromKV([
+                    ("content", content),
+                ])
+            case .Reaction:
+                return try getJsonStringFromKV([
+                    ("content", content),
+                    ("refrence", reference!),
+                ])
+            case .Reply:
+                return """
+                  {"content":{"messageType":"Text","messageObj":{"content":"\(content)"}},"reference":"\(reference!)"}
+                """.trimmingCharacters(in: .whitespaces)
+            case .Video, .Audio, .File, .Meta, .Composite, .Receipt, .UserActivity, .Intent, .Payment:
+                return try getJsonStringFromKV([
+                    ("content", content),
+                    ("refrence", reference!),
+                ])
+            }
+        }
+        
+        private enum CodingKeys: String, CodingKey {
+            case content
+        }
+      public  func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            
+            try container.encode(content, forKey: .content)
+        }
     }
 
     public struct SendOptions {
+        public var message: SendMessage?
+
+//        @available(*, deprecated, message: "Use message.content instead")
         public var messageContent = ""
+
+//        @available(*, deprecated, message: "Use message.type instead")
         public var messageType: MessageType
+
+//        @available(*, deprecated, message: "Use to instead")
         public var receiverAddress: String
+
+        public var to: String?
         public var account: String
         public var pgpPrivateKey: String
         public var senderPgpPubicKey: String?
@@ -79,8 +145,9 @@ extension PushChat {
         }
 
         public init(
+            message: SendMessage? = nil,
             messageContent: String, messageType: String, receiverAddress: String, account: String,
-            pgpPrivateKey: String, refrence: String? = nil, env: ENV = .STAGING
+            pgpPrivateKey: String, refrence: String? = nil, env: ENV = .STAGING, to: String? = nil
         ) {
             self.messageContent = messageContent
             self.messageType = MessageType(rawValue: messageType)!
@@ -89,6 +156,8 @@ extension PushChat {
             self.pgpPrivateKey = pgpPrivateKey
             reference = refrence
             self.env = env
+            self.to = to
+            self.message = message
         }
 
         public func getMessageObjJSON() throws -> String {
@@ -106,6 +175,11 @@ extension PushChat {
                 return """
                   {"content":{"messageType":"Text","messageObj":{"content":"\(messageContent)"}},"reference":"\(reference!)"}
                 """.trimmingCharacters(in: .whitespaces)
+            case .Video, .Audio, .File, .Meta, .Composite, .Receipt, .UserActivity, .Intent, .Payment:
+                return try getJsonStringFromKV([
+                    ("content", messageContent),
+                    ("refrence", reference!),
+                ])
             }
         }
     }

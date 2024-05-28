@@ -1,7 +1,6 @@
 import Foundation
 
 public struct PushUser: Decodable {
-
   public enum UserError: Error {
     case ONE_OF_ACCOUNT_OR_SIGNER_REQUIRED
     case INVALID_ETH_ADDRESS
@@ -33,7 +32,7 @@ public struct PushUser: Decodable {
   public let profile: UserProfile
 
   public func getPGPPublickey() -> String {
-    return PushUser.getPGPPublickey(publicKey: self.publicKey)
+    return PushUser.getPGPPublickey(publicKey: publicKey)
   }
 
   public static func getPGPPublickey(publicKey: String) -> String {
@@ -47,8 +46,8 @@ public struct PushUser: Decodable {
   }
 }
 
-extension PushUser {
-  public static func get(
+public extension PushUser {
+  static func get(
     account userAddress: String,
     env: ENV
   ) async throws -> PushUser? {
@@ -64,21 +63,20 @@ extension PushUser {
       throw URLError(.badServerResponse)
     }
 
-    guard (200...299).contains(httpResponse.statusCode) else {
+    guard (200 ... 299).contains(httpResponse.statusCode) else {
       throw URLError(.badServerResponse)
     }
 
-    //check if user is null
+    // check if user is null
     if data.count == 4 {
       return nil
     }
 
     let userProfile = try JSONDecoder().decode(PushUser.self, from: data)
     return userProfile
-
   }
 
-  public static func userProfileCreated(account: String, env: ENV) async throws -> Bool {
+  static func userProfileCreated(account: String, env: ENV) async throws -> Bool {
     let userInfo = try await PushUser.get(account: account, env: env)
     return userInfo != nil
   }

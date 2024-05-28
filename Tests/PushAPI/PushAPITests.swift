@@ -126,6 +126,17 @@ class PushAPITests: XCTestCase {
 
         XCTAssertEqual(groupMembers?.count, 2)
     }
+    
+    
+    func testAesEncryptDecrypt() async throws{
+        let plaintext = "Hello, AES!"
+        let secretKey = "0123456789abcdef"
+        
+//        let cipher = try aesEncrypt(plainText: plaintext, secretKey: secretKey)
+        let cipher =  try AESCBCHelper.encrypt(messageText: plaintext, secretKey: secretKey)
+        
+        print("plaintext: \(plaintext), secretKey: \(secretKey), cipher: \(cipher)")
+    }
 
 
 }
