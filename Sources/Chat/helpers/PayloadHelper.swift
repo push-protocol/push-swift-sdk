@@ -33,7 +33,6 @@ enum PayloadHelper {
             }
 
             let receiverCreatedUser = try await PushUser.get(account: receiverAddress, env: env)
-
             if receiverCreatedUser?.publicKey == nil {
                 let _ = try await PushUser.createUserEmpty(userAddress: receiverAddress, env: env)
                 // If the user is being created here, that means that user don't have a PGP keys. So this intent will be in plaintext
@@ -62,7 +61,7 @@ enum PayloadHelper {
                 } else {
                     let core = try await encryptAndSignCore(
                         plainText: message,
-                        keys: [receiverCreatedUser!.publicKey, senderCreatedUser!.publicKey],
+                        keys: [receiverCreatedUser!.getPGPPublickey(), senderCreatedUser!.getPGPPublickey()],
                         senderPgpPrivateKey: senderPgpPrivateKey,
                         secretKey: secretKey
                     )
@@ -135,8 +134,6 @@ enum PayloadHelper {
         senderPgpPrivateKey: String,
         secretKey: String
     ) async throws -> [String: String] {
-        print("encryptAndSignCore, keys:\(keys)")
-
         let cipherText = try AESCBCHelper.encrypt(messageText: plainText, secretKey: secretKey)
 
         let encryptedSecret = try Pgp.pgpEncryptV2(message: secretKey, pgpPublicKeys: keys)

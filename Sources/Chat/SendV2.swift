@@ -282,7 +282,6 @@ extension PushChat {
             messageContent: encryptedMessageContent,
             messageObj: encryptionType == "PlainText"
                 ? messageObj
-//            try messageObj.toJson()
                 : encryptedMessageObj,
             messageType: messageType.rawValue,
             signature: deprecatedSignature,
@@ -306,7 +305,8 @@ extension PushChat {
             ("sessionKey", body.sessionKey ?? "null"),
             ("encryptedSecret", body.encryptedSecret ?? "null"),
         ])
-        bodyToBehashed = bodyToBehashed.replacingOccurrences(of: "\"\(messageObjKey)\"", with: try messageObj.toJson())
+            bodyToBehashed = bodyToBehashed.replacingOccurrences(of: "\"\(messageObjKey)\"",
+                                                                 with:encryptionType == "PlainText" ? try messageObj.toJson(): "\"\(encryptedMessageObj)\"" )
 
         let hash = generateSHA256Hash(msg: bodyToBehashed)
 
