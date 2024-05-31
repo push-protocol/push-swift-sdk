@@ -13,7 +13,10 @@ extension PushEndpoint {
     components.scheme = "https"
     components.host = ENV.getHost(withEnv: env)
     components.path = "/apis/\(apiVersion)/" + path
-    components.queryItems = queryItems
+      if !queryItems.isEmpty {
+          components.queryItems = queryItems
+      }
+    
 
     guard let url = components.url else {
       preconditionFailure(

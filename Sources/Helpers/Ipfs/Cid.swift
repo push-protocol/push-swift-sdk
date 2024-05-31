@@ -18,6 +18,26 @@ public struct Message: Codable {
   public var sessionKey: String?
 }
 
+extension Message {
+    enum CodingKeys: String, CodingKey {
+        case fromCAIP10
+        case toCAIP10
+        case fromDID
+        case toDID
+        case messageType
+        case messageContent
+        case messageObj
+        case signature
+        case sigType
+        case timestamp
+        case encType
+        case encryptedSecret
+        case link
+        case cid
+        case sessionKey
+    }
+}
+
 public func getCID(env: ENV, cid: String) async throws -> Message {
   let url: URL = PushEndpoint.getCID(env: env, cid: cid).url
 
