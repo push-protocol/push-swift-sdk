@@ -133,15 +133,13 @@ public struct Chat {
     
     public func send(target: String, message: PushChat.SendMessage) async throws -> MessageV2 {
         
-        let sendOption = PushChat.SendOptions(
+        let sendOption = PushChat.SendOptionsV2(
+            to: target,
             message: message,
-            messageContent: target,
-            messageType: message.type.rawValue,
-            receiverAddress: target,
             account: account,
             pgpPrivateKey: decryptedPgpPvtKey,
-            env: env,
-            to: target
+            env: env
+          
         )
         
         return try await Push.PushChat.sendV2(

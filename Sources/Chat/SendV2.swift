@@ -10,8 +10,8 @@ extension PushChat {
         public var env: ENV
     }
 
-    static func computeOptions(_ options: SendOptions) throws -> ComputedOptions {
-        let messageType = options.message?.type ?? options.messageType
+    static func computeOptions(_ options: SendOptionsV2) throws -> ComputedOptions {
+        let messageType = options.messageType ?? options.message.type
         var messageObj: SendMessage? = options.message
 
         if messageObj == nil {
@@ -22,18 +22,19 @@ extension PushChat {
             messageObj = SendMessage(content: options.messageContent, type: messageType)
         }
 
-        let to = options.to ?? options.receiverAddress
+        let to = options.receiverAddress ?? options.to
 
         if to.isEmpty {
             fatalError("Options.to is required")
         }
 
 //        // Parse Reply Message
-//        if messageType == MessageType.Reply {
-//            if let replyContent = (messageObj as? SendMessage)?.replyContent {
+//        if messageType == .Reply {
+//            messageObj?.content = SendMessage(content: <#T##String#>, type: <#T##MessageType#>)
+//            if let replyContent = messageObj.replyContent {
 //                (messageObj as? SendMessage)?.replyContent = NestedContent.fromNestedContent(replyContent)
 //            } else {
-//                throw NSError(domain: "AppErrorDomain", code: -1, userInfo: [NSLocalizedDescriptionKey: "Options.message is not properly defined for Reply"])
+//                fatalError("Options.message is not properly defined for Reply")
 //            }
 //        }
 
@@ -73,24 +74,23 @@ extension PushChat {
     }
 
     public struct SendOptionsV2 {
-        public var message: SendMessage?
+        public var message: SendMessage
 
-//        @available(*, deprecated, message: "Use message.content instead")
+        @available(*, deprecated, message: "Use message.content instead")
         public var messageContent = ""
 
-//        @available(*, deprecated, message: "Use message.type instead")
-        public var messageType: MessageType
+        @available(*, deprecated, message: "Use message.type instead")
+        public var messageType: MessageType?
 
-//        @available(*, deprecated, message: "Use to instead")
-        public var receiverAddress: String
+        @available(*, deprecated, message: "Use to instead")
+        public var receiverAddress: String?
 
-        public var to: String?
+        public var to: String
         public var account: String
         public var pgpPrivateKey: String
         public var senderPgpPubicKey: String?
         public var receiverPgpPubicKey: String?
         public var processMessage: String?
-        public var reference: String?
         public var env: ENV = .STAGING
 
         public enum Reactions: String {
@@ -106,46 +106,27 @@ extension PushChat {
         }
 
         public init(
-            message: SendMessage? = nil,
-            messageContent: String, messageType: String, receiverAddress: String, account: String,
-            pgpPrivateKey: String, refrence: String? = nil, env: ENV = .STAGING, to: String? = nil
+            to: String,
+            message: SendMessage,
+            account: String,
+            pgpPrivateKey: String,
+            env: ENV = .STAGING,
+            messageContent: String = "",
+            messageType: MessageType? = nil,
+            receiverAddress: String? = nil
         ) {
             self.messageContent = messageContent
-            self.messageType = MessageType(rawValue: messageType)!
-            self.receiverAddress = walletToPCAIP10(account: receiverAddress)
+            self.messageType = messageType
+            self.receiverAddress = receiverAddress != nil ? walletToPCAIP10(account: receiverAddress!) : nil
             self.account = walletToPCAIP10(account: account)
             self.pgpPrivateKey = pgpPrivateKey
-            reference = refrence
             self.env = env
-            self.to = to
+            self.to = walletToPCAIP10(account: to)
             self.message = message
-        }
-
-        public func getMessageObjJSON() throws -> String {
-            switch messageType {
-            case .Text, .Image, .MediaEmbed:
-                return try getJsonStringFromKV([
-                    ("content", messageContent),
-                ])
-            case .Reaction:
-                return try getJsonStringFromKV([
-                    ("content", messageContent),
-                    ("refrence", reference!),
-                ])
-            case .Reply:
-                return """
-                  {"content":{"messageType":"Text","messageObj":{"content":"\(messageContent)"}},"reference":"\(reference!)"}
-                """.trimmingCharacters(in: .whitespaces)
-            case .Video, .Audio, .File, .Meta, .Composite, .Receipt, .UserActivity, .Intent, .Payment:
-                return try getJsonStringFromKV([
-                    ("content", messageContent),
-                    ("refrence", reference!),
-                ])
-            }
         }
     }
 
-    public static func sendV2(chatOptions: SendOptions) async throws -> MessageV2 {
+    public static func sendV2(chatOptions: SendOptionsV2) async throws -> MessageV2 {
         let computedOptions = try computeOptions(chatOptions)
 
         try validateSendOptions(options: computedOptions)
@@ -195,7 +176,6 @@ extension PushChat {
 //        }
 
         let url = isIntent ? try PushEndpoint.sendChatIntent(env: computedOptions.env).url : try PushEndpoint.sendChatMessage(env: computedOptions.env).url
-        
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -305,8 +285,8 @@ extension PushChat {
             ("sessionKey", body.sessionKey ?? "null"),
             ("encryptedSecret", body.encryptedSecret ?? "null"),
         ])
-            bodyToBehashed = bodyToBehashed.replacingOccurrences(of: "\"\(messageObjKey)\"",
-                                                                 with:encryptionType == "PlainText" ? try messageObj.toJson(): "\"\(encryptedMessageObj)\"" )
+        bodyToBehashed = bodyToBehashed.replacingOccurrences(of: "\"\(messageObjKey)\"",
+                                                             with: encryptionType == "PlainText" ? try messageObj.toJson() : "\"\(encryptedMessageObj)\"")
 
         let hash = generateSHA256Hash(msg: bodyToBehashed)
 
@@ -356,7 +336,6 @@ extension PushChat {
             try container.encode(toCAIP10, forKey: .toCAIP10)
             try container.encode(messageContent, forKey: .messageContent)
 
-            
             if let objString = messageObj as? String {
                 try container.encode(objString, forKey: .messageObj)
             } else if let obj = messageObj as? SendMessage {
@@ -373,11 +352,7 @@ extension PushChat {
             try container.encode(sessionKey, forKey: .sessionKey)
         }
     }
-    
-
-    
 }
-
 
 public struct MessageV2: Codable {
     public var fromCAIP10: String
@@ -395,11 +370,11 @@ public struct MessageV2: Codable {
     public var link: String?
     public var cid: String?
     public var sessionKey: String?
-    
+
     // Implement a custom init(from:) initializer for decoding
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        
+
         // Decode properties from the container
         fromCAIP10 = try container.decode(String.self, forKey: .fromCAIP10)
         toCAIP10 = try container.decode(String.self, forKey: .toCAIP10)
@@ -415,21 +390,20 @@ public struct MessageV2: Codable {
         link = try container.decodeIfPresent(String.self, forKey: .link)
         cid = try container.decodeIfPresent(String.self, forKey: .cid)
         sessionKey = try container.decodeIfPresent(String.self, forKey: .sessionKey)
-        
+
         do {
-            self.messageObj  = try container.decodeIfPresent( MessageObj.self, forKey: .messageObj);
-        }catch{
+            messageObj = try container.decodeIfPresent(MessageObj.self, forKey: .messageObj)
+        } catch {
             do {
                 let stringValue = try container.decodeIfPresent(String?.self, forKey: .messageObj)
-                
-                self.messageObj = MessageObj(content: stringValue ?? nil)
-            } catch{
-                self.messageObj = nil
+
+                messageObj = MessageObj(content: stringValue ?? nil)
+            } catch {
+                messageObj = nil
             }
         }
     }
 }
-
 
 public struct MessageObj: Codable {
     let content: String?
