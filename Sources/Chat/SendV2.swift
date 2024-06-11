@@ -176,7 +176,6 @@ extension PushChat {
 //        }
 
         let url = isIntent ? try PushEndpoint.sendChatIntent(env: computedOptions.env).url : try PushEndpoint.sendChatMessage(env: computedOptions.env).url
-
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
