@@ -442,5 +442,5 @@ public struct Message: Codable {
 }
 
 public struct MessageObj: Codable {
-    let content: String?
+   public let content: String?
 }
