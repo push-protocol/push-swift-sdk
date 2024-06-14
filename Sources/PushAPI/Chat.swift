@@ -131,7 +131,7 @@ public struct Chat {
 //            ))
 //    }
     
-    public func send(target: String, message: PushChat.SendMessage) async throws -> MessageV2 {
+    public func send(target: String, message: PushChat.SendMessage) async throws -> Message {
         
         let sendOption = PushChat.SendOptionsV2(
             to: target,

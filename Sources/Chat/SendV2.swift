@@ -126,7 +126,7 @@ extension PushChat {
         }
     }
 
-    public static func sendV2(chatOptions: SendOptionsV2) async throws -> MessageV2 {
+    public static func sendV2(chatOptions: SendOptionsV2) async throws -> Message {
         let computedOptions = try computeOptions(chatOptions)
 
         try validateSendOptions(options: computedOptions)
@@ -151,7 +151,8 @@ extension PushChat {
 
         var messageContent: String
         if computedOptions.messageType == .Reply ||
-            computedOptions.messageType == .Composite {
+            computedOptions.messageType == .Composite
+        {
             messageContent = "MessageType Not Supported by this sdk version. Plz upgrade !!!"
         } else {
             messageContent = computedOptions.messageObj.content
@@ -167,7 +168,8 @@ extension PushChat {
                 messageObj: computedOptions.messageObj,
                 group: groupInfo,
                 isGroup: isGroup,
-                env: computedOptions.env)
+                env: computedOptions.env
+            )
 
 //        if isIntent {
 //            return try await sendIntentService(payload: sendMessagePayload, env: computedOptions.env)
@@ -198,7 +200,7 @@ extension PushChat {
         }
 
         do {
-            return try JSONDecoder().decode(MessageV2.self, from: data)
+            return try JSONDecoder().decode(Message.self, from: data)
         } catch {
             print("[Push SDK] - API \(error.localizedDescription)")
             throw error
@@ -216,7 +218,8 @@ extension PushChat {
         isGroup: Bool,
         env: ENV
     ) async throws
-        -> SendMessagePayloadV2 {
+        -> SendMessagePayloadV2
+    {
         var secretKey: String
 
         if isGroup, group != nil, group?.encryptedSecret != nil, group?.sessionKey != nil {
@@ -285,8 +288,8 @@ extension PushChat {
             ("sessionKey", body.sessionKey ?? "null"),
             ("encryptedSecret", body.encryptedSecret ?? "null"),
         ])
-        bodyToBehashed = bodyToBehashed.replacingOccurrences(of: "\"\(messageObjKey)\"",
-                                                             with: encryptionType == "PlainText" ? try messageObj.toJson() : "\"\(encryptedMessageObj)\"")
+        bodyToBehashed = try bodyToBehashed.replacingOccurrences(of: "\"\(messageObjKey)\"",
+                                                                 with: encryptionType == "PlainText" ? messageObj.toJson() : "\"\(encryptedMessageObj)\"")
 
         let hash = generateSHA256Hash(msg: bodyToBehashed)
 
@@ -354,7 +357,7 @@ extension PushChat {
     }
 }
 
-public struct MessageV2: Codable {
+public struct Message: Codable {
     public var fromCAIP10: String
     public var toCAIP10: String
     public var fromDID: String
@@ -370,6 +373,39 @@ public struct MessageV2: Codable {
     public var link: String?
     public var cid: String?
     public var sessionKey: String?
+
+    public init(fromCAIP10: String,
+                toCAIP10: String,
+                fromDID: String,
+                toDID: String,
+                messageType: String,
+                messageContent: String,
+                messageObj: MessageObj? = nil, // Define a type that can represent both String and JSON
+                signature: String,
+                sigType: String,
+                timestamp: Int? = nil,
+                encType: String,
+                encryptedSecret: String? = nil,
+                link: String? = nil,
+                cid: String? = nil,
+                sessionKey: String? = nil)
+    {
+        self.fromCAIP10 = fromCAIP10
+        self.toCAIP10 = toCAIP10
+        self.fromDID = fromDID
+        self.toDID = toDID
+        self.messageType = messageType
+        self.messageContent = messageContent
+        self.messageObj = messageObj
+        self.signature = signature
+        self.sigType = sigType
+        self.timestamp = timestamp
+        self.encType = encType
+        self.encryptedSecret = encryptedSecret
+        self.link = link
+        self.cid = cid
+        self.sessionKey = sessionKey
+    }
 
     // Implement a custom init(from:) initializer for decoding
     public init(from decoder: Decoder) throws {
