@@ -26,7 +26,7 @@ public struct PushChat {
     var toDecrypt: Bool = false
     var page: Int = CONSTANTS.PAGINATION.INITIAL_PAGE
     var limit: Int = CONSTANTS.PAGINATION.LIMIT
-    var env: ENV = ENV.STAGING
+    var env: ENV = .STAGING
 
     public init(
       account: String,

@@ -49,7 +49,7 @@ extension PushChat {
             message: messages[i], privateKeyArmored: pgpPrivateKey, env: env)
 
           if decryptedObj != nil {
-            messages[i].messageObj = decryptedObj
+            messages[i].messageObj = MessageObj(content: decryptedObj)
           }
           messages[i].messageContent = decryptedMsg
         }
@@ -151,7 +151,7 @@ extension PushChat {
             var messageObj: String? = nil
             if let msgObj = message.messageObj {
                 messageObj = try? decryptMessage(
-                    msgObj, secretKey: secretKey)
+                    msgObj.content!, secretKey: secretKey)
             }
             
             let decMsg = try decryptMessage(

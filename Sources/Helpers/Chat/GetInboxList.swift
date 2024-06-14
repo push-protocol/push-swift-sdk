@@ -8,7 +8,7 @@ struct BodyToHashInboxList: Encodable {
   let messageType: String
 }
 
-func verifySignature(messageContent: String, signatureArmored: String, publicKeyArmored: String)
+func verifySignature(messageContent _: String, signatureArmored _: String, publicKeyArmored _: String)
   throws
 {
   // TODO: Implement
@@ -17,14 +17,15 @@ func verifySignature(messageContent: String, signatureArmored: String, publicKey
 private func decryptAndVerifySignature(
   cipherText: String,
   encryptedSecretKey: String,
-  publicKeyArmored: String,
-  signatureArmored: String,
+  publicKeyArmored _: String,
+  signatureArmored _: String,
   privateKeyArmored: String,
-  message: Message
+  message _: Message
 ) async throws -> String {
   do {
     let secretKey: String = try Pgp.pgpDecrypt(
-      cipherText: encryptedSecretKey, toPrivateKeyArmored: privateKeyArmored)
+      cipherText: encryptedSecretKey, toPrivateKeyArmored: privateKeyArmored
+    )
 
     guard let userMsg = try AESCBCHelper.decrypt(cipherText: cipherText, secretKey: secretKey)
     else {
@@ -40,14 +41,13 @@ private func decryptAndVerifySignature(
 
 private func decryptFeeds(
   feeds: [PushChat.Feeds],
-  connectedUser: PushUser,
+  connectedUser _: PushUser,
   pgpPrivateKey: String?,
   env: ENV
 ) async throws -> [PushChat.Feeds] {
   var updatedFeeds: [PushChat.Feeds] = []
   for feed in feeds {
     var currentFeed = feed
-    // print(feed.chatId, feed.publicKey?.count, feed.msg?.encType)
     if currentFeed.msg == nil {
       updatedFeeds.append(currentFeed)
       continue
@@ -58,7 +58,8 @@ private func decryptFeeds(
       }
 
       let (decryptedMsg, _) = try await PushChat.decryptMessage(
-        message: currentFeed.msg!, privateKeyArmored: pgpPrivateKey!, env: env)
+        message: currentFeed.msg!, privateKeyArmored: pgpPrivateKey!, env: env
+      )
       currentFeed.msg?.messageContent = decryptedMsg
     }
     updatedFeeds.append(currentFeed)
@@ -92,12 +93,12 @@ public func getInboxLists(
         messageContent: "",
         signature: "",
         sigType: "",
-        timestamp: nil,
         encType: "PlainText",
         encryptedSecret: "",
         link: ""
       )
     }
+
     feeds.append(
       PushChat.Feeds(
         msg: message,
