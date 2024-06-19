@@ -29,7 +29,10 @@ public struct Chat {
             let options = PushChat.GetChatsOptions(
                 account: account,
                 pgpPrivateKey: decryptedPgpPvtKey,
-                page: page, limit: limit, env: env)
+                toDecrypt: true,
+                page: page,
+                limit: limit,
+                env: env)
 
             return try await PushChat.getChats(
                 options: options
@@ -39,7 +42,9 @@ public struct Chat {
             let options = PushChat.RequestOptionsType(
                 account: account,
                 pgpPrivateKey: decryptedPgpPvtKey,
-                page: page, limit: limit, env: env)
+                page: page, 
+                limit: limit,
+                env: env)
             return try await PushChat.requests(options: options)
         }
     }
@@ -118,18 +123,16 @@ public struct Chat {
 
         try await PushUser.updateUserProfile(account: account, pgpPrivateKey: decryptedPgpPvtKey, newProfile: profile!, env: env)
     }
-    
+
     public func send(target: String, message: PushChat.SendMessage) async throws -> Message {
-        
         let sendOption = PushChat.SendOptionsV2(
             to: target,
             message: message,
             account: account,
             pgpPrivateKey: decryptedPgpPvtKey,
             env: env
-          
         )
-        
+
         return try await Push.PushChat.sendV2(
             chatOptions: sendOption)
     }
@@ -288,7 +291,7 @@ public struct Group {
             description: options.description,
             image: options.image,
             members: options.members,
-            
+
             isPublic: !options.isPrivate,
             creatorAddress: account,
             creatorPgpPrivateKey: decryptedPgpPvtKey,
@@ -311,7 +314,7 @@ public struct GroupParticipants {
         var role: String?
 
         /// role: 'admin' | 'member';
-       public init(pending: Bool? = nil, role: String? = nil) {
+        public init(pending: Bool? = nil, role: String? = nil) {
             self.pending = pending
             self.role = role
         }
@@ -333,7 +336,7 @@ public struct GroupParticipants {
         public var participants: Int
         public var pending: Int
 
-     public   init(participants: Int, pending: Int) {
+        public init(participants: Int, pending: Int) {
             self.participants = participants
             self.pending = pending
         }
@@ -344,7 +347,7 @@ public struct GroupParticipants {
         public var role: String
         public var participant: Bool
 
-      public  init(pending: Bool, role: String, participant: Bool) {
+        public init(pending: Bool, role: String, participant: Bool) {
             self.pending = pending
             self.role = role
             self.participant = participant
@@ -368,7 +371,7 @@ public struct GroupParticipants {
 
     public func status(chatId: String, accountId: String) async throws -> ParticipantStatus {
         let status = try await PushChat.getGroupMemberStatus(chatId: chatId, did: accountId, env: env)
-       
+
         return ParticipantStatus(
             pending: status?.isPending == true,
             role: status?.isAdmin == true ? "ADMIN" : "MEMBER",

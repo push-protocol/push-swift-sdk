@@ -115,7 +115,8 @@ public func getInboxLists(
         cid: list.cid,
         chatId: list.chatId,
         deprecated: list.deprecated,
-        deprecatedCode: list.deprecatedCode
+        deprecatedCode: list.deprecatedCode,
+        groupInformation: list.groupInformation
       )
     )
   }
