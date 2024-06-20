@@ -2,7 +2,7 @@ import Foundation
 
 public struct PushAPI {
     private var env: ENV
-    private var account: String
+    public var account: String
     private var readMode: Bool
     private var decryptedPgpPvtKey: String
     private var pgpPublicKey: String?
