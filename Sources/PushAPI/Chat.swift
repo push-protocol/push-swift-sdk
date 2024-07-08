@@ -23,6 +23,11 @@ public struct Chat {
         case CHAT
         case REQUESTS
     }
+    
+    public func decrypt(messagePayloads:[Message] ) async throws-> [Message]{
+        
+        return messagePayloads;
+    }
 
     public func list(type: ChatListType, page: Int = 1, limit: Int = 10, overrideAccount: String? = nil) async throws -> [PushChat.Feeds] {
         if type == .CHAT {

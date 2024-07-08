@@ -132,3 +132,15 @@ public enum ProposedEventNames: String {
     case StartSpace = "space.start"
     case StopSpace = "space.stop"
 }
+
+public struct NotificationChannel {
+    let name: String
+    let icon: String
+    let url: String
+    
+    init(name: String, icon: String, url: String) {
+        self.name = name
+        self.icon = icon
+        self.url = url
+    }
+}

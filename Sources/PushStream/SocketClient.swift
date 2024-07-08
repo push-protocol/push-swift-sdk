@@ -42,24 +42,24 @@ public struct SocketClient{
         }
         
         var query : [String:String] = [:]
+        var queryParam : String = ""
         
         if options.socketType == .notification {
+            queryParam = "address=\(userAddressInCAIP)"
             query = ["address": userAddressInCAIP]
   
         }else{
+            queryParam = "mode=chat&did=\(userAddressInCAIP)"
             query = ["mode": "chat", "did": userAddressInCAIP]
         }
         
-        print("query: \(query)")
-        
         var config = [
-            .log(true),
+            .connectParams(query),
             .compress,
             .reconnects(options.socketOptions?.autoConnect == true),
-            .connectParams(query),
             .forceWebsockets(true),
             .secure(true),
-            .extraHeaders(["Sec-WebSocket-Extensions":"permessage-deflate"])
+            
         ] as SocketIOClientConfiguration
         
         if options.socketOptions?.reconnectionDelay != nil{
@@ -70,14 +70,15 @@ public struct SocketClient{
             config.insert(.reconnectWaitMax(options.socketOptions!.reconnectionDelayMax!))
         }
         
+        
+        let url = "\(pushWSUrl)?\(queryParam)"
+//        "https://backend-staging.epns.io?did=eip155:0x6A34eB3a649355335a22bd8Ae0da0a6b209277B7&mode=chat"
+        print(url)
         // Create a Socket.IO manager instance
-        let socketManager = SocketManager(socketURL: URL(string: pushWSUrl)!, config: config)
+        let socketManager =
+        SocketManager(socketURL: URL(string: url)!, config: config)
         
-        print("pushWSUrl: \(pushWSUrl)")
-        print("socketManager: \(socketManager)")
-        print("config: \(config)")
-        
-        return socketManager
+        return socketManager//.defaultSocket
     }
 }
 

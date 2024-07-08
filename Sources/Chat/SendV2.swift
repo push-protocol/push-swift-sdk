@@ -406,6 +406,24 @@ public struct Message: Codable {
         self.cid = cid
         self.sessionKey = sessionKey
     }
+    
+    public init(dictionary: [String: Any]) {
+         self.fromCAIP10 = dictionary["fromCAIP10"] as? String ?? ""
+         self.toCAIP10 = dictionary["toCAIP10"] as? String ?? ""
+         self.fromDID = dictionary["fromDID"] as? String ?? ""
+         self.toDID = dictionary["toDID"] as? String ?? ""
+         self.messageType = dictionary["messageType"] as? String ?? ""
+         self.messageContent = dictionary["messageContent"] as? String ?? ""
+         self.messageObj = dictionary["messageObj"] as? MessageObj
+         self.signature = dictionary["signature"] as? String ?? ""
+         self.sigType = dictionary["sigType"] as? String ?? ""
+         self.timestamp = dictionary["timestamp"] as? Int
+         self.encType = dictionary["encType"] as? String ?? ""
+         self.encryptedSecret = dictionary["encryptedSecret"] as? String
+         self.link = dictionary["link"] as? String
+         self.cid = dictionary["cid"] as? String
+         self.sessionKey = dictionary["sessionKey"] as? String
+     }
 
     // Implement a custom init(from:) initializer for decoding
     public init(from decoder: Decoder) throws {
@@ -439,8 +457,51 @@ public struct Message: Codable {
             }
         }
     }
+    
+    public func toDictionary() -> [String: Any] {
+            var dictionary: [String: Any] = [
+                "fromCAIP10": fromCAIP10,
+                "toCAIP10": toCAIP10,
+                "fromDID": fromDID,
+                "toDID": toDID,
+                "messageType": messageType,
+                "messageContent": messageContent,
+                "signature": signature,
+                "sigType": sigType,
+                "encType": encType
+            ]
+            
+            // Add optional properties if they are not nil
+            if let messageObj = messageObj {
+                dictionary["messageObj"] = messageObj.toMap()
+            }
+            if let timestamp = timestamp {
+                dictionary["timestamp"] = timestamp
+            }
+            if let encryptedSecret = encryptedSecret {
+                dictionary["encryptedSecret"] = encryptedSecret
+            }
+            if let link = link {
+                dictionary["link"] = link
+            }
+            if let cid = cid {
+                dictionary["cid"] = cid
+            }
+            if let sessionKey = sessionKey {
+                dictionary["sessionKey"] = sessionKey
+            }
+            
+            return dictionary
+        }
 }
 
 public struct MessageObj: Codable {
    public let content: String?
+    
+       // Convert to a dictionary
+       public func toMap() -> [String: Any] {
+           var map: [String: Any] = [:]
+           map["content"] = content
+           return map
+       }
 }

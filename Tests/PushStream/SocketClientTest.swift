@@ -4,24 +4,33 @@ import XCTest
 class SocketClientTests: XCTestCase {
     func testConnection() async throws {
         let options = SocketInputOptions(
-            user: "0x6A34eB3a649355335a22bd8Ae0da0a6b209277B7",
+            user: "0x222b8ABe6E770708767522f3CFF5c6730A9a7A0F",
+//            user: "0x6A34eB3a649355335a22bd8Ae0da0a6b209277B7",
             env: ENV.STAGING,
             socketType: .chat,
             socketOptions: SocketOptions(
             ))
-
-        let manager = try SocketClient.createSocketConnection(options)
-        
     
-        print("createSocketConnection: manager: \(manager)")
-        
 
-        let socket = manager.defaultSocket
+
+       let manager = try SocketClient.createSocketConnection(options)
+        let socket =  manager.defaultSocket
+        
+        socket.on(clientEvent: .connect) { data, ack in
+            print("Socket connect \(data)")
+        }
         socket.on(clientEvent: .error) { data, ack in
             print("Socket error \(data)")
         }
-        print("createSocketConnection: manager: \(socket.sid)")
-
+        
+        
+        socket.on(EVENTS.chatGroups.rawValue, callback: {data,ack in
+            print("EVENTS: \(EVENTS.chatGroups.rawValue) data: \(data)")
+        })
+        socket.on(EVENTS.chatReceivedMessage.rawValue, callback: {data,ack in
+            print("EVENTS: \(EVENTS.chatGroups.rawValue) data: \(data)")
+        })
+        
         socket.connect(
             timeoutAfter: 15, 
             withHandler: {
@@ -42,10 +51,9 @@ class SocketClientTests: XCTestCase {
 
         print("socket connected status 4 \(socket.status)")
         try await Task.sleep(nanoseconds: UInt64(5 * 1000000000))
+        try await Task.sleep(nanoseconds: UInt64(5 * 1000000000))
 
         print("socket connected status 5 \(socket.status)")
-//        print("socket connected status \(socket.e)")
-//        print("socket connected status \(socket.config)")
     }
 
     func testPushStream() async throws {
@@ -61,9 +69,10 @@ class SocketClientTests: XCTestCase {
         let johnSigner = try SignerPrivateKey(privateKey: johnPk)
 
         // Store Address
-        let aliceAddress = try await aliceSigner.getAddress()
-        let bobAddress = try await bobSigner.getAddress()
-        let johnAddress = try await johnSigner.getAddress()
+//        let aliceAddress = try await aliceSigner.getAddress()
+//        let bobAddress = try await bobSigner.getAddress()
+//        let johnAddress = try await johnSigner.getAddress()
+        
 
         var userAlice = try await PushAPI
             .initializePush(
@@ -82,6 +91,8 @@ class SocketClientTests: XCTestCase {
             )
         )
         
+        
+        
         stream.on(STREAM.CONNECT.rawValue, listener: {it in
             print("Scocket connected: \(it)")
         }) 
@@ -94,12 +105,21 @@ class SocketClientTests: XCTestCase {
             print("Scocket log : \(it)")
         })
         
-      try await stream.connect()
         
-        try await Task.sleep(nanoseconds: UInt64(20 * 1000000000))
+//      try await stream.connect()
+      
+        
+        
+        try await Task.sleep(nanoseconds: UInt64(5 * 1000000000))
+        print("socket connected status -> \(stream.connected())")
+        
+//        stream.disconnect()
+        
+        try await Task.sleep(nanoseconds: UInt64(500 * 1000000000))
 
-        print("socket connected status \(stream)")
+        print("socket connected status \(stream.connected())")
         
         
     }
+  
 }
