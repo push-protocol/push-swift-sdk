@@ -30,15 +30,14 @@ public struct PushAPI {
         profile = Profile(account: account, decryptedPgpPvtKey: decryptedPgpPvtKey, env: env)
     }
 
-    public mutating func initStream(listen: [STREAM], options: PushStreamInitializeOptions) throws -> PushStream {
-        let pushStream = try PushStream.initialize(
+    public mutating func initStream(listen: [STREAM], options: PushStreamInitializeOptions) async throws -> PushStream {
+        stream = try await PushStream.initialize(
             account: account,
             listen: listen,
             decryptedPgpPvtKey: decryptedPgpPvtKey,
             options: options,
             env: env)
-        stream = pushStream
-        return pushStream
+        return stream!
     }
 
     public static func initializePush(signer: Signer, options: PushAPIInitializeOptions) async throws -> PushAPI {

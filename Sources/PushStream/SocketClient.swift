@@ -72,7 +72,6 @@ public struct SocketClient{
         
         
         let url = "\(pushWSUrl)?\(queryParam)"
-//        "https://backend-staging.epns.io?did=eip155:0x6A34eB3a649355335a22bd8Ae0da0a6b209277B7&mode=chat"
         print(url)
         // Create a Socket.IO manager instance
         let socketManager =
