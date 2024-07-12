@@ -72,12 +72,11 @@ public struct SocketClient{
         
         
         let url = "\(pushWSUrl)?\(queryParam)"
-        print(url)
         // Create a Socket.IO manager instance
         let socketManager =
         SocketManager(socketURL: URL(string: url)!, config: config)
         
-        return socketManager//.defaultSocket
+        return socketManager
     }
 }
 
