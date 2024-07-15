@@ -1,7 +1,7 @@
 import Foundation
 
 public class DataModifier {
-    public    static func convertToProposedNameForSpace(_ currentEventName: String) -> String {
+    public static func convertToProposedNameForSpace(_ currentEventName: String) -> String {
         switch currentEventName {
         case "create":
             return ProposedEventNames.CreateSpace.rawValue
@@ -23,12 +23,14 @@ public class DataModifier {
             return ProposedEventNames.StartSpace.rawValue
         case "stop":
             return ProposedEventNames.StopSpace.rawValue
+        case "roleChange":
+            return ProposedEventNames.RoleChange.rawValue
         default:
             fatalError("Unknown current event name: \(currentEventName)")
         }
     }
 
-    public    static func handleChatGroupEvent(data: [String: Any], includeRaw: Bool = false) -> [String: Any] {
+    public static func handleChatGroupEvent(data: [String: Any], includeRaw: Bool = false) -> [String: Any] {
         switch data["eventType"] as? String {
         case "create":
             return mapToCreateGroupEvent(data: data, includeRaw: includeRaw)
@@ -42,20 +44,40 @@ public class DataModifier {
             return mapToRequestEvent(data: data, includeRaw: includeRaw)
         case GroupEventType.Remove.rawValue:
             return mapToRemoveEvent(data: data, includeRaw: includeRaw)
+        case GroupEventType.RoleChange.rawValue:
+            return mapToRoleChangeEvent(data: data, includeRaw: includeRaw)
         default:
             print("Unknown eventType: \(data["eventType"] ?? "")")
             return data
         }
     }
-    
-    public   static func mapToRemoveEvent(data: [String: Any], includeRaw: Bool) -> [String: Any] {
+
+    public static func mapToRoleChangeEvent(data: [String: Any], includeRaw: Bool) -> [String: Any] {
         var eventData: [String: Any] = [
             "origin": data["messageOrigin"] as Any,
             "timestamp": data["timestamp"] as Any,
             "chatId": data["chatId"] as Any,
             "from": data["from"] as Any,
             "to": data["to"] as Any,
-            "event": GroupEventType.Remove.rawValue
+            "newRole": data["newRole"] as Any,
+            "event": GroupEventType.RoleChange.rawValue,
+        ]
+
+        if includeRaw {
+            eventData["raw"] = ["verificationProof": data["verificationProof"] as Any]
+        }
+
+        return eventData
+    }
+    
+    public static func mapToRemoveEvent(data: [String: Any], includeRaw: Bool) -> [String: Any] {
+        var eventData: [String: Any] = [
+            "origin": data["messageOrigin"] as Any,
+            "timestamp": data["timestamp"] as Any,
+            "chatId": data["chatId"] as Any,
+            "from": data["from"] as Any,
+            "to": data["to"] as Any,
+            "event": GroupEventType.Remove.rawValue,
         ]
 
         if includeRaw {
@@ -65,8 +87,7 @@ public class DataModifier {
         return eventData
     }
 
-    
-    public   static func mapToRequestEvent(data: [String: Any], includeRaw: Bool) -> [String: Any] {
+    public static func mapToRequestEvent(data: [String: Any], includeRaw: Bool) -> [String: Any] {
         var eventData: [String: Any] = [
             "origin": data["messageOrigin"] as Any,
             "timestamp": data["timestamp"] as Any,
@@ -75,8 +96,8 @@ public class DataModifier {
             "to": data["to"] as Any,
             "event": MessageEventType.Request.rawValue,
             "meta": [
-                "group": data["isGroup"] as? Bool ?? false
-            ]
+                "group": data["isGroup"] as? Bool ?? false,
+            ],
         ]
 
         if includeRaw {
@@ -86,32 +107,14 @@ public class DataModifier {
         return eventData
     }
 
-    
-    public   static func mapToLeaveGroupEvent(data: [String: Any], includeRaw: Bool) -> [String: Any] {
+    public static func mapToLeaveGroupEvent(data: [String: Any], includeRaw: Bool) -> [String: Any] {
         var baseEventData: [String: Any] = [
             "origin": data["messageOrigin"] as Any,
             "timestamp": data["timestamp"] as Any,
             "chatId": data["chatId"] as Any,
             "from": data["from"] as Any,
             "to": data["to"] as Any,
-            "event": GroupEventType.LeaveGroup.rawValue
-        ]
-
-        if includeRaw {
-            baseEventData["raw"] = ["verificationProof": data["verificationProof"] as Any]
-        }
-
-        return baseEventData
-    }
-    
-    public    static func mapToJoinGroupEvent(data: [String: Any], includeRaw: Bool) -> [String: Any] {
-        var baseEventData: [String: Any] = [
-            "origin": data["messageOrigin"] as Any,
-            "timestamp": data["timestamp"] as Any,
-            "chatId": data["chatId"] as Any,
-            "from": data["from"] as Any,
-            "to": data["to"] as Any,
-            "event": GroupEventType.JoinGroup.rawValue
+            "event": GroupEventType.LeaveGroup.rawValue,
         ]
 
         if includeRaw {
@@ -121,15 +124,32 @@ public class DataModifier {
         return baseEventData
     }
 
-    public   static func mapToCreateGroupEvent(data: [String: Any], includeRaw: Bool) -> [String: Any] {
+    public static func mapToJoinGroupEvent(data: [String: Any], includeRaw: Bool) -> [String: Any] {
+        var baseEventData: [String: Any] = [
+            "origin": data["messageOrigin"] as Any,
+            "timestamp": data["timestamp"] as Any,
+            "chatId": data["chatId"] as Any,
+            "from": data["from"] as Any,
+            "to": data["to"] as Any,
+            "event": GroupEventType.JoinGroup.rawValue,
+        ]
+
+        if includeRaw {
+            baseEventData["raw"] = ["verificationProof": data["verificationProof"] as Any]
+        }
+
+        return baseEventData
+    }
+
+    public static func mapToCreateGroupEvent(data: [String: Any], includeRaw: Bool) -> [String: Any] {
         return mapToGroupEvent(eventType: GroupEventType.CreateGroup.rawValue, incomingData: data, includeRaw: includeRaw)
-    } 
-    
-    public    static func mapToUpdateGroupEvent(data: [String: Any], includeRaw: Bool) -> [String: Any] {
+    }
+
+    public static func mapToUpdateGroupEvent(data: [String: Any], includeRaw: Bool) -> [String: Any] {
         return mapToGroupEvent(eventType: GroupEventType.UpdateGroup.rawValue, incomingData: data, includeRaw: includeRaw)
     }
 
-    public   static func mapToGroupEvent(eventType: String, incomingData: [String: Any], includeRaw: Bool) -> [String: Any] {
+    public static func mapToGroupEvent(eventType: String, incomingData: [String: Any], includeRaw: Bool) -> [String: Any] {
         let metaAndRaw = buildChatGroupEventMetaAndRaw(incomingData: incomingData, includeRaw: includeRaw)
         var groupEvent: [String: Any] = [
             "event": eventType,
@@ -147,7 +167,7 @@ public class DataModifier {
         return groupEvent
     }
 
-    public  static func buildChatGroupEventMetaAndRaw(incomingData: [String: Any], includeRaw: Bool) -> [String: Any] {
+    public static func buildChatGroupEventMetaAndRaw(incomingData: [String: Any], includeRaw: Bool) -> [String: Any] {
         let meta: [String: Any] = [
             "name": incomingData["groupName"]!,
             "description": incomingData["groupDescription"]!,
@@ -165,7 +185,7 @@ public class DataModifier {
         return ["meta": meta]
     }
 
-    public  static func convertToProposedName(_ currentEventName: String) -> String {
+    public static func convertToProposedName(_ currentEventName: String) -> String {
         switch currentEventName {
         case "message":
             return ProposedEventNames.Message.rawValue
@@ -185,12 +205,14 @@ public class DataModifier {
             return ProposedEventNames.UpdateGroup.rawValue
         case "remove":
             return ProposedEventNames.Remove.rawValue
+        case "roleChange":
+            return ProposedEventNames.RoleChange.rawValue
         default:
             fatalError("Unknown current event name: \(currentEventName)")
         }
     }
 
-    public  static func handleToField(_ data: inout [String: Any]) {
+    public static func handleToField(_ data: inout [String: Any]) {
         switch data["event"] as? String {
         case ProposedEventNames.LeaveGroup.rawValue?,
              ProposedEventNames.JoinGroup.rawValue?:
@@ -205,7 +227,7 @@ public class DataModifier {
         }
     }
 
-   public static func handleChatEvent(_ data: [String: Any],_ includeRaw: Bool = false) -> [String: Any] {
+    public static func handleChatEvent(_ data: [String: Any], _ includeRaw: Bool = false) -> [String: Any] {
         guard let eventTypeKey = data["eventType"] as? String ?? data["messageCategory"] as? String else {
             fatalError("Invalid eventType or messageCategory in data")
         }
@@ -224,7 +246,7 @@ public class DataModifier {
         return mapToMessageEvent(data: data, includeRaw: includeRaw, eventType: eventType)
     }
 
-    public   static func mapToMessageEvent(data: [String: Any], includeRaw: Bool, eventType: String) -> [String: Any] {
+    public static func mapToMessageEvent(data: [String: Any], includeRaw: Bool, eventType: String) -> [String: Any] {
         var eventType = eventType
 
         if let hasIntent = data["hasIntent"] as? Bool, hasIntent == false, eventType == MessageEventType.Message.rawValue {
