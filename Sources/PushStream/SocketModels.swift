@@ -4,18 +4,15 @@ public struct PushStreamInitializeOptions {
     var filter: PushStreamFilter?
     var connection: PushStreamConnection
     var raw: Bool
-    var env: ENV
     var overrideAccount: String?
 
   public  init(filter: PushStreamFilter? = nil,
          connection: PushStreamConnection? = nil,
          raw: Bool = false,
-         env: ENV = .PROD,
          overrideAccount: String? = nil) {
         self.filter = filter
         self.connection = connection ?? PushStreamConnection()
         self.raw = raw
-        self.env = env
         self.overrideAccount = overrideAccount
     }
 

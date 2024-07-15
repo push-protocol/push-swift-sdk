@@ -231,9 +231,9 @@ public class DataModifier {
             eventType = MessageEventType.Request.rawValue
         }
 
-        var messageEvent: [String: Any] = [
+        var messageEvent: [String: Any?] = [
             "event": eventType,
-            "origin": data["messageOrigin"]!,
+            "origin": data["messageOrigin"] as? String? as Any,
             "timestamp": String(describing: data["timestamp"]!),
             "chatId": data["chatId"]!,
             "from": data["fromCAIP10"]!,

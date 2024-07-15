@@ -30,7 +30,7 @@ public struct PushAPI {
         profile = Profile(account: account, decryptedPgpPvtKey: decryptedPgpPvtKey, env: env)
     }
 
-    public mutating func initStream(listen: [STREAM], options: PushStreamInitializeOptions) async throws -> PushStream {
+    public mutating func initStream(listen: [STREAM], options: PushStreamInitializeOptions) async throws -> PushStream {        
         stream = try await PushStream.initialize(
             account: account,
             listen: listen,

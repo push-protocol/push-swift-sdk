@@ -10,33 +10,29 @@ class SocketClientTests: XCTestCase {
             socketType: .chat,
             socketOptions: SocketOptions(
             ))
-    
 
+        let manager = try SocketClient.createSocketConnection(options)
+        let socket = manager.defaultSocket
 
-       let manager = try SocketClient.createSocketConnection(options)
-        let socket =  manager.defaultSocket
-        
-        socket.on(clientEvent: .connect) { data, ack in
+        socket.on(clientEvent: .connect) { data, _ in
             print("Socket connect \(data)")
         }
-        socket.on(clientEvent: .error) { data, ack in
+        socket.on(clientEvent: .error) { data, _ in
             print("Socket error \(data)")
         }
-        
-        
-        socket.on(EVENTS.chatGroups.rawValue, callback: {data,ack in
+
+        socket.on(EVENTS.chatGroups.rawValue, callback: { data, _ in
             print("EVENTS: \(EVENTS.chatGroups.rawValue) data: \(data)")
         })
-        socket.on(EVENTS.chatReceivedMessage.rawValue, callback: {data,ack in
+        socket.on(EVENTS.chatReceivedMessage.rawValue, callback: { data, _ in
             print("EVENTS: \(EVENTS.chatGroups.rawValue) data: \(data)")
         })
-        
+
         socket.connect(
             timeoutAfter: 15,
             withHandler: {
-            print("*** Failed to connect")
-        })
-        
+                print("*** Failed to connect")
+            })
 
         try await Task.sleep(nanoseconds: UInt64(5 * 1000000000))
 
@@ -72,7 +68,6 @@ class SocketClientTests: XCTestCase {
 //        let aliceAddress = try await aliceSigner.getAddress()
 //        let bobAddress = try await bobSigner.getAddress()
 //        let johnAddress = try await johnSigner.getAddress()
-        
 
         var userAlice = try await PushAPI
             .initializePush(
@@ -81,8 +76,10 @@ class SocketClientTests: XCTestCase {
                     env: .STAGING)
             )
 
+        print("userAlice: \(userAlice.account)")
         var stream = try await userAlice.initStream(
-            listen: [STREAM.CHAT, STREAM.CHAT_OPS],
+        
+            listen: [.CHAT, .CHAT_OPS, .CONNECT, .DISCONNECT],
             options: PushStreamInitializeOptions(
                 filter: PushStreamFilter(
                     channels: ["*"],
@@ -90,40 +87,41 @@ class SocketClientTests: XCTestCase {
                 )
             )
         )
-        
-        
-        stream.on(STREAM.CONNECT.rawValue, listener: {it in
+
+        stream.on(STREAM.CONNECT.rawValue, listener: { it in
             print("Scocket connected: \(it)")
-        }) 
-        
-        stream.on(STREAM.DISCONNECT.rawValue, listener: {it in
+        })
+
+        stream.on(STREAM.DISCONNECT.rawValue, listener: { it in
             print("Scocket DISCONNECT: \(it)")
-        }) 
-        
-        stream.on("log", listener: {it in
+        })
+
+        stream.on(STREAM.CHAT.rawValue, listener: { it in
+            print("Scocket CHAT: \(it)")
+        })
+
+        stream.on(STREAM.CHAT_OPS.rawValue, listener: { it in
+            print("Scocket CHAT: \(it)")
+        })
+
+        stream.on("log", listener: { it in
             print("Scocket log : \(it)")
         })
-        
-        
-      try await stream.connect()
-      
-        
-        
+
+        try await stream.connect()
+
         try await Task.sleep(nanoseconds: UInt64(5 * 1000000000))
         print("socket connected status -> \(stream.connected())")
-        
+
         try await Task.sleep(nanoseconds: UInt64(5 * 1000000000))
         print("socket connected status 2 -> \(stream.connected())")
-        
+
 //        stream.disconnect()
-        
+
         try await Task.sleep(nanoseconds: UInt64(500 * 1000000000))
 
 //        print("socket connected status \(stream.connected())")
-        
-        
     }
-    
 
     func testPushStream2() async throws {
         let alicePk = "a59c37c9b61b73f824972b901e0b4ae914750fd8de94c5dfebc4934ff1d12d3c" /// getRandomAccount()
@@ -141,7 +139,6 @@ class SocketClientTests: XCTestCase {
         let aliceAddress = try await aliceSigner.getAddress()
 //        let bobAddress = try await bobSigner.getAddress()
 //        let johnAddress = try await johnSigner.getAddress()
-        
 
         var userAlice = try await PushAPI
             .initializePush(
@@ -150,54 +147,41 @@ class SocketClientTests: XCTestCase {
                     env: .STAGING)
             )
 
-        let stream = try await PushStream.initialize(account: aliceAddress, listen: [.CHAT,.CHAT_OPS, .CONNECT, .DISCONNECT], decryptedPgpPvtKey: "", options: PushStreamInitializeOptions(), env: .STAGING)
-        
-        
-//        var stream = try await userAlice.initStream(
-//            listen: [STREAM.CHAT, STREAM.CHAT_OPS],
-//            options: PushStreamInitializeOptions(
-//                filter: PushStreamFilter(
-//                    channels: ["*"],
-//                    chats: ["*"]
-//                )
-//            )
-//        )
-//        
+        let stream = try await PushStream.initialize(account: aliceAddress, listen: [.CHAT, .CHAT_OPS, .CONNECT, .DISCONNECT], decryptedPgpPvtKey: "", options: PushStreamInitializeOptions(filter: PushStreamFilter(chats: ["*"])), env: .STAGING)
+
         print("stream: \(stream.pushChatSocket)")
-        
-        
-        stream.on(STREAM.CONNECT.rawValue, listener: {it in
+        print("stream: \(userAlice.account)")
+
+        stream.on(STREAM.CONNECT.rawValue, listener: { it in
             print("Scocket connected: \(it)")
-        }) 
-        
-        stream.on(STREAM.DISCONNECT.rawValue, listener: {it in
+        })
+
+        stream.on(STREAM.DISCONNECT.rawValue, listener: { it in
             print("Scocket DISCONNECT: \(it)")
-        }) 
-        
-        stream.on("log", listener: {it in
+        })
+        stream.on(STREAM.CHAT.rawValue, listener: { it in
+            print("Scocket CHAT: \(it)")
+        })
+        stream.on(STREAM.CHAT_OPS.rawValue, listener: { it in
+            print("Scocket CHAT: \(it)")
+        })
+
+        stream.on("log", listener: { it in
             print("Scocket log : \(it)")
         })
-        
-        
-      try await stream.connect()
-      
-        
-        
+
+        try await stream.connect()
+
         try await Task.sleep(nanoseconds: UInt64(5 * 1000000000))
         print("socket connected status -> \(stream.connected())")
-        
+
         try await Task.sleep(nanoseconds: UInt64(5 * 1000000000))
         print("socket connected status 2 -> \(stream.connected())")
-        
+
 //        stream.disconnect()
-        
+
         try await Task.sleep(nanoseconds: UInt64(500 * 1000000000))
 
 //        print("socket connected status \(stream.connected())")
-        
-        
     }
-    
-
-  
 }
