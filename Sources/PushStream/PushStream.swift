@@ -54,7 +54,6 @@ public class PushStream: NSObject {
         options: PushStreamInitializeOptions?,
         env: ENV
     ) async throws -> PushStream {
-        print("initialize: env: \(env)")
         if listen.isEmpty {
             fatalError("The listen property must have at least one STREAM type.")
         }
@@ -87,10 +86,8 @@ extension PushStream {
         })
 
         pushChatSocket.on(EVENTS.chatGroups.rawValue, callback: { d, _ in
-            
-            print("EVENTS.chatGroups: data \(d.first)")
+
             let data = d.first as! [String: Any]
-            print("EVENTS.chatGroups == data: \(data)")
             var modifiedData = DataModifier.handleChatGroupEvent(
                 data: data,
                 includeRaw: self.raw
@@ -116,18 +113,9 @@ extension PushStream {
             }
 
         })
-        
-//        pushChatSocket.onAny({ event in
-//            print(" pushChatSocket.onAny: event \(event)")
-//            print(" pushChatSocket.onAny: event.event \(event.event)")
-//            print(" pushChatSocket.onAny: event.items \(event.items)")
-//            
-//        })
 
-//        print("EVENTS.chatReceivedMessage.rawValue \(EVENTS.chatReceivedMessage.rawValue)")
         pushChatSocket.on(EVENTS.chatReceivedMessage.rawValue, callback: { [self] d, _ in
-            
-            print("EVENTS.chatReceivedMessage == data: \(d.first)")
+
             Task {
                 do {
                     var data = d.first as! [String: Any]
@@ -164,13 +152,11 @@ extension PushStream {
 extension PushStream {
     func checkAndEmitConnectEvent() {
         emit(STREAM.CONNECT.rawValue, data: "Connected Successfully")
-        print("Emitted STREAM.CONNECT")
     }
 
     func handleSocketDisconnection(_ socketType: String) {
         if socketType == "chat" {
             emit(STREAM.DISCONNECT.rawValue, data: "Disonnected Successfully")
-            print("Emitted STREAM.DISCONNECT")
         }
     }
 

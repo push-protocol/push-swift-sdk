@@ -24,6 +24,7 @@ let package = Package(
       dependencies: [
         .product(name: "ObjectivePGP", package: "ObjectivePGP"),
         .product(name: "SocketIO", package: "socket.io-client-swift"),
+        .product(name: "web3swift", package: "Web3swift"),
         "CryptoSwift",
       ],
       path: "Sources"
