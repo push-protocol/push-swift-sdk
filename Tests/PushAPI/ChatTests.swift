@@ -18,7 +18,7 @@ class ChatTests: XCTestCase {
         let chats = try await pushAPI.chat.list(type: .CHAT)
         XCTAssertEqual(chats.count, 0)
     }
-    
+
     func testLatestChat() async throws {
         let userPk = getRandomAccount()
         let signer = try SignerPrivateKey(privateKey: userPk)
@@ -28,19 +28,18 @@ class ChatTests: XCTestCase {
                 signer: signer,
                 options: PushAPI.PushAPIInitializeOptions()
             )
-        
+
         let latest = try await pushAPI.chat.latest(target: "064ae7a086bc1d25cf45231a9725fec6789e1013b99bb482f41136268ffa73c6")
-      
+
         print(latest?.messageContent ?? "No message")
     }
-    
-    func testSendP2P() async throws{
-        let alicePk = "a59c37c9b61b73f824972b901e0b4ae914750fd8de94c5dfebc4934ff1d12d3c" ///getRandomAccount()
-        let bobPk = "0ab2b8f38a851c8e8782119fd1e202290b5c86736506525acde7b404260beba7"//getRandomAccount()
-        
+
+    func testSendP2P() async throws {
+        let alicePk = "a59c37c9b61b73f824972b901e0b4ae914750fd8de94c5dfebc4934ff1d12d3c" /// getRandomAccount()
+        let bobPk = "0ab2b8f38a851c8e8782119fd1e202290b5c86736506525acde7b404260beba7" // getRandomAccount()
+
         print("alicePk: \(alicePk)")
         print("bobPk: \(bobPk)")
-    
 
         // Initialize signers
         let aliceSigner = try SignerPrivateKey(privateKey: alicePk)
@@ -65,36 +64,31 @@ class ChatTests: XCTestCase {
                 signer: bobSigner,
                 options: PushAPI.PushAPIInitializeOptions(env: .STAGING)
             )
-        
-       
-       
-        
-      let messageToUnregisteredWallet =   try await userAlice.chat.send(
-        target: "0xd53f7207d84b188d1C70ac7d0BBd52C42CD5EcCc",
-        message: PushChat.SendMessage(content: "Food", type: .Text))
+
+        let messageToUnregisteredWallet = try await userAlice.chat.send(
+            target: "0xd53f7207d84b188d1C70ac7d0BBd52C42CD5EcCc",
+            message: PushChat.SendMessage(content: "Food", type: .Text))
         print("messageToUnregisteredWallet: \(messageToUnregisteredWallet)")
-        
-        
-        let message =   try await userAlice.chat.send(
-        target: bobAddress,
-        message: PushChat.SendMessage(content: "Food", type: .Text))
-        
+
+        let message = try await userAlice.chat.send(
+            target: bobAddress,
+            message: PushChat.SendMessage(content: "Food", type: .Text))
+
         print("Message: \(message)")
     }
-    
-    func testSendToGroup() async throws{
-        let alicePk = "a59c37c9b61b73f824972b901e0b4ae914750fd8de94c5dfebc4934ff1d12d3c" ///getRandomAccount()
-        let bobPk = "0ab2b8f38a851c8e8782119fd1e202290b5c86736506525acde7b404260beba7"//getRandomAccount()
+
+    func testSendToGroup() async throws {
+        let alicePk = "a59c37c9b61b73f824972b901e0b4ae914750fd8de94c5dfebc4934ff1d12d3c" /// getRandomAccount()
+        let bobPk = "0ab2b8f38a851c8e8782119fd1e202290b5c86736506525acde7b404260beba7" // getRandomAccount()
         let johnPk = getRandomAccount()
         print("alicePk: \(alicePk)")
         print("bobPk: \(bobPk)")
-    
 
         // Initialize signers
         let aliceSigner = try SignerPrivateKey(privateKey: alicePk)
         let bobSigner = try SignerPrivateKey(privateKey: bobPk)
         let johnSigner = try SignerPrivateKey(privateKey: johnPk)
-        
+
         // Store Address
         let aliceAddress = try await aliceSigner.getAddress()
         let bobAddress = try await bobSigner.getAddress()
@@ -103,7 +97,6 @@ class ChatTests: XCTestCase {
         print("bobAddress: \(bobAddress)")
         print("johnAddress: \(johnAddress)")
 
-  
         let userAlice = try await PushAPI
             .initializePush(
                 signer: aliceSigner,
@@ -116,14 +109,13 @@ class ChatTests: XCTestCase {
                 signer: bobSigner,
                 options: PushAPI.PushAPIInitializeOptions(env: .STAGING)
             )
-        
+
         let userJohn = try await PushAPI
             .initializePush(
                 signer: johnSigner,
                 options: PushAPI.PushAPIInitializeOptions(env: .STAGING)
             )
-        
-       
+
         let newName = "Push Swift"
         let groupOptions = Group.GroupCreationOptions(
             description: "Push Swift Test",
@@ -135,24 +127,20 @@ class ChatTests: XCTestCase {
 
         // Create Oublic group
         let group = try await userBob.chat.group.create(name: newName, options: groupOptions)
-        
+
         XCTAssertEqual(group?.groupName, newName)
         print("group: \(group?.chatId ?? "null")")
-        
-      let message =   try await userBob.chat.send(
-        target: group!.chatId,
-        message: PushChat.SendMessage(content: "Food", type: .Text))
-        
+
+        let message = try await userBob.chat.send(
+            target: group!.chatId,
+            message: PushChat.SendMessage(content: "Food", type: .Text))
+
         print("Message: \(message)")
-        
+
         let chats = try await userBob.chat.list(type: .CHAT)
         print(chats)
+
+        let participants = try await userBob.chat.group.participants.list(chatId: group!.chatId)
+        print("participants: \(String(describing: participants))")
     }
-
-   
-
-
-
 }
-
-    

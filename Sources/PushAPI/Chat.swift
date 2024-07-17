@@ -296,7 +296,6 @@ public struct Group {
             description: options.description,
             image: options.image,
             members: options.members,
-
             isPublic: !options.isPrivate,
             creatorAddress: account,
             creatorPgpPrivateKey: decryptedPgpPvtKey,
