@@ -73,7 +73,7 @@ public struct Chat {
     ) async throws -> [Message] {
         var ref = reference
         if ref == nil {
-            let threadHash = try await PushChat.ConversationHash(conversationId: target, account: account, env: env)!
+            let threadHash = try await PushChat.ConversationHash(conversationId: target, account: account, env: env)
             ref = threadHash
         }
 
