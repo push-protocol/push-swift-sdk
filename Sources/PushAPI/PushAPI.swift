@@ -11,6 +11,8 @@ public struct PushAPI {
     public var chat: Chat
     public var profile: Profile
 
+    public var stream: PushStream?
+
     init(env: ENV,
          account: String,
          readMode: Bool,
@@ -26,6 +28,16 @@ public struct PushAPI {
 
         chat = Chat(account: account, decryptedPgpPvtKey: decryptedPgpPvtKey, env: env)
         profile = Profile(account: account, decryptedPgpPvtKey: decryptedPgpPvtKey, env: env)
+    }
+
+    public mutating func initStream(listen: [STREAM], options: PushStreamInitializeOptions) async throws -> PushStream {        
+        stream = try await PushStream.initialize(
+            account: account,
+            listen: listen,
+            decryptedPgpPvtKey: decryptedPgpPvtKey,
+            options: options,
+            env: env)
+        return stream!
     }
 
     public static func initializePush(signer: Signer, options: PushAPIInitializeOptions) async throws -> PushAPI {

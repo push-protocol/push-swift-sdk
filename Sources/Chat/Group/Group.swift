@@ -6,24 +6,24 @@ public enum GroupChatError: Error {
 }
 
 extension PushChat {
-   public struct GroupMemberPublicKey: Codable {
-        let did: String
-        let publicKey: String
+    public struct GroupMemberPublicKey: Codable {
+        public let did: String
+        public let publicKey: String
     }
 
     public struct GetMemberPublicKeysResponse: Codable {
-        let members: [GroupMemberPublicKey]
+        public let members: [GroupMemberPublicKey]
     }
-    
+
     public struct GetMembersResponse: Codable {
-        let members: [ChatMemberProfile]
+        public let members: [ChatMemberProfile]
     }
 
     public struct ChatMemberProfile: Codable {
-        let address: String
-        let intent: Bool
-        let role: String
-        let userInfo: UserData?
+        public let address: String
+        public let intent: Bool
+        public let role: String
+        public let userInfo: UserData?
 
         init(address: String, intent: Bool, role: String, userInfo: UserData?) {
             self.address = address
@@ -34,30 +34,30 @@ extension PushChat {
     }
 
     public struct UserData: Codable {
-        let msgSent: Int
-        let maxMsgPersisted: Int
-        let did: String
-        let wallets: String
-        let profile: UserProfile
-        let encryptedPrivateKey: String?
-        let publicKey: String?
-        let verificationProof: String?
-        let origin: String?
+        public let msgSent: Int
+        public let maxMsgPersisted: Int
+        public let did: String
+        public let wallets: String
+        public let profile: UserProfile
+        public let encryptedPrivateKey: String?
+        public let publicKey: String?
+        public let verificationProof: String?
+        public let origin: String?
     }
 
     public struct UserProfile: Codable {
-        let verificationProof: String?
-        let profileVerificationProof: String?
-        let picture: String
-        let name: String?
-        let desc: String?
-        let blockedUsersList: [String]?
+        public let verificationProof: String?
+        public let profileVerificationProof: String?
+        public let picture: String
+        public let name: String?
+        public let desc: String?
+        public let blockedUsersList: [String]?
     }
 
     public struct GroupMemberStatus: Codable {
-        let isMember: Bool
-        let isPending: Bool
-        let isAdmin: Bool
+        public let isMember: Bool
+        public let isPending: Bool
+        public let isAdmin: Bool
 
         init(isMember: Bool, isPending: Bool, isAdmin: Bool) {
             self.isMember = isMember
@@ -67,34 +67,32 @@ extension PushChat {
     }
 
     public struct ChatMemberCounts: Codable {
-        let totalMembersCount: TotalMembersCount
+        public let totalMembersCount: TotalMembersCount
     }
 
     public struct TotalMembersCount: Codable {
-        let overallCount: Int
-        let adminsCount: Int
-        let membersCount: Int
-        let pendingCount: Int
-        let approvedCount: Int
-        let roles: MemberRoles
+        public let overallCount: Int
+        public let adminsCount: Int
+        public let membersCount: Int
+        public let pendingCount: Int
+        public let approvedCount: Int
+        public let roles: MemberRoles
     }
 
     public struct MemberRoles: Codable {
-        let admin: RoleCounts
-        let member: RoleCounts
-        
+        public let admin: RoleCounts
+        public let member: RoleCounts
+
         enum CodingKeys: String, CodingKey {
-               case admin = "ADMIN"
-               case member = "MEMBER"
-           }
+            case admin = "ADMIN"
+            case member = "MEMBER"
+        }
     }
 
     public struct RoleCounts: Codable {
-        let total: Int
-        let pending: Int
+        public let total: Int
+        public let pending: Int
     }
-
-
 
     public struct GroupAccess: Codable {
         public var entry: Bool?

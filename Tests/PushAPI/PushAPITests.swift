@@ -56,6 +56,7 @@ class PushAPITests: XCTestCase {
         let johnAddress = try await johnSigner.getAddress()
         let markAddress = try await johnSigner.getAddress()
 
+        print("aliceAddress: \(aliceAddress)")
         // Initialize PushAPI
         let userAlice = try await PushAPI
             .initializePush(

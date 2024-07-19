@@ -23,6 +23,11 @@ public struct Chat {
         case CHAT
         case REQUESTS
     }
+    
+    public func decrypt(messagePayloads:[Message] ) async throws-> [Message]{
+        
+        return messagePayloads;
+    }
 
     public func list(type: ChatListType, page: Int = 1, limit: Int = 10, overrideAccount: String? = nil) async throws -> [PushChat.Feeds] {
         if type == .CHAT {
@@ -68,7 +73,7 @@ public struct Chat {
     ) async throws -> [Message] {
         var ref = reference
         if ref == nil {
-            let threadHash = try await PushChat.ConversationHash(conversationId: target, account: account, env: env)!
+            let threadHash = try await PushChat.ConversationHash(conversationId: target, account: account, env: env)
             ref = threadHash
         }
 
@@ -291,7 +296,6 @@ public struct Group {
             description: options.description,
             image: options.image,
             members: options.members,
-
             isPublic: !options.isPrivate,
             creatorAddress: account,
             creatorPgpPrivateKey: decryptedPgpPvtKey,
